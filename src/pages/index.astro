@@ -1,0 +1,273 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+import ScoobyRun from '../components/ScoobyRun.astro';
+---
+
+<BaseLayout title="Those One Guys | Rock & Roll">
+  <!-- === HERO === -->
+  <section class="hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.12} />
+    <Cityscape color="#1a0a05" opacity={0.35} />
+
+    <div class="hero-scatter">
+      <div class="scatter s1"><ComicBurst text="BAM!" bg="#e8251b" shape="pow" size="sm" rotate={-20} float delay={200} /></div>
+      <div class="scatter s2"><ComicBurst text="POW!" bg="#ffe135" color="#5c3317" shape="jagged" size="xs" rotate={15} float delay={400} /></div>
+      <div class="scatter s3"><ComicBurst text="ZAP!" bg="#ff69b4" shape="zap" size="sm" rotate={-10} float delay={600} /></div>
+      <div class="scatter s4"><ComicBurst text="WHAM!" bg="#1e90ff" shape="bang" size="xs" rotate={25} float delay={800} /></div>
+      <div class="scatter s5"><ComicBurst text="KABOOM!" bg="#f5a623" color="#5c3317" shape="pow" size="sm" rotate={-15} float delay={300} /></div>
+      <div class="scatter s6"><ComicBurst text="CRASH!" bg="#1a8a7d" shape="jagged" size="xs" rotate={20} float delay={700} /></div>
+    </div>
+
+    <div class="hero-main-bursts">
+      <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="lg" rotate={-12} delay={0} />
+      <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="lg" rotate={8} delay={150} />
+      <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="lg" rotate={-5} delay={300} />
+    </div>
+
+    <div class="hero-content">
+      <h1 class="hero-title comic-title">Those One Guys</h1>
+      <p class="hero-sub">Loud guitars. Big grooves. Zero chill.</p>
+      <div class="hero-buttons">
+        <a href="/music" class="btn btn-primary">Listen Now</a>
+        <a href="/shows" class="btn btn-secondary">See Us Live</a>
+      </div>
+    </div>
+
+    <div class="hero-bottom-bursts">
+      <ComicBurst text="YEAH!" bg="#ffe135" color="#5c3317" shape="cloud" size="sm" rotate={-8} float delay={500} />
+      <ComicBurst text="ROCK!" bg="#e8251b" shape="bang" size="sm" rotate={12} float delay={650} />
+      <ComicBurst text="WHAP!" bg="#1e90ff" shape="star" size="xs" rotate={-18} float delay={400} />
+      <ComicBurst text="OOF!" bg="#ff69b4" shape="pow" size="xs" rotate={6} float delay={550} />
+    </div>
+  </section>
+
+  <!-- === CHASE SCENE === -->
+  <ScoobyRun />
+
+  <!-- === THE VIBE === -->
+  <section class="vibes-section halftone">
+    <SpeedLines color="#5c3317" opacity={0.05} />
+    <div class="section vibes-inner">
+      <div class="burst-row">
+        <ComicBurst text="THOSE!" bg="#1e90ff" shape="bang" size="sm" rotate={-12} />
+        <ComicBurst text="KAPOW!" bg="#e8251b" shape="pow" size="md" rotate={5} />
+        <h2 class="section-title comic-title">The Vibe</h2>
+        <ComicBurst text="WHAM!" bg="#ff69b4" shape="jagged" size="md" rotate={-8} />
+        <ComicBurst text="ONE!" bg="#f5a623" color="#5c3317" shape="star" size="sm" rotate={15} />
+      </div>
+      <div class="vibes-grid">
+        <div class="vibe-card comic-panel">
+          <div class="vibe-burst"><ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="md" rotate={-15} /></div>
+          <h3>Rock & Roll</h3>
+          <p>Riffs that rattle your bones and make your neighbors file noise complaints.</p>
+        </div>
+        <div class="vibe-card comic-panel">
+          <div class="vibe-burst"><ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="md" rotate={10} /></div>
+          <h3>Groovy Jams</h3>
+          <p>Basslines so thick you could pour them on pancakes. Funky, heavy, and impossible to sit still.</p>
+        </div>
+        <div class="vibe-card comic-panel">
+          <div class="vibe-burst"><ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="md" rotate={-8} /></div>
+          <h3>Good Times</h3>
+          <p>Every show is a party. Every song is an invitation. Come hang.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === CTA === -->
+  <section class="cta-banner halftone">
+    <Cityscape color="#0d3d36" opacity={0.3} />
+    <SpeedLines color="#fdf5e6" opacity={0.08} />
+    <div class="cta-content">
+      <ComicBurst text="BAM!" bg="#ffe135" color="#5c3317" shape="pow" size="lg" rotate={-10} float />
+      <ComicBurst text="THOSE!" bg="#e8641b" shape="bang" size="sm" rotate={20} float delay={200} />
+      <div class="cta-text">
+        <h2 class="comic-title">Next Show Coming Soon</h2>
+        <p>Stay tuned for dates, or just follow the sound of the amps.</p>
+        <a href="/contact" class="btn btn-primary">Get In Touch</a>
+      </div>
+      <ComicBurst text="GUYS!" bg="#ff69b4" shape="star" size="sm" rotate={-15} float delay={300} />
+      <ComicBurst text="ZAP!" bg="#e8251b" shape="zap" size="lg" rotate={12} float />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* === Hero === */
+  .hero {
+    position: relative;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(145deg, #1a0a05 0%, var(--brown) 20%, var(--plum) 50%, var(--orange) 80%, var(--gold) 100%);
+    gap: 0.25rem;
+    padding: 1.5rem 2rem 2rem;
+  }
+
+  .hero-scatter {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .scatter {
+    position: absolute;
+  }
+
+  .s1 { top: 5%; left: 3%; }
+  .s2 { top: 8%; right: 8%; }
+  .s3 { top: 35%; left: 2%; }
+  .s4 { top: 30%; right: 3%; }
+  .s5 { bottom: 20%; left: 5%; }
+  .s6 { bottom: 15%; right: 5%; }
+
+  .hero-main-bursts {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 2;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-content {
+    position: relative;
+    text-align: center;
+    color: var(--cream);
+    padding: 1rem 2rem;
+    z-index: 2;
+  }
+
+  .hero-title {
+    font-family: var(--comic);
+    font-size: clamp(3rem, 9vw, 6.5rem);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    text-shadow: 5px 5px 0 rgba(0,0,0,0.5), -2px -2px 0 var(--orange);
+    letter-spacing: 8px;
+    -webkit-text-stroke: 2px rgba(0,0,0,0.2);
+  }
+
+  .hero-sub {
+    font-family: var(--comic);
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    max-width: 500px;
+    margin: 0 auto 1.25rem;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-bottom-bursts {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 2;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  @media (max-width: 768px) {
+    .hero-scatter { display: none; }
+    .hero-bottom-bursts { display: none; }
+  }
+
+  /* === Vibes === */
+  .vibes-section {
+    position: relative;
+    background: var(--cream);
+    overflow: hidden;
+  }
+
+  .vibes-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .vibes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2.5rem;
+  }
+
+  .vibe-card {
+    background: white;
+    padding: 1.5rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .vibe-burst {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .vibe-card h3 {
+    font-family: var(--comic);
+    color: var(--brown);
+    font-size: 1.8rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 3px;
+  }
+
+  .vibe-card p {
+    font-size: 1rem;
+    opacity: 0.75;
+    line-height: 1.7;
+  }
+
+  /* === CTA === */
+  .cta-banner {
+    background: linear-gradient(135deg, #0d3d36, var(--teal), #0d3d36);
+    color: var(--cream);
+    padding: 5rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+  }
+
+  .cta-text {
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .cta-text h2 {
+    font-size: 2.8rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .cta-text p {
+    font-family: var(--comic);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    letter-spacing: 1px;
+  }
+</style>

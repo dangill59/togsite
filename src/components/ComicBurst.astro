@@ -1,0 +1,110 @@
+---
+interface Props {
+  text: string;
+  color?: string;
+  bg?: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  rotate?: number;
+  shape?: 'star' | 'jagged' | 'pow' | 'cloud' | 'bang' | 'zap';
+  float?: boolean;
+  delay?: number;
+}
+
+const { text, color = '#fdf5e6', bg = '#e8641b', size = 'md', rotate = 0, shape = 'star', float = false, delay = 0 } = Astro.props;
+const sizeClass = `burst-${size}`;
+
+const f = bg; // fill color
+const shapes: Record<string, string> = {
+  star: `<polygon points="100,0 117,65 190,35 140,85 200,100 140,115 190,165 117,135 100,200 83,135 10,165 60,115 0,100 60,85 10,35 83,65" fill="${f}" stroke="#000" stroke-width="3"/>`,
+  jagged: `<polygon points="100,2 120,40 160,10 145,55 198,40 155,75 200,100 155,125 198,160 145,145 160,190 120,160 100,198 80,160 40,190 55,145 2,160 45,125 0,100 45,75 2,40 55,55 40,10 80,40" fill="${f}" stroke="#000" stroke-width="3"/>`,
+  pow: `<polygon points="100,0 112,55 150,15 130,60 185,30 145,75 200,70 155,100 200,130 145,125 185,170 130,140 150,185 112,145 100,200 88,145 50,185 70,140 15,170 55,125 0,130 45,100 0,70 55,75 15,30 70,60 50,15 88,55" fill="${f}" stroke="#000" stroke-width="3"/>`,
+  cloud: `<path d="M50,180 Q0,180 10,140 Q-5,110 25,90 Q10,50 50,45 Q55,10 100,15 Q140,5 155,40 Q190,30 195,70 Q215,85 195,110 Q210,145 185,155 Q195,190 155,180 Q130,200 100,190 Q65,200 50,180Z" fill="${f}" stroke="#000" stroke-width="3"/>`,
+  bang: `<polygon points="100,0 115,50 155,8 135,55 195,25 148,70 200,60 158,95 200,105 155,110 200,140 148,130 195,175 135,145 155,192 115,150 100,200 85,150 45,192 65,145 5,175 52,130 0,140 45,110 0,105 42,95 0,60 52,70 5,25 65,55 45,8 85,50" fill="${f}" stroke="#000" stroke-width="3"/>`,
+  zap: `<polygon points="85,0 140,75 200,55 120,110 180,100 100,160 170,145 95,200 80,140 20,165 75,105 0,130 70,75 15,80" fill="${f}" stroke="#000" stroke-width="3"/>`,
+};
+---
+
+<div
+  class:list={['comic-burst', sizeClass, { 'burst-float': float }]}
+  style={`--burst-bg: ${bg}; --burst-color: ${color}; --burst-rotate: ${rotate}deg; --burst-delay: ${delay}ms;`}
+>
+  <svg viewBox="0 0 200 200" class="burst-svg" set:html={shapes[shape]} />
+  <span class="burst-text">{text}</span>
+</div>
+
+<style>
+  .comic-burst {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(var(--burst-rotate));
+    flex-shrink: 0;
+    animation: burstPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: var(--burst-delay);
+  }
+
+  .burst-float {
+    animation: burstPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+               burstBob 3s ease-in-out infinite;
+    animation-delay: var(--burst-delay), calc(var(--burst-delay) + 0.5s);
+  }
+
+  @keyframes burstPop {
+    from { transform: rotate(var(--burst-rotate)) scale(0); opacity: 0; }
+    to { transform: rotate(var(--burst-rotate)) scale(1); opacity: 1; }
+  }
+
+  @keyframes burstBob {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -12px; }
+  }
+
+  .comic-burst:hover {
+    animation: burstShake 0.3s ease forwards;
+    cursor: default;
+  }
+
+  @keyframes burstShake {
+    0% { transform: rotate(var(--burst-rotate)) scale(1); }
+    25% { transform: rotate(calc(var(--burst-rotate) - 8deg)) scale(1.15); }
+    50% { transform: rotate(calc(var(--burst-rotate) + 8deg)) scale(1.15); }
+    75% { transform: rotate(calc(var(--burst-rotate) - 4deg)) scale(1.1); }
+    100% { transform: rotate(var(--burst-rotate)) scale(1.05); }
+  }
+
+  .burst-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.4));
+    overflow: visible;
+  }
+
+  .burst-text {
+    position: absolute;
+    font-family: 'Bangers', cursive;
+    color: var(--burst-color);
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3), -1px -1px 0 rgba(0,0,0,0.15);
+    letter-spacing: 2px;
+    padding: 25%;
+    white-space: nowrap;
+  }
+
+  .burst-xs { width: 70px; height: 70px; }
+  .burst-xs .burst-text { font-size: 0.65rem; letter-spacing: 1px; }
+
+  .burst-sm { width: 110px; height: 110px; }
+  .burst-sm .burst-text { font-size: 0.95rem; }
+
+  .burst-md { width: 160px; height: 160px; }
+  .burst-md .burst-text { font-size: 1.4rem; }
+
+  .burst-lg { width: 230px; height: 230px; }
+  .burst-lg .burst-text { font-size: 2rem; }
+
+  .burst-xl { width: 300px; height: 300px; }
+  .burst-xl .burst-text { font-size: 2.6rem; }
+</style>

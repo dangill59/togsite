@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+
+const shows = [
+  { date: "TBA", venue: "The Groove Lounge", city: "Your City, ST", note: "Doors at 8pm", burst: "THOSE!", shape: "star" as const, burstBg: "#e8641b" },
+  { date: "TBA", venue: "Vinyl Records & Bar", city: "Another Town, ST", note: "All ages", burst: "ONE!", shape: "pow" as const, burstBg: "#1a8a7d" },
+  { date: "TBA", venue: "The Shag Carpet Club", city: "Somewhere Cool, ST", note: "21+", burst: "GUYS!", shape: "jagged" as const, burstBg: "#6b2d5b" },
+];
+
+const miniWords = ["BAM!", "POW!", "ZAP!", "WHAM!", "CRASH!", "BOOM!"];
+const miniColors = ["#e8251b", "#1e90ff", "#ff69b4", "#ffe135", "#f5a623", "#1a8a7d"];
+const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
+---
+
+<BaseLayout title="Shows | Those One Guys">
+  <section class="shows-hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.12} />
+    <Cityscape color="#1a0a05" opacity={0.3} />
+    <div class="shows-hero-inner">
+      <div class="burst-row">
+        <ComicBurst text="POW!" bg="#ffe135" color="#5c3317" shape="pow" size="md" rotate={-15} />
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={10} />
+      </div>
+      <h1 class="page-hero-title comic-title">Shows</h1>
+      <div class="burst-row">
+        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="sm" rotate={-8} />
+        <ComicBurst text="BAM!" bg="#e8251b" shape="bang" size="md" rotate={12} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="section-subtitle">Come see us do the thing. Dates coming soon.</p>
+
+    <div class="shows-list">
+      {shows.map((show, i) => (
+        <div class="show-row comic-panel">
+          <div class="show-burst">
+            <ComicBurst text={show.burst} bg={show.burstBg} shape={show.shape} size="md" rotate={i % 2 === 0 ? -10 : 10} />
+          </div>
+          <div class="show-details">
+            <h3 class="comic-title">{show.venue}</h3>
+            <p class="show-city">{show.city}</p>
+            <p class="show-note">{show.note}</p>
+          </div>
+          <div class="show-date">
+            <span class="date-text">{show.date}</span>
+          </div>
+          <div class="show-mini-bursts">
+            <ComicBurst text={miniWords[i * 2]} bg={miniColors[i * 2]} color={miniColors[i * 2] === "#ffe135" ? "#5c3317" : "#fdf5e6"} shape={miniShapes[i * 2]} size="xs" rotate={-15 + i * 8} />
+            <ComicBurst text={miniWords[i * 2 + 1]} bg={miniColors[i * 2 + 1]} shape={miniShapes[i * 2 + 1]} size="xs" rotate={10 - i * 5} />
+          </div>
+          <div class="show-action">
+            <a href="#" class="btn btn-primary">Tickets</a>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="book-us halftone">
+    <Cityscape color="#1a0a05" opacity={0.2} />
+    <SpeedLines color="#fdf5e6" opacity={0.08} />
+    <div class="book-us-inner">
+      <ComicBurst text="THOSE!" bg="#ffe135" color="#5c3317" shape="star" size="lg" rotate={-8} float />
+      <ComicBurst text="CRASH!" bg="#e8251b" shape="bang" size="sm" rotate={20} float delay={200} />
+      <div class="book-us-text">
+        <h2 class="comic-title">Want Us At Your Event?</h2>
+        <p>Weddings, bar mitzvahs, questionable house parties — we're in.</p>
+        <a href="/contact" class="btn btn-secondary">Book Us</a>
+      </div>
+      <ComicBurst text="KAPOW!" bg="#1e90ff" shape="jagged" size="sm" rotate={-15} float delay={300} />
+      <ComicBurst text="GUYS!" bg="#ff69b4" shape="pow" size="lg" rotate={10} float />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .shows-hero {
+    position: relative;
+    background: linear-gradient(135deg, #1a0a05, var(--teal));
+    padding: 5rem 2rem;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .shows-hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .page-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .shows-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .show-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: white;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .show-burst { flex-shrink: 0; }
+
+  .show-details { flex: 1; }
+
+  .show-details h3 {
+    font-size: 1.5rem;
+    color: var(--brown);
+    margin-bottom: 0.2rem;
+  }
+
+  .show-city { font-weight: 600; font-size: 0.9rem; opacity: 0.7; }
+  .show-note { font-size: 0.85rem; opacity: 0.5; margin-top: 0.2rem; }
+
+  .show-date { min-width: 70px; text-align: center; }
+
+  .date-text {
+    font-family: var(--comic);
+    font-size: 1.5rem;
+    color: var(--orange);
+    letter-spacing: 3px;
+  }
+
+  .show-mini-bursts {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .show-row { flex-direction: column; text-align: center; gap: 1rem; }
+    .show-mini-bursts { justify-content: center; }
+  }
+
+  .book-us {
+    background: linear-gradient(135deg, var(--plum), var(--brown));
+    color: var(--cream);
+    padding: 5rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .book-us-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .book-us-text {
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .book-us-text h2 { font-size: 2.6rem; margin-bottom: 0.75rem; }
+  .book-us-text p { font-family: var(--comic); font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; letter-spacing: 1px; }
+</style>

@@ -1,0 +1,253 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+---
+
+<BaseLayout title="Contact | Those One Guys">
+  <section class="contact-hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.1} />
+    <Cityscape color="#1a0a05" opacity={0.25} />
+    <div class="contact-hero-inner">
+      <div class="burst-row">
+        <ComicBurst text="RING!" bg="#1a8a7d" shape="cloud" size="md" rotate={-12} />
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={18} />
+      </div>
+      <h1 class="page-hero-title comic-title">Get In Touch</h1>
+      <div class="burst-row">
+        <ComicBurst text="ONE!" bg="#ffe135" color="#5c3317" shape="pow" size="sm" rotate={-8} />
+        <ComicBurst text="BUZZ!" bg="#e8251b" shape="bang" size="md" rotate={10} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="section-subtitle">Booking, press, fan mail, or just wanna say what's up — we dig it all.</p>
+
+    <div class="contact-grid">
+      <form class="contact-form comic-panel" action="#" method="POST">
+        <div class="form-header">
+          <ComicBurst text="WRITE!" bg="#1e90ff" shape="pow" size="sm" rotate={-10} />
+          <h2 class="comic-title">Drop A Line</h2>
+          <ComicBurst text="TO US!" bg="#ff69b4" shape="star" size="sm" rotate={8} />
+        </div>
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Your name" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="your@email.com" required />
+        </div>
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <select id="subject" name="subject">
+            <option value="booking">Booking Inquiry</option>
+            <option value="press">Press / Media</option>
+            <option value="fan">Fan Mail</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="5" placeholder="What's on your mind?" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send It</button>
+      </form>
+
+      <div class="contact-sidebar">
+        <div class="contact-info comic-panel">
+          <h3 class="comic-title">Other Ways to Reach Us</h3>
+          <div class="info-item">
+            <strong>Email</strong>
+            <p>hello@thoseoneguys.com</p>
+          </div>
+          <div class="info-item">
+            <strong>Socials</strong>
+            <div class="socials">
+              <a href="#">Instagram</a>
+              <a href="#">Facebook</a>
+              <a href="#">TikTok</a>
+              <a href="#">YouTube</a>
+            </div>
+          </div>
+          <div class="info-item">
+            <strong>Booking</strong>
+            <p>booking@thoseoneguys.com</p>
+          </div>
+        </div>
+
+        <div class="sidebar-bursts">
+          <div class="burst-cluster">
+            <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="lg" rotate={-10} float />
+            <ComicBurst text="BAM!" bg="#ffe135" color="#5c3317" shape="bang" size="sm" rotate={20} float delay={200} />
+          </div>
+          <div class="burst-cluster">
+            <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="lg" rotate={8} float delay={100} />
+            <ComicBurst text="POW!" bg="#e8251b" shape="zap" size="sm" rotate={-15} float delay={350} />
+          </div>
+          <div class="burst-cluster">
+            <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="lg" rotate={-5} float delay={200} />
+            <ComicBurst text="WHAM!" bg="#1e90ff" shape="cloud" size="sm" rotate={12} float delay={400} />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--brown), var(--orange));
+    padding: 5rem 2rem;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .contact-hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .page-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    background: white;
+    padding: 2rem;
+  }
+
+  .form-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-header h2 {
+    font-size: 1.6rem;
+    color: var(--brown);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-family: var(--comic);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--brown);
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.85rem 1rem;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: var(--cream);
+    color: var(--brown);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 4px 4px 0 var(--orange);
+  }
+
+  .contact-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .contact-info {
+    background: white;
+    padding: 2.5rem;
+  }
+
+  .contact-info h3 {
+    font-size: 1.4rem;
+    color: var(--brown);
+    margin-bottom: 2rem;
+  }
+
+  .info-item { margin-bottom: 1.5rem; }
+
+  .info-item strong {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    color: var(--orange);
+    margin-bottom: 0.3rem;
+    font-family: var(--comic);
+  }
+
+  .socials {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .socials a {
+    padding: 0.5rem 1.2rem;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+    box-shadow: 3px 3px 0 var(--brown);
+  }
+
+  .socials a:hover {
+    background: var(--brown);
+    color: var(--cream);
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--brown);
+  }
+
+  .sidebar-bursts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .burst-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+</style>

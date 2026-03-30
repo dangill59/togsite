@@ -1,0 +1,180 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+import CharacterDarby from '../components/CharacterDarby.astro';
+import CharacterDano from '../components/CharacterDano.astro';
+import CharacterP from '../components/CharacterP.astro';
+---
+
+<BaseLayout title="About | Those One Guys">
+  <section class="about-hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.1} />
+    <Cityscape color="#1a0a05" opacity={0.2} />
+    <div class="about-hero-inner">
+      <div class="burst-row">
+        <ComicBurst text="CRASH!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
+        <ComicBurst text="POW!" bg="#ffe135" color="#5c3317" shape="pow" size="sm" rotate={18} />
+      </div>
+      <h1 class="page-hero-title comic-title">About The Band</h1>
+      <div class="burst-row">
+        <ComicBurst text="BOOM!" bg="#1e90ff" shape="jagged" size="sm" rotate={-8} />
+        <ComicBurst text="WHAM!" bg="#ff69b4" shape="star" size="md" rotate={10} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="bio comic-panel halftone">
+      <div class="bio-corner-burst tl"><ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={-20} /></div>
+      <div class="bio-corner-burst tr"><ComicBurst text="GUYS!" bg="#6b2d5b" shape="pow" size="sm" rotate={15} /></div>
+      <p>
+        Those One Guys are a rock & roll band doing what rock & roll bands do best:
+        playing loud, having fun, and refusing to take themselves too seriously.
+        Born out of a shared love for fat riffs, funky grooves, and the spirit of the 70's,
+        the band brings a high-energy, feel-good show every time they hit the stage.
+      </p>
+      <p>
+        Whether it's a sweaty club gig or a backyard party, Those One Guys deliver
+        the kind of music that makes you want to crank the volume knob past the little
+        line that says you probably shouldn't.
+      </p>
+      <div class="bio-corner-burst bl"><ComicBurst text="ONE!" bg="#1a8a7d" shape="jagged" size="sm" rotate={-10} /></div>
+      <div class="bio-corner-burst br"><ComicBurst text="BAM!" bg="#ffe135" color="#5c3317" shape="bang" size="sm" rotate={20} /></div>
+    </div>
+  </section>
+
+  <section class="members-section halftone">
+    <SpeedLines color="#5c3317" opacity={0.04} />
+    <Cityscape color="#ddd" opacity={0.15} />
+    <div class="section members-inner">
+      <div class="burst-row">
+        <ComicBurst text="MEET!" bg="#e8641b" shape="pow" size="md" rotate={-10} />
+        <h2 class="section-title comic-title">The Guys</h2>
+        <ComicBurst text="THE!" bg="#1a8a7d" shape="bang" size="md" rotate={8} />
+        <ComicBurst text="BAND!" bg="#6b2d5b" shape="star" size="md" rotate={-5} />
+      </div>
+
+      <div class="members-grid">
+        <div class="member-panel comic-panel">
+          <div class="member-burst-top">
+            <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="md" rotate={-8} />
+            <ComicBurst text="BOOM!" bg="#2d5a27" shape="bang" size="xs" rotate={15} />
+          </div>
+          <CharacterDarby />
+          <div class="role-tag">Bass & Vocals</div>
+        </div>
+
+        <div class="member-panel comic-panel">
+          <div class="member-burst-top">
+            <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="md" rotate={10} />
+            <ComicBurst text="STRUM!" bg="#f5a623" color="#5c3317" shape="jagged" size="xs" rotate={-12} />
+          </div>
+          <CharacterDano />
+          <div class="role-tag">Guitar & Vocals</div>
+        </div>
+
+        <div class="member-panel comic-panel">
+          <div class="member-burst-top">
+            <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="md" rotate={-5} />
+            <ComicBurst text="SMASH!" bg="#9b59b6" shape="cloud" size="xs" rotate={18} />
+          </div>
+          <CharacterP />
+          <div class="role-tag">Drums & Vocals</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .about-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--brown), var(--plum));
+    padding: 5rem 2rem;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .about-hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .page-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .bio {
+    max-width: 750px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    padding: 3rem;
+    background: white;
+    position: relative;
+  }
+
+  .bio p + p { margin-top: 1.5rem; }
+
+  .bio-corner-burst {
+    position: absolute;
+    z-index: 5;
+  }
+  .tl { top: -20px; left: -20px; }
+  .tr { top: -20px; right: -20px; }
+  .bl { bottom: -20px; left: -20px; }
+  .br { bottom: -20px; right: -20px; }
+
+  .members-section {
+    background: var(--cream);
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 4rem;
+  }
+
+  .members-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1300px;
+  }
+
+  .members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+    margin: 0 auto;
+  }
+
+  .member-panel {
+    background: white;
+    padding: 1.5rem 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .member-burst-top {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .role-tag {
+    font-family: var(--comic);
+    background: var(--brown);
+    color: var(--gold);
+    padding: 0.4rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+  }
+</style>

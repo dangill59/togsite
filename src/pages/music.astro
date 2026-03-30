@@ -1,0 +1,229 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+
+const albums = [
+  {
+    title: "Album Title Here",
+    year: "2025",
+    tracks: ["Track 1", "Track 2", "Track 3", "Track 4", "Track 5"],
+  },
+  {
+    title: "Another Album",
+    year: "2023",
+    tracks: ["Song A", "Song B", "Song C", "Song D"],
+  },
+];
+---
+
+<BaseLayout title="Music | Those One Guys">
+  <section class="music-hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.1} />
+    <Cityscape color="#1a0a05" opacity={0.25} />
+    <div class="music-hero-inner">
+      <div class="burst-row">
+        <ComicBurst text="WHAM!" bg="#ff69b4" shape="bang" size="md" rotate={-14} />
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={20} />
+      </div>
+      <h1 class="page-hero-title comic-title">Music</h1>
+      <div class="burst-row">
+        <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="sm" rotate={-10} />
+        <ComicBurst text="KAPOW!" bg="#1e90ff" shape="jagged" size="md" rotate={8} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="section-subtitle">Crank it up. Here's what we've been cooking.</p>
+
+    <div class="albums">
+      {albums.map((album, i) => (
+        <div class="album-card comic-panel">
+          <div class="album-art halftone">
+            <div class="album-bursts">
+              <ComicBurst text={i === 0 ? "THOSE!" : "ONE!"} bg={i === 0 ? "#e8641b" : "#6b2d5b"} shape={i === 0 ? "star" : "pow"} size="lg" rotate={i % 2 === 0 ? -10 : 10} />
+              <ComicBurst text={i === 0 ? "BOOM!" : "CRASH!"} bg={i === 0 ? "#ffe135" : "#e8251b"} color={i === 0 ? "#5c3317" : "#fdf5e6"} shape={i === 0 ? "bang" : "jagged"} size="sm" rotate={i % 2 === 0 ? 15 : -15} />
+            </div>
+          </div>
+          <div class="album-info">
+            <h2 class="comic-title">{album.title}</h2>
+            <p class="album-year">{album.year}</p>
+            <ol class="track-list">
+              {album.tracks.map((track) => (
+                <li>{track}</li>
+              ))}
+            </ol>
+            <a href="#" class="btn btn-primary">Listen</a>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="streaming-section halftone">
+    <Cityscape color="#1a0a05" opacity={0.2} />
+    <SpeedLines color="#fdf5e6" opacity={0.06} />
+    <div class="streaming-inner">
+      <div class="streaming-bursts">
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="md" rotate={-8} float />
+        <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="sm" rotate={15} float delay={200} />
+      </div>
+      <h2 class="comic-title">Find Us On</h2>
+      <div class="streaming-links">
+        <a href="#" class="stream-badge">Spotify</a>
+        <a href="#" class="stream-badge">Apple Music</a>
+        <a href="#" class="stream-badge">YouTube</a>
+        <a href="#" class="stream-badge">Bandcamp</a>
+      </div>
+      <div class="streaming-bursts">
+        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="sm" rotate={-12} float delay={300} />
+        <ComicBurst text="ZAP!" bg="#ff69b4" shape="zap" size="md" rotate={10} float delay={100} />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .music-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--orange), var(--plum));
+    padding: 5rem 2rem;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .music-hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .page-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .albums {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .album-card {
+    display: flex;
+    gap: 0;
+    background: white;
+    padding: 0;
+  }
+
+  .album-art {
+    width: 300px;
+    min-height: 280px;
+    background: linear-gradient(135deg, var(--plum), var(--orange), var(--gold));
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .album-bursts {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .album-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .album-info h2 {
+    font-size: 2.2rem;
+    color: var(--brown);
+    margin-bottom: 0.25rem;
+  }
+
+  .album-year {
+    font-family: var(--comic);
+    color: var(--orange);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 1rem;
+  }
+
+  .track-list {
+    padding-left: 1.2rem;
+    margin-bottom: 1.5rem;
+    line-height: 2;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 600px) {
+    .album-card { flex-direction: column; }
+    .album-art { width: 100%; min-height: 220px; }
+  }
+
+  .streaming-section {
+    background: var(--brown);
+    color: var(--cream);
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .streaming-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .streaming-section h2 {
+    font-size: 2.5rem;
+  }
+
+  .streaming-bursts {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .streaming-links {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .stream-badge {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    border: 3px solid var(--gold);
+    border-radius: 4px;
+    color: var(--gold);
+    font-family: var(--comic);
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .stream-badge:hover {
+    background: var(--gold);
+    color: var(--brown);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 rgba(0,0,0,0.4);
+  }
+</style>
