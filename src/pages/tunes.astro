@@ -1,0 +1,333 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+
+const originals = [
+  "Ice Cream Melt",
+  "Delay Song",
+  "Half My Life",
+  "Crazy for Your Love",
+  "Right Time",
+  "Dust",
+  "Inner Fire",
+  "It's Getting Old",
+  "Rampage",
+  "Selfish Girls",
+  "I Cannot Deny",
+  "You're for Me",
+  "She's the One for You",
+  "Ooo Wah Ooo",
+  "Enough Is Enough",
+];
+
+const covers = [
+  { song: "Tush", artist: "ZZ Top" },
+  { song: "La Grange", artist: "ZZ Top" },
+  { song: "Thank You", artist: "Led Zeppelin" },
+  { song: "Cheap Sunglasses", artist: "ZZ Top" },
+  { song: "Old Man", artist: "Neil Young" },
+  { song: "Ohio", artist: "Crosby, Stills, Nash & Young" },
+  { song: "Rockin' in the Free World", artist: "Neil Young" },
+  { song: "Tonight's the Night", artist: "Neil Young" },
+  { song: "Cinnamon Girl", artist: "Neil Young" },
+  { song: "Shine", artist: "Collective Soul" },
+  { song: "Why Pt. 2", artist: "Collective Soul" },
+  { song: "Sanctuary", artist: "Iron Maiden" },
+  { song: "The Middle", artist: "Jimmy Eat World" },
+  { song: "Small Things", artist: "blink-182" },
+  { song: "Message in a Bottle", artist: "The Police" },
+  { song: "Synchronicity II", artist: "The Police" },
+  { song: "Rocky Mountain Way", artist: "Joe Walsh" },
+  { song: "Sweet Home Alabama", artist: "Lynyrd Skynyrd" },
+  { song: "Jane Says", artist: "Jane's Addiction" },
+  { song: "Immigrant Song", artist: "Led Zeppelin" },
+  { song: "Mary Jane's Last Dance", artist: "Tom Petty" },
+  { song: "Refugee", artist: "Tom Petty" },
+  { song: "Dancing with Myself", artist: "Billy Idol" },
+  { song: "Sedated", artist: "Ramones" },
+  { song: "Can't Hardly Wait", artist: "The Replacements" },
+  { song: "Melt with You", artist: "Modern English" },
+  { song: "Sin City", artist: "AC/DC" },
+  { song: "Low", artist: "Cracker" },
+];
+---
+
+<BaseLayout title="Tunes | Those One Guys">
+  <section class="tunes-hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.1} />
+    <Cityscape color="#1a0a05" opacity={0.25} />
+    <div class="tunes-hero-inner">
+      <div class="burst-row">
+        <ComicBurst text="CRANK!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={18} />
+      </div>
+      <h1 class="page-hero-title comic-title">Our Tunes</h1>
+      <div class="burst-row">
+        <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="sm" rotate={-8} />
+        <ComicBurst text="LOUD!" bg="#ff69b4" shape="jagged" size="md" rotate={10} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="tunes-grid">
+      <!-- Originals -->
+      <div class="tune-list comic-panel">
+        <div class="tune-header">
+          <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={-8} />
+          <h2 class="comic-title">Originals</h2>
+          <ComicBurst text="GUYS!" bg="#6b2d5b" shape="pow" size="sm" rotate={10} />
+        </div>
+        <ol class="songs originals-list">
+          {originals.map((song) => (
+            <li>{song}</li>
+          ))}
+        </ol>
+      </div>
+
+      <!-- Covers -->
+      <div class="tune-list comic-panel">
+        <div class="tune-header">
+          <ComicBurst text="BAM!" bg="#1e90ff" shape="bang" size="sm" rotate={-10} />
+          <h2 class="comic-title">Covers</h2>
+          <ComicBurst text="POW!" bg="#ffe135" color="#5c3317" shape="jagged" size="sm" rotate={12} />
+        </div>
+        <ul class="songs covers-list">
+          {covers.map((c) => (
+            <li>
+              <span class="song-name">{c.song}</span>
+              <span class="song-artist">{c.artist}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fan Suggestions -->
+  <section class="fan-section halftone">
+    <Cityscape color="#1a0a05" opacity={0.2} />
+    <SpeedLines color="#fdf5e6" opacity={0.06} />
+    <div class="fan-inner">
+      <div class="burst-row">
+        <ComicBurst text="YOUR!" bg="#ffe135" color="#5c3317" shape="star" size="md" rotate={-10} />
+        <ComicBurst text="TURN!" bg="#e8251b" shape="bang" size="md" rotate={8} />
+      </div>
+      <h2 class="comic-title fan-title">What Should We Play?</h2>
+      <p class="fan-subtitle">Got a song you want to hear us cover? A deep cut we need to learn? Drop it here.</p>
+
+      <form class="suggest-form comic-panel" action="#" method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="song">Song</label>
+            <input type="text" id="song" name="song" placeholder="Song name" required />
+          </div>
+          <div class="form-group">
+            <label for="artist">Artist</label>
+            <input type="text" id="artist" name="artist" placeholder="Original artist" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" name="name" placeholder="Who are you?" />
+        </div>
+        <div class="form-group">
+          <label for="why">Why This Song?</label>
+          <textarea id="why" name="why" rows="3" placeholder="Tell us why this song rips..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send It</button>
+      </form>
+
+      <div class="fan-bursts">
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={-15} float />
+        <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="sm" rotate={10} float delay={200} />
+        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="sm" rotate={-5} float delay={400} />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tunes-hero {
+    position: relative;
+    background: linear-gradient(135deg, #1a0a05, var(--plum), var(--orange));
+    padding: 5rem 2rem;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .tunes-hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .page-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .tunes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .tunes-grid { grid-template-columns: 1fr; }
+  }
+
+  .tune-list {
+    background: white;
+    padding: 2rem;
+  }
+
+  .tune-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tune-header h2 {
+    font-size: 1.8rem;
+    color: var(--brown);
+  }
+
+  .songs {
+    padding-left: 1.5rem;
+  }
+
+  .songs li {
+    padding: 0.6rem 0;
+    border-bottom: 2px dashed rgba(92, 51, 23, 0.1);
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .songs li:last-child {
+    border-bottom: none;
+  }
+
+  .originals-list li {
+    font-weight: 600;
+    color: var(--brown);
+  }
+
+  .covers-list {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .covers-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .song-name {
+    font-weight: 600;
+    color: var(--brown);
+  }
+
+  .song-artist {
+    font-size: 0.85rem;
+    opacity: 0.5;
+    white-space: nowrap;
+    font-style: italic;
+  }
+
+  /* === Fan Section === */
+  .fan-section {
+    background: linear-gradient(135deg, var(--brown), var(--plum));
+    color: var(--cream);
+    padding: 5rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fan-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .fan-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--cream);
+  }
+
+  .fan-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+  }
+
+  .suggest-form {
+    background: white;
+    color: var(--brown);
+    padding: 2rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 500px) {
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-family: var(--comic);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--brown);
+  }
+
+  .form-group input,
+  .form-group textarea {
+    padding: 0.85rem 1rem;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: var(--cream);
+    color: var(--brown);
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 4px 4px 0 var(--orange);
+  }
+
+  .fan-bursts {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+</style>
