@@ -30,6 +30,9 @@ const navLinks = [
       href="https://fonts.googleapis.com/css2?family=Bangers&family=Righteous&family=Outfit:wght@300;400;600&display=swap"
       rel="stylesheet"
     />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#5c3317" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>{title}</title>
   </head>
   <body>
@@ -67,6 +70,10 @@ const navLinks = [
         links?.classList.toggle("open");
         toggle.classList.toggle("open");
       });
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
     </script>
   </body>
 </html>

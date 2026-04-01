@@ -1,0 +1,21 @@
+{
+  "name": "Those One Guys",
+  "short_name": "TOG",
+  "description": "Those One Guys - Rock & Roll with a 70's groove",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#5c3317",
+  "theme_color": "#5c3317",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
