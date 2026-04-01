@@ -448,6 +448,29 @@ import SpeedLines from '../components/SpeedLines.astro';
       ctx.shadowBlur = 0;
     }
 
+    // === SUPABASE (via REST API, no SDK needed) ===
+    const SUPABASE_URL = 'https://ysookbcxirqdogezjboo.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlzb29rYmN4aXJxZG9nZXpqYm9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNzAzMDUsImV4cCI6MjA5MDY0NjMwNX0._UNYB0wR74hlzTpfHuo34SDixc_Cj5E9qTku9TMG0Uw';
+    const hdrs = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+    const db = {
+      async select(email: string) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/fans?email=eq.${encodeURIComponent(email)}&limit=1`, { headers: hdrs });
+        const data = await res.json();
+        return data?.[0] || null;
+      },
+      async insert(fan: any) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/fans`, { method: 'POST', headers: hdrs, body: JSON.stringify(fan) });
+        return res;
+      },
+      async update(email: string, fields: any) {
+        await fetch(`${SUPABASE_URL}/rest/v1/fans?email=eq.${encodeURIComponent(email)}`, { method: 'PATCH', headers: hdrs, body: JSON.stringify(fields) });
+      },
+      async remove(email: string) {
+        await fetch(`${SUPABASE_URL}/rest/v1/fans?email=eq.${encodeURIComponent(email)}`, { method: 'DELETE', headers: hdrs });
+      },
+    };
+
     // === FORM LOGIC ===
     const form = document.getElementById('fanForm');
     const signupSection = document.getElementById('signup-section');
@@ -465,18 +488,24 @@ import SpeedLines from '../components/SpeedLines.astro';
       return superpowerSelect?.value || 'Mystery Power';
     }
 
-    function fillCard(name: string, memberNum: string, dateStr: string, favText: string, power: string, hash: number) {
+    function makeHash(name: string, email: string): number {
+      return Array.from(name + email).reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
+    }
+
+    function makeSignalCode(hash: number): string {
+      return 'TOG-' + Math.abs(hash).toString(36).toUpperCase().slice(0, 6);
+    }
+
+    function fillCard(name: string, signalCode: string, dateStr: string, favText: string, power: string, hash: number) {
       document.getElementById('cardName')!.textContent = name.toUpperCase();
-      document.getElementById('cardNumber')!.textContent = memberNum;
+      document.getElementById('cardNumber')!.textContent = signalCode;
       document.getElementById('cardDate')!.textContent = dateStr;
       document.getElementById('cardFav')!.textContent = favText;
       document.getElementById('cardPower')!.textContent = power;
 
-      // Draw hero character
       const canvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
       if (canvas) drawHero(canvas, Math.abs(hash), power);
 
-      // Generate QR pattern
       const qrEl = document.getElementById('cardQR')!;
       qrEl.innerHTML = '';
       const qrCanvas = document.createElement('canvas');
@@ -499,6 +528,15 @@ import SpeedLines from '../components/SpeedLines.astro';
       qrEl.appendChild(qrCanvas);
     }
 
+    function showCard(name: string, email: string, favText: string, power: string, signalCode: string, dateStr: string) {
+      const hash = makeHash(name, email);
+      fillCard(name, signalCode, dateStr, favText, power, hash);
+      localStorage.setItem('tog-fan', JSON.stringify({ name, email, signalCode, dateStr, favText, power }));
+      signupSection!.style.display = 'none';
+      cardSection!.style.display = 'block';
+    }
+
+    // === SIGNUP ===
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -508,56 +546,73 @@ import SpeedLines from '../components/SpeedLines.astro';
       const favText = fav.options[fav.selectedIndex].text;
       const power = getSuperpower();
 
-      // Show sending state
       const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
       submitBtn.textContent = 'Sending...';
       submitBtn.disabled = true;
 
-      // Send to Formspree
+      const hash = makeHash(name, email);
+      const signalCode = makeSignalCode(hash);
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      // Check if fan exists (editing)
+      const existing = await db.select(email);
+
+      if (existing) {
+        await db.update(email, { name, favorite_member: favText, superpower: power, signal_code: signalCode });
+      } else {
+        const res = await db.insert({ name, email, favorite_member: favText, superpower: power, signal_code: signalCode });
+        if (!res.ok) {
+          // Duplicate email - treat as update
+          await db.update(email, { name, favorite_member: favText, superpower: power, signal_code: signalCode });
+        }
+      }
+
+      // Also send to Formspree for email notification
       try {
         await fetch('https://formspree.io/f/xpqolkgy', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, favoriteMember: favText, superpower: power, type: 'fan-club-signup' }),
+          body: JSON.stringify({ name, email, favoriteMember: favText, superpower: power, signalCode, type: 'fan-club-signup' }),
         });
       } catch (err) {}
 
-      const hash = Array.from(name + email).reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
-      const memberNum = 'TOG-' + Math.abs(hash).toString(36).toUpperCase().slice(0, 6);
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-
-      fillCard(name, memberNum, dateStr, favText, power, hash);
-
-      // Save to localStorage
-      localStorage.setItem('tog-fan', JSON.stringify({ name, email, memberNum, dateStr, favText, power }));
-
-      // Show confirmation then card
-      signupSection!.style.display = 'none';
-      cardSection!.style.display = 'block';
-
-      // Scroll to confirmation message
+      showCard(name, email, favText, power, signalCode, dateStr);
       cardSection!.scrollIntoView({ behavior: 'smooth' });
+
+      submitBtn.textContent = 'Get My Fan Card';
+      submitBtn.disabled = false;
     });
 
-    // Check if already signed up
+    // === CHECK IF ALREADY SIGNED UP (localStorage first, then verify with DB) ===
     const saved = localStorage.getItem('tog-fan');
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        const hash = Array.from(data.name + data.email).reduce((acc: number, c: string) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
-        fillCard(data.name, data.memberNum, data.dateStr, data.favText, data.power || 'Mystery Power', hash);
-        signupSection!.style.display = 'none';
-        cardSection!.style.display = 'block';
+
+        // Try to load from DB to get latest data
+        const dbFan = await db.select(data.email);
+
+        if (dbFan) {
+          const hash = makeHash(dbFan.name, dbFan.email);
+          const dateStr = new Date(dbFan.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr);
+        } else {
+          // DB record gone but localStorage exists - show from local
+          const hash = makeHash(data.name, data.email);
+          fillCard(data.name, data.signalCode || data.memberNum, data.dateStr, data.favText, data.power || 'Mystery Power', hash);
+          signupSection!.style.display = 'none';
+          cardSection!.style.display = 'block';
+        }
       } catch(e) {}
     }
 
-    // Screenshot button
+    // === SCREENSHOT ===
     document.getElementById('screenshotBtn')?.addEventListener('click', () => {
       alert('Take a screenshot of your Fan Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
     });
 
-    // Edit profile - go back to form prefilled
+    // === EDIT PROFILE ===
     document.getElementById('editBtn')?.addEventListener('click', () => {
       const saved = localStorage.getItem('tog-fan');
       if (saved) {
@@ -565,12 +620,10 @@ import SpeedLines from '../components/SpeedLines.astro';
           const data = JSON.parse(saved);
           (document.getElementById('fanName') as HTMLInputElement).value = data.name || '';
           (document.getElementById('fanEmail') as HTMLInputElement).value = data.email || '';
-          // Set favorite member
           const favSelect = document.getElementById('favMember') as HTMLSelectElement;
           for (let i = 0; i < favSelect.options.length; i++) {
             if (favSelect.options[i].text === data.favText) { favSelect.selectedIndex = i; break; }
           }
-          // Set superpower
           const powerSelect = document.getElementById('superpowerSelect') as HTMLSelectElement;
           const customInput = document.getElementById('superpowerCustom') as HTMLInputElement;
           let found = false;
@@ -589,20 +642,26 @@ import SpeedLines from '../components/SpeedLines.astro';
       signupSection!.scrollIntoView({ behavior: 'smooth' });
     });
 
-    // Delete profile
-    document.getElementById('deleteBtn')?.addEventListener('click', () => {
+    // === DELETE PROFILE ===
+    document.getElementById('deleteBtn')?.addEventListener('click', async () => {
       if (confirm('Are you sure you want to delete your fan profile? This cannot be undone.')) {
+        const saved = localStorage.getItem('tog-fan');
+        if (saved) {
+          try {
+            const data = JSON.parse(saved);
+            await db.remove(data.email);
+          } catch(e) {}
+        }
         localStorage.removeItem('tog-fan');
         cardSection!.style.display = 'none';
         signupSection!.style.display = 'block';
-        // Reset form
         (document.getElementById('fanForm') as HTMLFormElement).reset();
         (document.getElementById('superpowerCustom') as HTMLInputElement).style.display = 'none';
         signupSection!.scrollIntoView({ behavior: 'smooth' });
       }
     });
 
-    // Copy link button
+    // === COPY LINK ===
     document.getElementById('copyBtn')?.addEventListener('click', () => {
       const input = document.getElementById('shareLink') as HTMLInputElement;
       navigator.clipboard.writeText(input.value).then(() => {
