@@ -1,0 +1,485 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+---
+
+<BaseLayout title="Fan Club | Those One Guys">
+  <section class="fan-hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.1} />
+    <Cityscape color="#1a0a05" opacity={0.25} />
+    <div class="fan-hero-inner">
+      <div class="burst-row">
+        <ComicBurst text="JOIN!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
+        <ComicBurst text="THE!" bg="#ffe135" color="#5c3317" shape="pow" size="sm" rotate={18} />
+      </div>
+      <h1 class="page-hero-title comic-title">Fan Club</h1>
+      <div class="burst-row">
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={-8} />
+        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="md" rotate={10} />
+      </div>
+    </div>
+  </section>
+
+  <!-- SIGNUP -->
+  <section class="section" id="signup-section">
+    <div class="signup-intro">
+      <h2 class="comic-title section-title">Become An Official Fan</h2>
+      <p class="section-subtitle">Sign up, get your Fan Card, flash it at the show, and score surprise merch. It's that easy.</p>
+      <div class="perks">
+        <div class="perk comic-panel">
+          <ComicBurst text="1" bg="#e8641b" shape="star" size="sm" rotate={-5} />
+          <h3>Sign Up</h3>
+          <p>Drop your name below and you're in the club.</p>
+        </div>
+        <div class="perk comic-panel">
+          <ComicBurst text="2" bg="#1a8a7d" shape="pow" size="sm" rotate={8} />
+          <h3>Get Your Card</h3>
+          <p>Instant Fan Card with your name and member number. Save it to your phone.</p>
+        </div>
+        <div class="perk comic-panel">
+          <ComicBurst text="3" bg="#6b2d5b" shape="jagged" size="sm" rotate={-8} />
+          <h3>Show It, Score It</h3>
+          <p>Flash your card at any show for surprise merch and perks.</p>
+        </div>
+      </div>
+    </div>
+
+    <form class="signup-form comic-panel" id="fanForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fanName">Your Name</label>
+          <input type="text" id="fanName" name="name" placeholder="What do they call you?" required />
+        </div>
+        <div class="form-group">
+          <label for="fanEmail">Email</label>
+          <input type="email" id="fanEmail" name="email" placeholder="your@email.com" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="favMember">Favorite Member</label>
+        <select id="favMember" name="favMember">
+          <option value="all">Can't Pick - Love 'Em All</option>
+          <option value="darby">Darby (Bass & Vocals)</option>
+          <option value="dano">Dano (Guitar & Vocals)</option>
+          <option value="p">P (Drums & Vocals)</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Get My Fan Card</button>
+    </form>
+  </section>
+
+  <!-- FAN CARD (hidden until signup) -->
+  <section class="section card-section" id="cardSection" style="display:none;">
+    <h2 class="comic-title section-title">You're In!</h2>
+    <p class="section-subtitle">Screenshot this or bookmark this page. Show it at any Those One Guys show.</p>
+
+    <div class="fan-card" id="fanCard">
+      <div class="card-bg"></div>
+      <div class="card-content">
+        <div class="card-header">
+          <div class="card-bursts-left">
+            <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="xs" rotate={-10} />
+          </div>
+          <div class="card-title">
+            <span class="card-label">OFFICIAL FAN CARD</span>
+            <span class="card-band comic-title">THOSE ONE GUYS</span>
+          </div>
+          <div class="card-bursts-right">
+            <ComicBurst text="GUYS!" bg="#6b2d5b" shape="pow" size="xs" rotate={10} />
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="card-member-info">
+            <span class="card-field-label">MEMBER</span>
+            <span class="card-name" id="cardName">---</span>
+          </div>
+          <div class="card-details">
+            <div class="card-detail">
+              <span class="card-field-label">MEMBER #</span>
+              <span class="card-value" id="cardNumber">---</span>
+            </div>
+            <div class="card-detail">
+              <span class="card-field-label">SINCE</span>
+              <span class="card-value" id="cardDate">---</span>
+            </div>
+            <div class="card-detail">
+              <span class="card-field-label">FAVORITE</span>
+              <span class="card-value" id="cardFav">---</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="card-stamp">
+            <ComicBurst text="VIP!" bg="#e8251b" shape="bang" size="sm" rotate={-5} />
+          </div>
+          <div class="card-qr" id="cardQR"></div>
+          <div class="card-stamp">
+            <ComicBurst text="FAN!" bg="#1a8a7d" shape="star" size="sm" rotate={8} />
+          </div>
+        </div>
+
+        <div class="card-bottom-text">
+          Flash this card at any Those One Guys show for surprise merch!
+        </div>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button class="btn btn-secondary" id="screenshotBtn">Save Screenshot</button>
+    </div>
+  </section>
+
+  <script>
+    const form = document.getElementById('fanForm');
+    const signupSection = document.getElementById('signup-section');
+    const cardSection = document.getElementById('cardSection');
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = (document.getElementById('fanName') as HTMLInputElement).value.trim();
+      const email = (document.getElementById('fanEmail') as HTMLInputElement).value.trim();
+      const fav = (document.getElementById('favMember') as HTMLSelectElement);
+      const favText = fav.options[fav.selectedIndex].text;
+
+      // Generate member number from name + timestamp
+      const hash = Array.from(name + email).reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
+      const memberNum = 'TOG-' + Math.abs(hash).toString(36).toUpperCase().slice(0, 6);
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      // Fill card
+      document.getElementById('cardName')!.textContent = name.toUpperCase();
+      document.getElementById('cardNumber')!.textContent = memberNum;
+      document.getElementById('cardDate')!.textContent = dateStr;
+      document.getElementById('cardFav')!.textContent = favText;
+
+      // Generate simple QR-like pattern (visual verification, not a real QR)
+      const qrEl = document.getElementById('cardQR')!;
+      qrEl.innerHTML = '';
+      const canvas = document.createElement('canvas');
+      canvas.width = 80;
+      canvas.height = 80;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, 80, 80);
+      // Pseudo-random grid based on member number
+      let seed = Math.abs(hash);
+      for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 10; x++) {
+          seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+          if (seed % 3 !== 0) {
+            ctx.fillStyle = '#fdf5e6';
+            ctx.fillRect(x * 8, y * 8, 7, 7);
+          }
+        }
+      }
+      // Corner markers
+      ctx.fillStyle = '#e8641b';
+      ctx.fillRect(0, 0, 16, 16);
+      ctx.fillRect(64, 0, 16, 16);
+      ctx.fillRect(0, 64, 16, 16);
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(3, 3, 10, 10);
+      ctx.fillRect(67, 3, 10, 10);
+      ctx.fillRect(3, 67, 10, 10);
+      ctx.fillStyle = '#e8641b';
+      ctx.fillRect(5, 5, 6, 6);
+      ctx.fillRect(69, 5, 6, 6);
+      ctx.fillRect(5, 69, 6, 6);
+      qrEl.appendChild(canvas);
+
+      // Show card, hide form
+      signupSection!.style.display = 'none';
+      cardSection!.style.display = 'block';
+      cardSection!.scrollIntoView({ behavior: 'smooth' });
+
+      // Save to localStorage so they can come back
+      localStorage.setItem('tog-fan', JSON.stringify({ name, email, memberNum, dateStr, favText }));
+    });
+
+    // Check if already signed up
+    const saved = localStorage.getItem('tog-fan');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        document.getElementById('cardName')!.textContent = data.name.toUpperCase();
+        document.getElementById('cardNumber')!.textContent = data.memberNum;
+        document.getElementById('cardDate')!.textContent = data.dateStr;
+        document.getElementById('cardFav')!.textContent = data.favText;
+        signupSection!.style.display = 'none';
+        cardSection!.style.display = 'block';
+
+        // Regenerate QR
+        const hash2 = Array.from(data.name + data.email).reduce((acc: number, c: string) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
+        const qrEl = document.getElementById('cardQR')!;
+        const canvas = document.createElement('canvas');
+        canvas.width = 80; canvas.height = 80;
+        const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 80, 80);
+        let seed = Math.abs(hash2);
+        for (let y = 0; y < 10; y++) {
+          for (let x = 0; x < 10; x++) {
+            seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+            if (seed % 3 !== 0) { ctx.fillStyle = '#fdf5e6'; ctx.fillRect(x * 8, y * 8, 7, 7); }
+          }
+        }
+        ctx.fillStyle = '#e8641b';
+        ctx.fillRect(0, 0, 16, 16); ctx.fillRect(64, 0, 16, 16); ctx.fillRect(0, 64, 16, 16);
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(3, 3, 10, 10); ctx.fillRect(67, 3, 10, 10); ctx.fillRect(3, 67, 10, 10);
+        ctx.fillStyle = '#e8641b';
+        ctx.fillRect(5, 5, 6, 6); ctx.fillRect(69, 5, 6, 6); ctx.fillRect(5, 69, 6, 6);
+        qrEl.appendChild(canvas);
+      } catch(e) {}
+    }
+
+    // Screenshot button - just prompts user
+    document.getElementById('screenshotBtn')?.addEventListener('click', () => {
+      alert('Take a screenshot of your Fan Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .fan-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--plum), var(--brown), var(--orange));
+    padding: 5rem 2rem;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .fan-hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .page-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  /* === Perks === */
+  .perks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .perk {
+    background: white;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .perk h3 {
+    font-family: var(--comic);
+    font-size: 1.4rem;
+    color: var(--brown);
+    margin: 0.5rem 0 0.3rem;
+    letter-spacing: 2px;
+  }
+
+  .perk p {
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+
+  /* === Signup Form === */
+  .signup-form {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 500px) {
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-family: var(--comic);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--brown);
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 0.85rem 1rem;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: var(--cream);
+    color: var(--brown);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 4px 4px 0 var(--orange);
+  }
+
+  /* === Fan Card === */
+  .card-section {
+    text-align: center;
+  }
+
+  .fan-card {
+    max-width: 480px;
+    margin: 0 auto;
+    border: 5px solid var(--brown);
+    border-radius: 8px;
+    box-shadow: 8px 8px 0 var(--brown);
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(145deg, #1a0a05, var(--brown), var(--plum), var(--orange));
+  }
+
+  .card-bg {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 8px 8px;
+    pointer-events: none;
+  }
+
+  .card-content {
+    position: relative;
+    padding: 1.5rem;
+    color: var(--cream);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px dashed rgba(245, 166, 35, 0.4);
+  }
+
+  .card-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card-label {
+    font-family: var(--comic);
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .card-band {
+    font-size: 1.8rem;
+    letter-spacing: 4px;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.4);
+    color: var(--gold);
+  }
+
+  .card-body {
+    margin-bottom: 1.5rem;
+  }
+
+  .card-member-info {
+    margin-bottom: 1.25rem;
+  }
+
+  .card-field-label {
+    display: block;
+    font-family: var(--comic);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--gold);
+    opacity: 0.8;
+    margin-bottom: 0.15rem;
+  }
+
+  .card-name {
+    font-family: var(--comic);
+    font-size: 2rem;
+    letter-spacing: 4px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    display: block;
+  }
+
+  .card-details {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .card-detail {
+    text-align: center;
+  }
+
+  .card-value {
+    font-family: var(--comic);
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    display: block;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding-top: 1rem;
+    border-top: 3px dashed rgba(245, 166, 35, 0.4);
+    margin-bottom: 1rem;
+  }
+
+  .card-qr canvas {
+    border: 3px solid var(--gold);
+    border-radius: 4px;
+  }
+
+  .card-bottom-text {
+    font-family: var(--comic);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--gold);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  .card-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+</style>
