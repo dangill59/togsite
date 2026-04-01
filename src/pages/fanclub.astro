@@ -171,13 +171,22 @@ import SpeedLines from '../components/SpeedLines.astro';
     const signupSection = document.getElementById('signup-section');
     const cardSection = document.getElementById('cardSection');
 
-    form?.addEventListener('submit', (e) => {
+    form?.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const name = (document.getElementById('fanName') as HTMLInputElement).value.trim();
       const email = (document.getElementById('fanEmail') as HTMLInputElement).value.trim();
       const fav = (document.getElementById('favMember') as HTMLSelectElement);
       const favText = fav.options[fav.selectedIndex].text;
+
+      // Send to Formspree
+      try {
+        await fetch('https://formspree.io/f/xpqolkgy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, favoriteMember: favText, type: 'fan-club-signup' }),
+        });
+      } catch (err) {}
 
       // Generate member number from name + timestamp
       const hash = Array.from(name + email).reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
