@@ -1,0 +1,244 @@
+---
+// Printable flyer page - display at shows, print out, put on merch table
+// No nav/footer - just the flyer, designed for print
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Those One Guys - Fan Club QR Flyer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="flyer">
+      <div class="flyer-bg"></div>
+      <div class="flyer-content">
+        <h1 class="flyer-band">Those One Guys</h1>
+        <div class="flyer-divider"></div>
+        <h2 class="flyer-headline">Join The Fan Club!</h2>
+        <p class="flyer-sub">Scan the code. Get your Fan Card. Flash it at any show for surprise merch.</p>
+
+        <div class="qr-container">
+          <img src="/fanclub-qr.png" alt="Scan to join" width="300" height="300" />
+        </div>
+
+        <p class="flyer-url">togsite.vercel.app/fanclub</p>
+
+        <div class="flyer-perks">
+          <div class="flyer-perk">
+            <span class="perk-num">1</span>
+            <span>Scan & Sign Up</span>
+          </div>
+          <div class="flyer-perk">
+            <span class="perk-num">2</span>
+            <span>Get Your Fan Card</span>
+          </div>
+          <div class="flyer-perk">
+            <span class="perk-num">3</span>
+            <span>Show It = Free Merch</span>
+          </div>
+        </div>
+
+        <p class="flyer-tagline">It's Free. It's Fun. It's Those One Guys.</p>
+      </div>
+    </div>
+
+    <div class="print-controls no-print">
+      <button onclick="window.print()">Print This Flyer</button>
+      <a href="/fanclub">Back to Fan Club</a>
+    </div>
+  </body>
+</html>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+
+  .flyer {
+    width: 8.5in;
+    max-width: 100%;
+    aspect-ratio: 8.5 / 11;
+    background: linear-gradient(145deg, #1a0a05, #5c3317, #6b2d5b, #e8641b);
+    border: 6px solid #5c3317;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flyer-bg {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 10px 10px;
+    pointer-events: none;
+  }
+
+  .flyer-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 3rem 2rem;
+    color: #fdf5e6;
+    text-align: center;
+  }
+
+  .flyer-band {
+    font-family: 'Bangers', cursive;
+    font-size: 4.5rem;
+    letter-spacing: 8px;
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+    color: #f5a623;
+    margin-bottom: 0.5rem;
+  }
+
+  .flyer-divider {
+    width: 200px;
+    height: 4px;
+    background: #f5a623;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+
+  .flyer-headline {
+    font-family: 'Bangers', cursive;
+    font-size: 3rem;
+    letter-spacing: 5px;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    margin-bottom: 0.75rem;
+  }
+
+  .flyer-sub {
+    font-size: 1.15rem;
+    max-width: 450px;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .qr-container {
+    background: #fdf5e6;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 4px solid #f5a623;
+    box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+    margin-bottom: 1rem;
+  }
+
+  .qr-container img {
+    display: block;
+  }
+
+  .flyer-url {
+    font-family: 'Bangers', cursive;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    color: #f5a623;
+    margin-bottom: 2rem;
+  }
+
+  .flyer-perks {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .flyer-perk {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .perk-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #e8641b;
+    color: #fdf5e6;
+    font-family: 'Bangers', cursive;
+    font-size: 1.2rem;
+    border-radius: 50%;
+    border: 2px solid #f5a623;
+    flex-shrink: 0;
+  }
+
+  .flyer-tagline {
+    font-family: 'Bangers', cursive;
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    color: #f5a623;
+    opacity: 0.8;
+  }
+
+  /* Print Controls */
+  .print-controls {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .print-controls button {
+    padding: 0.8rem 2rem;
+    font-family: 'Bangers', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    background: #e8641b;
+    color: #fdf5e6;
+    border: 3px solid #5c3317;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #5c3317;
+    text-transform: uppercase;
+  }
+
+  .print-controls button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 #5c3317;
+  }
+
+  .print-controls a {
+    color: #5c3317;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  @media print {
+    .no-print { display: none !important; }
+    body { background: white; padding: 0; }
+    .flyer {
+      width: 100%;
+      height: 100vh;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .flyer-band { font-size: 2.5rem; }
+    .flyer-headline { font-size: 2rem; }
+    .qr-container img { width: 200px; height: 200px; }
+  }
+</style>

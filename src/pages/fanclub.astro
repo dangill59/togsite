@@ -131,6 +131,39 @@ import SpeedLines from '../components/SpeedLines.astro';
     <div class="card-actions">
       <button class="btn btn-secondary" id="screenshotBtn">Save Screenshot</button>
     </div>
+
+    <div class="share-card comic-panel">
+      <h3 class="comic-title">Spread The Word</h3>
+      <p>Get your friends in the club. Share this QR code or link.</p>
+      <div class="share-qr">
+        <img src="/fanclub-qr.png" alt="Scan to join the fan club" width="180" height="180" />
+      </div>
+      <div class="share-link-box">
+        <input type="text" value="https://togsite.vercel.app/fanclub" readonly id="shareLink" />
+        <button class="btn btn-primary" id="copyBtn">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHARE QR (always visible, below signup too) -->
+  <section class="section qr-section" id="qrAlwaysSection">
+    <div class="qr-promo">
+      <div class="burst-row">
+        <ComicBurst text="SCAN!" bg="#e8641b" shape="star" size="md" rotate={-10} />
+        <ComicBurst text="JOIN!" bg="#1a8a7d" shape="pow" size="md" rotate={8} />
+      </div>
+      <h2 class="comic-title section-title">Join The Fan Club</h2>
+      <p class="section-subtitle">Scan the code or share the link. Show your card at any show for surprise merch.</p>
+      <div class="qr-big comic-panel">
+        <img src="/fanclub-qr.png" alt="Scan to join Those One Guys fan club" width="280" height="280" />
+        <p class="qr-url">togsite.vercel.app/fanclub</p>
+      </div>
+      <div class="burst-row">
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={-15} float />
+        <ComicBurst text="ONE!" bg="#1a8a7d" shape="bang" size="sm" rotate={10} float delay={200} />
+        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="sm" rotate={-5} float delay={400} />
+      </div>
+    </div>
   </section>
 
   <script>
@@ -242,6 +275,16 @@ import SpeedLines from '../components/SpeedLines.astro';
     // Screenshot button - just prompts user
     document.getElementById('screenshotBtn')?.addEventListener('click', () => {
       alert('Take a screenshot of your Fan Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
+    });
+
+    // Copy link button
+    document.getElementById('copyBtn')?.addEventListener('click', () => {
+      const input = document.getElementById('shareLink') as HTMLInputElement;
+      navigator.clipboard.writeText(input.value).then(() => {
+        const btn = document.getElementById('copyBtn')!;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
     });
   </script>
 </BaseLayout>
@@ -481,5 +524,85 @@ import SpeedLines from '../components/SpeedLines.astro';
     display: flex;
     justify-content: center;
     gap: 1rem;
+  }
+
+  /* === Share Card === */
+  .share-card {
+    max-width: 480px;
+    margin: 3rem auto 0;
+    background: white;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .share-card h3 {
+    font-size: 1.5rem;
+    color: var(--brown);
+    margin-bottom: 0.5rem;
+  }
+
+  .share-card p {
+    font-size: 0.95rem;
+    opacity: 0.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .share-qr {
+    margin-bottom: 1.5rem;
+  }
+
+  .share-qr img {
+    border: 4px solid var(--brown);
+    border-radius: 4px;
+    box-shadow: 4px 4px 0 var(--brown);
+    margin: 0 auto;
+  }
+
+  .share-link-box {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .share-link-box input {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    background: var(--cream);
+    color: var(--brown);
+  }
+
+  /* === QR Promo Section === */
+  .qr-section {
+    text-align: center;
+  }
+
+  .qr-promo {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .qr-big {
+    background: white;
+    padding: 2rem;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+
+  .qr-big img {
+    margin: 0 auto 1rem;
+    border: 4px solid var(--brown);
+    border-radius: 4px;
+  }
+
+  .qr-url {
+    font-family: var(--comic);
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--brown);
   }
 </style>
