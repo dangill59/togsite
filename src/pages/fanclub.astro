@@ -161,6 +161,8 @@ import SpeedLines from '../components/SpeedLines.astro';
 
     <div class="card-actions">
       <button class="btn btn-secondary" id="screenshotBtn">Save Screenshot</button>
+      <button class="btn btn-secondary" id="editBtn">Edit Profile</button>
+      <button class="btn btn-danger" id="deleteBtn">Delete Profile</button>
     </div>
 
     <div class="share-card comic-panel">
@@ -555,6 +557,51 @@ import SpeedLines from '../components/SpeedLines.astro';
       alert('Take a screenshot of your Fan Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
     });
 
+    // Edit profile - go back to form prefilled
+    document.getElementById('editBtn')?.addEventListener('click', () => {
+      const saved = localStorage.getItem('tog-fan');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          (document.getElementById('fanName') as HTMLInputElement).value = data.name || '';
+          (document.getElementById('fanEmail') as HTMLInputElement).value = data.email || '';
+          // Set favorite member
+          const favSelect = document.getElementById('favMember') as HTMLSelectElement;
+          for (let i = 0; i < favSelect.options.length; i++) {
+            if (favSelect.options[i].text === data.favText) { favSelect.selectedIndex = i; break; }
+          }
+          // Set superpower
+          const powerSelect = document.getElementById('superpowerSelect') as HTMLSelectElement;
+          const customInput = document.getElementById('superpowerCustom') as HTMLInputElement;
+          let found = false;
+          for (let i = 0; i < powerSelect.options.length; i++) {
+            if (powerSelect.options[i].value === data.power) { powerSelect.selectedIndex = i; found = true; break; }
+          }
+          if (!found && data.power) {
+            powerSelect.value = 'custom';
+            customInput.value = data.power;
+            customInput.style.display = 'block';
+          }
+        } catch(e) {}
+      }
+      cardSection!.style.display = 'none';
+      signupSection!.style.display = 'block';
+      signupSection!.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Delete profile
+    document.getElementById('deleteBtn')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to delete your fan profile? This cannot be undone.')) {
+        localStorage.removeItem('tog-fan');
+        cardSection!.style.display = 'none';
+        signupSection!.style.display = 'block';
+        // Reset form
+        (document.getElementById('fanForm') as HTMLFormElement).reset();
+        (document.getElementById('superpowerCustom') as HTMLInputElement).style.display = 'none';
+        signupSection!.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+
     // Copy link button
     document.getElementById('copyBtn')?.addEventListener('click', () => {
       const input = document.getElementById('shareLink') as HTMLInputElement;
@@ -844,6 +891,19 @@ import SpeedLines from '../components/SpeedLines.astro';
     display: flex;
     justify-content: center;
     gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.btn-danger) {
+    background: #888;
+    color: var(--cream);
+    opacity: 0.7;
+    font-size: 0.85rem !important;
+  }
+
+  :global(.btn-danger:hover) {
+    background: var(--rust);
+    opacity: 1;
   }
 
   /* === Share Card === */
