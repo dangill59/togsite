@@ -36,7 +36,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         <div class="perk comic-panel">
           <ComicBurst text="2" bg="#1a8a7d" shape="pow" size="sm" rotate={8} />
           <h3>Get Your Card</h3>
-          <p>Instant Fan Card with your name and member number. Save it to your phone.</p>
+          <p>Instant Fan Card with your own superhero character and signal code. Save it to your phone.</p>
         </div>
         <div class="perk comic-panel">
           <ComicBurst text="3" bg="#6b2d5b" shape="jagged" size="sm" rotate={-8} />
@@ -66,14 +66,34 @@ import SpeedLines from '../components/SpeedLines.astro';
           <option value="p">P (Drums & Vocals)</option>
         </select>
       </div>
+      <div class="form-group">
+        <label for="superpower">Your Superpower</label>
+        <select id="superpowerSelect">
+          <option value="">Pick a power...</option>
+          <option value="Super Strength">Super Strength</option>
+          <option value="Lightning Speed">Lightning Speed</option>
+          <option value="Mind Control">Mind Control</option>
+          <option value="Fire Breathing">Fire Breathing</option>
+          <option value="Laser Eyes">Laser Eyes</option>
+          <option value="Sonic Scream">Sonic Scream</option>
+          <option value="Time Travel">Time Travel</option>
+          <option value="Teleportation">Teleportation</option>
+          <option value="X-Ray Vision">X-Ray Vision</option>
+          <option value="Invisibility">Invisibility</option>
+          <option value="custom">Other - I'm Special</option>
+        </select>
+        <input type="text" id="superpowerCustom" name="superpower" placeholder="Type your superpower..." style="display:none; margin-top: 0.5rem;" />
+      </div>
       <button type="submit" class="btn btn-primary">Get My Fan Card</button>
     </form>
   </section>
 
   <!-- FAN CARD (hidden until signup) -->
   <section class="section card-section" id="cardSection" style="display:none;">
-    <h2 class="comic-title section-title">You're In!</h2>
-    <p class="section-subtitle">Screenshot this or bookmark this page. Show it at any Those One Guys show.</p>
+    <div class="confirm-msg" id="confirmMsg">
+      <h2 class="comic-title section-title confirm-title">You're In! Welcome, Hero!</h2>
+      <p class="section-subtitle">Your submission has been sent. Check your email for confirmation. Screenshot your card below and flash it at any show!</p>
+    </div>
 
     <div class="fan-card" id="fanCard">
       <div class="card-bg"></div>
@@ -92,22 +112,33 @@ import SpeedLines from '../components/SpeedLines.astro';
         </div>
 
         <div class="card-body">
-          <div class="card-member-info">
-            <span class="card-field-label">MEMBER</span>
-            <span class="card-name" id="cardName">---</span>
-          </div>
-          <div class="card-details">
-            <div class="card-detail">
-              <span class="card-field-label">MEMBER #</span>
-              <span class="card-value" id="cardNumber">---</span>
+          <div class="card-hero-row">
+            <div class="card-avatar">
+              <canvas id="heroCanvas" width="130" height="190"></canvas>
             </div>
-            <div class="card-detail">
-              <span class="card-field-label">SINCE</span>
-              <span class="card-value" id="cardDate">---</span>
-            </div>
-            <div class="card-detail">
-              <span class="card-field-label">FAVORITE</span>
-              <span class="card-value" id="cardFav">---</span>
+            <div class="card-info-col">
+              <div class="card-member-info">
+                <span class="card-field-label">HERO</span>
+                <span class="card-name" id="cardName">---</span>
+              </div>
+              <div class="card-detail">
+                <span class="card-field-label">SUPERPOWER</span>
+                <span class="card-value card-power-text" id="cardPower">---</span>
+              </div>
+              <div class="card-details">
+                <div class="card-detail">
+                  <span class="card-field-label">SIGNAL CODE</span>
+                  <span class="card-value" id="cardNumber">---</span>
+                </div>
+                <div class="card-detail">
+                  <span class="card-field-label">SINCE</span>
+                  <span class="card-value" id="cardDate">---</span>
+                </div>
+              </div>
+              <div class="card-detail">
+                <span class="card-field-label">ALLY</span>
+                <span class="card-value" id="cardFav">---</span>
+              </div>
             </div>
           </div>
         </div>
@@ -167,9 +198,304 @@ import SpeedLines from '../components/SpeedLines.astro';
   </section>
 
   <script>
+    // === HERO CHARACTER GENERATOR ===
+    function seededRand(seed: number) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return { val: (seed % 1000) / 1000, seed };
+    }
+
+    function pickFrom(arr: string[], seed: number) {
+      const r = seededRand(seed);
+      return { val: arr[Math.floor(r.val * arr.length)], seed: r.seed };
+    }
+
+    const skinTones = ['#FDBCB4','#F0C8A0','#D2A06D','#8D5524','#6B4019','#3D2B1F'];
+    const hairColors = ['#1a1a1a','#4A3728','#8B4513','#D2691E','#DAA520','#C0C0C0','#B7410E','#FF4500','#800080','#1E90FF'];
+    const capeColors = ['#e8641b','#c0392b','#1a8a7d','#6b2d5b','#1E90FF','#ff69b4','#DAA520','#2d5a27'];
+    const suitColors = ['#2c2c54','#1a1a3e','#4169E1','#2d5a27','#8B0000','#4a0080','#1a4a15','#333'];
+    const maskShapes = ['domino','full','pointed','visor','none'];
+    const hairStyles = ['spiky','flowing','mohawk','short','bald','wild','ponytail'];
+    const powerIcons: Record<string, {symbol: string, color: string}> = {
+      'Super Strength': { symbol: '💪', color: '#c0392b' },
+      'Lightning Speed': { symbol: '⚡', color: '#f5a623' },
+      'Mind Control': { symbol: '🧠', color: '#9b59b6' },
+      'Fire Breathing': { symbol: '🔥', color: '#e8641b' },
+      'Laser Eyes': { symbol: '👁', color: '#e8251b' },
+      'Sonic Scream': { symbol: '🔊', color: '#1E90FF' },
+      'Time Travel': { symbol: '⏰', color: '#1a8a7d' },
+      'Teleportation': { symbol: '✨', color: '#6b2d5b' },
+      'X-Ray Vision': { symbol: '🔍', color: '#2ecc71' },
+      'Invisibility': { symbol: '👻', color: '#95a5a6' },
+    };
+
+    function drawHero(canvas: HTMLCanvasElement, seed: number, power: string) {
+      const ctx = canvas.getContext('2d')!;
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      let s = seed;
+      let r;
+
+      // Pick traits from seed
+      r = pickFrom(skinTones, s); const skin = r.val; s = r.seed;
+      r = pickFrom(hairColors, s); const hair = r.val; s = r.seed;
+      r = pickFrom(capeColors, s); const cape = r.val; s = r.seed;
+      r = pickFrom(suitColors, s); const suit = r.val; s = r.seed;
+      r = pickFrom(maskShapes, s); const mask = r.val; s = r.seed;
+      r = pickFrom(hairStyles, s); const hairStyle = r.val; s = r.seed;
+      r = seededRand(s); const bodyWidth = 28 + r.val * 16; s = r.seed;
+      r = seededRand(s); const shoulderExtra = 4 + r.val * 10; s = r.seed;
+
+      const cx = w / 2, legTop = 125, feetY = 178;
+
+      // Cape
+      ctx.fillStyle = cape;
+      ctx.beginPath();
+      ctx.moveTo(cx - bodyWidth/2 - 4, 68);
+      ctx.quadraticCurveTo(cx - bodyWidth - 10, 140, cx - bodyWidth/2 - 15, feetY + 5);
+      ctx.lineTo(cx + bodyWidth/2 + 15, feetY + 5);
+      ctx.quadraticCurveTo(cx + bodyWidth + 10, 140, cx + bodyWidth/2 + 4, 68);
+      ctx.closePath();
+      ctx.fill();
+      // Cape edge
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Legs
+      ctx.fillStyle = suit;
+      ctx.fillRect(cx - 14, legTop, 11, 55);
+      ctx.fillRect(cx + 3, legTop, 11, 55);
+
+      // Boots
+      r = seededRand(s); s = r.seed;
+      const bootColor = r.val > 0.5 ? cape : '#1a1a1a';
+      ctx.fillStyle = bootColor;
+      ctx.beginPath(); ctx.roundRect(cx - 17, feetY - 4, 16, 12, 4); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(cx + 1, feetY - 4, 16, 12, 4); ctx.fill();
+
+      // Body
+      ctx.fillStyle = suit;
+      ctx.beginPath();
+      ctx.roundRect(cx - bodyWidth/2, 65, bodyWidth, 65, 8);
+      ctx.fill();
+
+      // Shoulders
+      ctx.beginPath();
+      ctx.roundRect(cx - bodyWidth/2 - shoulderExtra/2, 63, bodyWidth + shoulderExtra, 16, 6);
+      ctx.fill();
+
+      // Belt
+      ctx.fillStyle = cape;
+      ctx.fillRect(cx - bodyWidth/2, legTop - 5, bodyWidth, 7);
+      // Belt buckle
+      ctx.fillStyle = '#DAA520';
+      ctx.beginPath(); ctx.roundRect(cx - 6, legTop - 7, 12, 11, 2); ctx.fill();
+      ctx.fillStyle = suit;
+      ctx.font = 'bold 7px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('T', cx, legTop + 2);
+
+      // Chest emblem
+      const pi = powerIcons[power];
+      if (pi) {
+        ctx.fillStyle = pi.color;
+        ctx.beginPath();
+        ctx.moveTo(cx, 72); ctx.lineTo(cx + 14, 82); ctx.lineTo(cx + 10, 100);
+        ctx.lineTo(cx, 105); ctx.lineTo(cx - 10, 100); ctx.lineTo(cx - 14, 82);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#DAA520'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(pi.symbol, cx, 95);
+      } else {
+        // Custom power - star emblem
+        ctx.fillStyle = '#DAA520';
+        ctx.beginPath();
+        ctx.moveTo(cx, 74); ctx.lineTo(cx + 12, 82); ctx.lineTo(cx + 8, 98);
+        ctx.lineTo(cx, 102); ctx.lineTo(cx - 8, 98); ctx.lineTo(cx - 12, 82);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = suit;
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('★', cx, 94);
+      }
+
+      // Arms
+      ctx.fillStyle = skin;
+      // Left arm
+      ctx.save(); ctx.translate(cx - bodyWidth/2 - 2, 70); ctx.rotate(-0.2);
+      ctx.beginPath(); ctx.roundRect(-5, 0, 12, 45, 5); ctx.fill();
+      // Fist
+      ctx.fillRect(-6, 42, 14, 10); ctx.beginPath(); ctx.roundRect(-6, 42, 14, 10, 4); ctx.fill();
+      ctx.restore();
+      // Right arm
+      ctx.save(); ctx.translate(cx + bodyWidth/2 + 2, 70); ctx.rotate(0.2);
+      ctx.beginPath(); ctx.roundRect(-7, 0, 12, 45, 5); ctx.fill();
+      ctx.fillRect(-7, 42, 14, 10); ctx.beginPath(); ctx.roundRect(-7, 42, 14, 10, 4); ctx.fill();
+      ctx.restore();
+
+      // Gloves
+      ctx.fillStyle = cape;
+      ctx.save(); ctx.translate(cx - bodyWidth/2 - 2, 70); ctx.rotate(-0.2);
+      ctx.beginPath(); ctx.roundRect(-6, 38, 15, 16, 4); ctx.fill();
+      ctx.restore();
+      ctx.save(); ctx.translate(cx + bodyWidth/2 + 2, 70); ctx.rotate(0.2);
+      ctx.beginPath(); ctx.roundRect(-8, 38, 15, 16, 4); ctx.fill();
+      ctx.restore();
+
+      // Neck
+      ctx.fillStyle = skin;
+      ctx.fillRect(cx - 7, 50, 14, 18);
+
+      // Head
+      ctx.fillStyle = skin;
+      ctx.beginPath(); ctx.ellipse(cx, 35, 20, 22, 0, 0, Math.PI * 2); ctx.fill();
+
+      // Hair
+      ctx.fillStyle = hair;
+      if (hairStyle === 'spiky') {
+        for (let i = -3; i <= 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(cx + i * 6 - 3, 22);
+          ctx.lineTo(cx + i * 6 + 3, 22);
+          ctx.lineTo(cx + i * 6, 5 - Math.abs(i) * 2);
+          ctx.fill();
+        }
+        ctx.beginPath(); ctx.ellipse(cx, 22, 20, 10, 0, Math.PI, Math.PI * 2); ctx.fill();
+      } else if (hairStyle === 'flowing') {
+        ctx.beginPath(); ctx.ellipse(cx, 22, 22, 14, 0, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx + 20, 25); ctx.quadraticCurveTo(cx + 30, 50, cx + 22, 65); ctx.lineTo(cx + 18, 60); ctx.quadraticCurveTo(cx + 24, 45, cx + 18, 25); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx - 20, 25); ctx.quadraticCurveTo(cx - 30, 50, cx - 22, 65); ctx.lineTo(cx - 18, 60); ctx.quadraticCurveTo(cx - 24, 45, cx - 18, 25); ctx.fill();
+      } else if (hairStyle === 'mohawk') {
+        ctx.beginPath(); ctx.moveTo(cx - 5, 22); ctx.lineTo(cx + 5, 22); ctx.lineTo(cx + 3, 0); ctx.lineTo(cx - 3, 0); ctx.fill();
+        ctx.fillRect(cx - 4, 15, 8, 10);
+      } else if (hairStyle === 'short') {
+        ctx.beginPath(); ctx.ellipse(cx, 22, 21, 13, 0, Math.PI, Math.PI * 2); ctx.fill();
+      } else if (hairStyle === 'wild') {
+        ctx.beginPath(); ctx.ellipse(cx, 25, 26, 20, 0, Math.PI, Math.PI * 2); ctx.fill();
+        for (let i = 0; i < 5; i++) {
+          const angle = Math.PI + (i / 4) * Math.PI;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(angle) * 20, 25 + Math.sin(angle) * 16);
+          ctx.lineTo(cx + Math.cos(angle) * 30, 25 + Math.sin(angle) * 24);
+          ctx.lineTo(cx + Math.cos(angle + 0.3) * 18, 25 + Math.sin(angle + 0.3) * 14);
+          ctx.fill();
+        }
+      } else if (hairStyle === 'ponytail') {
+        ctx.beginPath(); ctx.ellipse(cx, 22, 21, 12, 0, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx - 18, 28); ctx.quadraticCurveTo(cx - 28, 45, cx - 20, 70); ctx.lineTo(cx - 16, 68); ctx.quadraticCurveTo(cx - 22, 42, cx - 16, 28); ctx.fill();
+      }
+      // bald = no hair drawn
+
+      // Mask
+      if (mask === 'domino') {
+        ctx.fillStyle = suit;
+        ctx.beginPath(); ctx.ellipse(cx - 8, 33, 10, 6, -0.1, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 8, 33, 10, 6, 0.1, 0, Math.PI * 2); ctx.fill();
+        // Eye whites
+        ctx.fillStyle = 'white';
+        ctx.beginPath(); ctx.ellipse(cx - 8, 33, 5, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 8, 33, 5, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath(); ctx.arc(cx - 7, 33, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 9, 33, 2, 0, Math.PI * 2); ctx.fill();
+      } else if (mask === 'full') {
+        ctx.fillStyle = suit;
+        ctx.beginPath(); ctx.ellipse(cx, 30, 20, 16, 0, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.beginPath(); ctx.ellipse(cx - 8, 33, 6, 4, -0.15, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 8, 33, 6, 4, 0.15, 0, Math.PI * 2); ctx.fill();
+      } else if (mask === 'pointed') {
+        ctx.fillStyle = suit;
+        ctx.beginPath(); ctx.ellipse(cx, 30, 20, 14, 0, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx - 18, 22); ctx.lineTo(cx - 24, 6); ctx.lineTo(cx - 12, 18); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx + 18, 22); ctx.lineTo(cx + 24, 6); ctx.lineTo(cx + 12, 18); ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.beginPath(); ctx.ellipse(cx - 8, 33, 6, 4, -0.15, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 8, 33, 6, 4, 0.15, 0, Math.PI * 2); ctx.fill();
+      } else if (mask === 'visor') {
+        ctx.fillStyle = suit;
+        ctx.beginPath(); ctx.roundRect(cx - 20, 28, 40, 12, 6); ctx.fill();
+        ctx.fillStyle = cape;
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath(); ctx.roundRect(cx - 18, 30, 36, 8, 4); ctx.fill();
+        ctx.globalAlpha = 1;
+      } else {
+        // No mask - regular eyes
+        ctx.fillStyle = 'white';
+        ctx.beginPath(); ctx.ellipse(cx - 8, 33, 5, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 8, 33, 5, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath(); ctx.arc(cx - 7, 33, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 9, 33, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Mouth - determined grin
+      ctx.strokeStyle = skin === '#FDBCB4' || skin === '#F0C8A0' ? '#a0705a' : '#1a1a1a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 7, 44);
+      ctx.quadraticCurveTo(cx, 50, cx + 7, 44);
+      ctx.stroke();
+
+      // Power glow effect
+      const glowColor = pi ? pi.color : '#DAA520';
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = 'transparent';
+      ctx.fillRect(0, 0, 0, 0);
+      ctx.shadowBlur = 0;
+    }
+
+    // === FORM LOGIC ===
     const form = document.getElementById('fanForm');
     const signupSection = document.getElementById('signup-section');
     const cardSection = document.getElementById('cardSection');
+    const superpowerSelect = document.getElementById('superpowerSelect') as HTMLSelectElement;
+    const superpowerCustom = document.getElementById('superpowerCustom') as HTMLInputElement;
+
+    superpowerSelect?.addEventListener('change', () => {
+      superpowerCustom.style.display = superpowerSelect.value === 'custom' ? 'block' : 'none';
+      if (superpowerSelect.value !== 'custom') superpowerCustom.value = '';
+    });
+
+    function getSuperpower(): string {
+      if (superpowerSelect?.value === 'custom') return superpowerCustom?.value.trim() || 'Mystery Power';
+      return superpowerSelect?.value || 'Mystery Power';
+    }
+
+    function fillCard(name: string, memberNum: string, dateStr: string, favText: string, power: string, hash: number) {
+      document.getElementById('cardName')!.textContent = name.toUpperCase();
+      document.getElementById('cardNumber')!.textContent = memberNum;
+      document.getElementById('cardDate')!.textContent = dateStr;
+      document.getElementById('cardFav')!.textContent = favText;
+      document.getElementById('cardPower')!.textContent = power;
+
+      // Draw hero character
+      const canvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
+      if (canvas) drawHero(canvas, Math.abs(hash), power);
+
+      // Generate QR pattern
+      const qrEl = document.getElementById('cardQR')!;
+      qrEl.innerHTML = '';
+      const qrCanvas = document.createElement('canvas');
+      qrCanvas.width = 80; qrCanvas.height = 80;
+      const ctx = qrCanvas.getContext('2d')!;
+      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 80, 80);
+      let seed = Math.abs(hash);
+      for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 10; x++) {
+          seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+          if (seed % 3 !== 0) { ctx.fillStyle = '#fdf5e6'; ctx.fillRect(x * 8, y * 8, 7, 7); }
+        }
+      }
+      ctx.fillStyle = '#e8641b';
+      ctx.fillRect(0, 0, 16, 16); ctx.fillRect(64, 0, 16, 16); ctx.fillRect(0, 64, 16, 16);
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(3, 3, 10, 10); ctx.fillRect(67, 3, 10, 10); ctx.fillRect(3, 67, 10, 10);
+      ctx.fillStyle = '#e8641b';
+      ctx.fillRect(5, 5, 6, 6); ctx.fillRect(69, 5, 6, 6); ctx.fillRect(5, 69, 6, 6);
+      qrEl.appendChild(qrCanvas);
+    }
 
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -178,71 +504,38 @@ import SpeedLines from '../components/SpeedLines.astro';
       const email = (document.getElementById('fanEmail') as HTMLInputElement).value.trim();
       const fav = (document.getElementById('favMember') as HTMLSelectElement);
       const favText = fav.options[fav.selectedIndex].text;
+      const power = getSuperpower();
+
+      // Show sending state
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitBtn.textContent = 'Sending...';
+      submitBtn.disabled = true;
 
       // Send to Formspree
       try {
         await fetch('https://formspree.io/f/xpqolkgy', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, favoriteMember: favText, type: 'fan-club-signup' }),
+          body: JSON.stringify({ name, email, favoriteMember: favText, superpower: power, type: 'fan-club-signup' }),
         });
       } catch (err) {}
 
-      // Generate member number from name + timestamp
       const hash = Array.from(name + email).reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
       const memberNum = 'TOG-' + Math.abs(hash).toString(36).toUpperCase().slice(0, 6);
-
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
-      // Fill card
-      document.getElementById('cardName')!.textContent = name.toUpperCase();
-      document.getElementById('cardNumber')!.textContent = memberNum;
-      document.getElementById('cardDate')!.textContent = dateStr;
-      document.getElementById('cardFav')!.textContent = favText;
+      fillCard(name, memberNum, dateStr, favText, power, hash);
 
-      // Generate simple QR-like pattern (visual verification, not a real QR)
-      const qrEl = document.getElementById('cardQR')!;
-      qrEl.innerHTML = '';
-      const canvas = document.createElement('canvas');
-      canvas.width = 80;
-      canvas.height = 80;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(0, 0, 80, 80);
-      // Pseudo-random grid based on member number
-      let seed = Math.abs(hash);
-      for (let y = 0; y < 10; y++) {
-        for (let x = 0; x < 10; x++) {
-          seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-          if (seed % 3 !== 0) {
-            ctx.fillStyle = '#fdf5e6';
-            ctx.fillRect(x * 8, y * 8, 7, 7);
-          }
-        }
-      }
-      // Corner markers
-      ctx.fillStyle = '#e8641b';
-      ctx.fillRect(0, 0, 16, 16);
-      ctx.fillRect(64, 0, 16, 16);
-      ctx.fillRect(0, 64, 16, 16);
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(3, 3, 10, 10);
-      ctx.fillRect(67, 3, 10, 10);
-      ctx.fillRect(3, 67, 10, 10);
-      ctx.fillStyle = '#e8641b';
-      ctx.fillRect(5, 5, 6, 6);
-      ctx.fillRect(69, 5, 6, 6);
-      ctx.fillRect(5, 69, 6, 6);
-      qrEl.appendChild(canvas);
+      // Save to localStorage
+      localStorage.setItem('tog-fan', JSON.stringify({ name, email, memberNum, dateStr, favText, power }));
 
-      // Show card, hide form
+      // Show confirmation then card
       signupSection!.style.display = 'none';
       cardSection!.style.display = 'block';
-      cardSection!.scrollIntoView({ behavior: 'smooth' });
 
-      // Save to localStorage so they can come back
-      localStorage.setItem('tog-fan', JSON.stringify({ name, email, memberNum, dateStr, favText }));
+      // Scroll to confirmation message
+      cardSection!.scrollIntoView({ behavior: 'smooth' });
     });
 
     // Check if already signed up
@@ -250,38 +543,14 @@ import SpeedLines from '../components/SpeedLines.astro';
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        document.getElementById('cardName')!.textContent = data.name.toUpperCase();
-        document.getElementById('cardNumber')!.textContent = data.memberNum;
-        document.getElementById('cardDate')!.textContent = data.dateStr;
-        document.getElementById('cardFav')!.textContent = data.favText;
+        const hash = Array.from(data.name + data.email).reduce((acc: number, c: string) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
+        fillCard(data.name, data.memberNum, data.dateStr, data.favText, data.power || 'Mystery Power', hash);
         signupSection!.style.display = 'none';
         cardSection!.style.display = 'block';
-
-        // Regenerate QR
-        const hash2 = Array.from(data.name + data.email).reduce((acc: number, c: string) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
-        const qrEl = document.getElementById('cardQR')!;
-        const canvas = document.createElement('canvas');
-        canvas.width = 80; canvas.height = 80;
-        const ctx = canvas.getContext('2d')!;
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 80, 80);
-        let seed = Math.abs(hash2);
-        for (let y = 0; y < 10; y++) {
-          for (let x = 0; x < 10; x++) {
-            seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-            if (seed % 3 !== 0) { ctx.fillStyle = '#fdf5e6'; ctx.fillRect(x * 8, y * 8, 7, 7); }
-          }
-        }
-        ctx.fillStyle = '#e8641b';
-        ctx.fillRect(0, 0, 16, 16); ctx.fillRect(64, 0, 16, 16); ctx.fillRect(0, 64, 16, 16);
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(3, 3, 10, 10); ctx.fillRect(67, 3, 10, 10); ctx.fillRect(3, 67, 10, 10);
-        ctx.fillStyle = '#e8641b';
-        ctx.fillRect(5, 5, 6, 6); ctx.fillRect(69, 5, 6, 6); ctx.fillRect(5, 69, 6, 6);
-        qrEl.appendChild(canvas);
       } catch(e) {}
     }
 
-    // Screenshot button - just prompts user
+    // Screenshot button
     document.getElementById('screenshotBtn')?.addEventListener('click', () => {
       alert('Take a screenshot of your Fan Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
     });
@@ -526,6 +795,48 @@ import SpeedLines from '../components/SpeedLines.astro';
     color: var(--gold);
     opacity: 0.7;
     text-transform: uppercase;
+  }
+
+  .confirm-msg {
+    margin-bottom: 2rem;
+  }
+
+  .confirm-title {
+    color: var(--orange);
+  }
+
+  .card-hero-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-avatar {
+    flex-shrink: 0;
+    border: 3px solid var(--gold);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+
+  .card-avatar canvas {
+    display: block;
+  }
+
+  .card-info-col {
+    flex: 1;
+    text-align: left;
+  }
+
+  .card-power-text {
+    color: var(--gold) !important;
+    font-size: 0.9rem !important;
+  }
+
+  @media (max-width: 400px) {
+    .card-hero-row { flex-direction: column; text-align: center; }
+    .card-info-col { text-align: center; }
   }
 
   .card-actions {
