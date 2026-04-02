@@ -5,7 +5,7 @@ import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
 ---
 
-<BaseLayout title="Fan Club | Those One Guys">
+<BaseLayout title="Hero Squad | Those One Guys">
   <section class="fan-hero halftone">
     <SpeedLines color="#fdf5e6" opacity={0.1} />
     <Cityscape color="#1a0a05" opacity={0.25} />
@@ -14,7 +14,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         <ComicBurst text="JOIN!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
         <ComicBurst text="THE!" bg="#ffe135" color="#5c3317" shape="pow" size="sm" rotate={18} />
       </div>
-      <h1 class="page-hero-title comic-title">Fan Club</h1>
+      <h1 class="page-hero-title comic-title">Hero Squad</h1>
       <div class="burst-row">
         <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={-8} />
         <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="md" rotate={10} />
@@ -26,7 +26,7 @@ import SpeedLines from '../components/SpeedLines.astro';
   <section class="section" id="signup-section">
     <div class="signup-intro">
       <h2 class="comic-title section-title">Become An Official Fan</h2>
-      <p class="section-subtitle">Sign up, get your Fan Card, flash it at the show, and score surprise merch. It's that easy.</p>
+      <p class="section-subtitle">Sign up, get your Hero Card, flash it at the show, and score surprise merch. It's that easy.</p>
       <div class="perks">
         <div class="perk comic-panel">
           <ComicBurst text="1" bg="#e8641b" shape="star" size="sm" rotate={-5} />
@@ -36,7 +36,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         <div class="perk comic-panel">
           <ComicBurst text="2" bg="#1a8a7d" shape="pow" size="sm" rotate={8} />
           <h3>Get Your Card</h3>
-          <p>Instant Fan Card with your own superhero character and signal code. Save it to your phone.</p>
+          <p>Instant Hero Card with your own superhero character and signal code. Save it to your phone.</p>
         </div>
         <div class="perk comic-panel">
           <ComicBurst text="3" bg="#6b2d5b" shape="jagged" size="sm" rotate={-8} />
@@ -84,7 +84,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         </select>
         <input type="text" id="superpowerCustom" name="superpower" placeholder="Type your superpower..." style="display:none; margin-top: 0.5rem;" />
       </div>
-      <button type="submit" class="btn btn-primary">Get My Fan Card</button>
+      <button type="submit" class="btn btn-primary">Get My Hero Card</button>
     </form>
   </section>
 
@@ -169,7 +169,7 @@ import SpeedLines from '../components/SpeedLines.astro';
       <h3 class="comic-title">Spread The Word</h3>
       <p>Get your friends in the club. Share this QR code or link.</p>
       <div class="share-qr">
-        <img src="/fanclub-qr.png" alt="Scan to join the fan club" width="180" height="180" />
+        <img src="/fanclub-qr.png" alt="Scan to join the Hero Squad" width="180" height="180" />
       </div>
       <div class="share-link-box">
         <input type="text" value="https://togsite.vercel.app/fanclub" readonly id="shareLink" />
@@ -185,10 +185,10 @@ import SpeedLines from '../components/SpeedLines.astro';
         <ComicBurst text="SCAN!" bg="#e8641b" shape="star" size="md" rotate={-10} />
         <ComicBurst text="JOIN!" bg="#1a8a7d" shape="pow" size="md" rotate={8} />
       </div>
-      <h2 class="comic-title section-title">Join The Fan Club</h2>
+      <h2 class="comic-title section-title">Join The Hero Squad</h2>
       <p class="section-subtitle">Scan the code or share the link. Show your card at any show for surprise merch.</p>
       <div class="qr-big comic-panel">
-        <img src="/fanclub-qr.png" alt="Scan to join Those One Guys fan club" width="280" height="280" />
+        <img src="/fanclub-qr.png" alt="Scan to join Those One Guys Hero Squad" width="280" height="280" />
         <p class="qr-url">togsite.vercel.app/fanclub</p>
       </div>
       <div class="burst-row">
@@ -580,7 +580,7 @@ import SpeedLines from '../components/SpeedLines.astro';
       showCard(name, email, favText, power, signalCode, dateStr);
       cardSection!.scrollIntoView({ behavior: 'smooth' });
 
-      submitBtn.textContent = 'Get My Fan Card';
+      submitBtn.textContent = 'Get My Hero Card';
       submitBtn.disabled = false;
     });
 
@@ -609,7 +609,7 @@ import SpeedLines from '../components/SpeedLines.astro';
 
     // === SCREENSHOT ===
     document.getElementById('screenshotBtn')?.addEventListener('click', () => {
-      alert('Take a screenshot of your Fan Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
+      alert('Take a screenshot of your Hero Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
     });
 
     // === EDIT PROFILE ===
@@ -774,7 +774,7 @@ import SpeedLines from '../components/SpeedLines.astro';
     box-shadow: 4px 4px 0 var(--orange);
   }
 
-  /* === Fan Card === */
+  /* === Hero Card === */
   .card-section {
     text-align: center;
   }
