@@ -115,6 +115,11 @@ import SpeedLines from '../components/SpeedLines.astro';
           <div class="card-hero-row">
             <div class="card-avatar">
               <canvas id="heroCanvas" width="130" height="190"></canvas>
+              <img id="heroImage" class="hero-image" style="display:none;" alt="Your Hero Character" />
+              <div id="heroLoading" class="hero-loading" style="display:none;">
+                <div class="hero-loading-spinner"></div>
+                <span>Generating your hero...</span>
+              </div>
             </div>
             <div class="card-info-col">
               <div class="card-member-info">
@@ -528,12 +533,50 @@ import SpeedLines from '../components/SpeedLines.astro';
       qrEl.appendChild(qrCanvas);
     }
 
-    function showCard(name: string, email: string, favText: string, power: string, signalCode: string, dateStr: string) {
+    function showCard(name: string, email: string, favText: string, power: string, signalCode: string, dateStr: string, heroImg?: string) {
       const hash = makeHash(name, email);
       fillCard(name, signalCode, dateStr, favText, power, hash);
-      localStorage.setItem('tog-fan', JSON.stringify({ name, email, signalCode, dateStr, favText, power }));
+      const storageData: any = { name, email, signalCode, dateStr, favText, power };
+      if (heroImg) storageData.heroImage = heroImg;
+      localStorage.setItem('tog-fan', JSON.stringify(storageData));
       signupSection!.style.display = 'none';
       cardSection!.style.display = 'block';
+
+      // Show AI image if available
+      const heroImage = document.getElementById('heroImage') as HTMLImageElement;
+      const heroCanvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
+      if (heroImg) {
+        heroImage.src = heroImg;
+        heroImage.style.display = 'block';
+        heroCanvas.style.display = 'none';
+      } else {
+        heroImage.style.display = 'none';
+        heroCanvas.style.display = 'block';
+      }
+    }
+
+    async function generateHeroImage(name: string, superpower: string, favoriteMember: string): Promise<string | null> {
+      const heroLoading = document.getElementById('heroLoading')!;
+      const heroCanvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
+      heroLoading.style.display = 'flex';
+      heroCanvas.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/generate-hero', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, superpower, favoriteMember }),
+        });
+        const data = await res.json();
+        heroLoading.style.display = 'none';
+        if (data.image) return data.image;
+        console.error('Hero generation failed:', data.error);
+        return null;
+      } catch (err) {
+        heroLoading.style.display = 'none';
+        console.error('Hero generation error:', err);
+        return null;
+      }
     }
 
     // === SIGNUP ===
@@ -577,8 +620,15 @@ import SpeedLines from '../components/SpeedLines.astro';
         });
       } catch (err) {}
 
+      // Show card immediately with canvas fallback, then generate AI hero
       showCard(name, email, favText, power, signalCode, dateStr);
       cardSection!.scrollIntoView({ behavior: 'smooth' });
+
+      // Generate AI hero image in background
+      const heroImg = await generateHeroImage(name, power, favText);
+      if (heroImg) {
+        showCard(name, email, favText, power, signalCode, dateStr, heroImg);
+      }
 
       submitBtn.textContent = 'Get My Hero Card';
       submitBtn.disabled = false;
@@ -596,13 +646,21 @@ import SpeedLines from '../components/SpeedLines.astro';
         if (dbFan) {
           const hash = makeHash(dbFan.name, dbFan.email);
           const dateStr = new Date(dbFan.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-          showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr);
+          showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, data.heroImage || undefined);
         } else {
           // DB record gone but localStorage exists - show from local
           const hash = makeHash(data.name, data.email);
           fillCard(data.name, data.signalCode || data.memberNum, data.dateStr, data.favText, data.power || 'Mystery Power', hash);
           signupSection!.style.display = 'none';
           cardSection!.style.display = 'block';
+          // Show saved AI image if available
+          const heroImage = document.getElementById('heroImage') as HTMLImageElement;
+          const heroCanvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
+          if (data.heroImage) {
+            heroImage.src = data.heroImage;
+            heroImage.style.display = 'block';
+            heroCanvas.style.display = 'none';
+          }
         }
       } catch(e) {}
     }
@@ -928,6 +986,42 @@ import SpeedLines from '../components/SpeedLines.astro';
 
   .card-avatar canvas {
     display: block;
+  }
+
+  .hero-image {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    display: block;
+    border-radius: 4px;
+  }
+
+  .hero-loading {
+    width: 130px;
+    height: 190px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--gold);
+    font-family: var(--comic);
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .hero-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(245, 166, 35, 0.3);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: heroSpin 0.8s linear infinite;
+  }
+
+  @keyframes heroSpin {
+    to { transform: rotate(360deg); }
   }
 
   .card-info-col {

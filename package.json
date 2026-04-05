@@ -12,6 +12,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/vercel": "^10.0.4",
     "@supabase/supabase-js": "^2.101.1",
     "astro": "^6.1.1",
     "qrcode": "^1.5.4",
