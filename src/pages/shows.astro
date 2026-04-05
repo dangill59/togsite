@@ -53,8 +53,7 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
             <ComicBurst text={miniWords[i * 2 + 1]} bg={miniColors[i * 2 + 1]} shape={miniShapes[i * 2 + 1]} size="xs" rotate={10 - i * 5} />
           </div>
           <div class="show-action">
-            <a href="#" class="btn btn-primary">Tickets</a>
-            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(show.address)}`} target="_blank" rel="noopener" class="btn btn-secondary">Directions</a>
+            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(show.address)}`} target="_blank" rel="noopener" class="btn btn-primary">Directions</a>
           </div>
         </div>
       ))}
