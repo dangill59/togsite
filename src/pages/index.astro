@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ComicBurst from '../components/ComicBurst.astro';
 import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
-import ScoobyRun from '../components/ScoobyRun.astro';
 ---
 
 <BaseLayout title="Those One Guys | Rock & Roll">
@@ -39,6 +38,12 @@ import ScoobyRun from '../components/ScoobyRun.astro';
       </div>
     </div>
 
+    <div class="hero-characters">
+      <div class="hero-char hc-p"><img src="/p.png" alt="P" /></div>
+      <div class="hero-char hc-dano"><img src="/dano.png" alt="Dano" /></div>
+      <div class="hero-char hc-darby"><img src="/darby.png" alt="Darby" /></div>
+    </div>
+
     <div class="hero-bottom-bursts">
       <ComicBurst text="YEAH!" bg="#ffe135" color="#5c3317" shape="cloud" size="sm" rotate={-8} float delay={500} />
       <ComicBurst text="ROCK!" bg="#e8251b" shape="bang" size="sm" rotate={12} float delay={650} />
@@ -46,9 +51,6 @@ import ScoobyRun from '../components/ScoobyRun.astro';
       <ComicBurst text="OOF!" bg="#ff69b4" shape="pow" size="xs" rotate={6} float delay={550} />
     </div>
   </section>
-
-  <!-- === CHASE SCENE === -->
-  <ScoobyRun />
 
   <!-- === THE VIBE === -->
   <section class="vibes-section halftone">
@@ -155,25 +157,26 @@ import ScoobyRun from '../components/ScoobyRun.astro';
     font-family: var(--comic);
     line-height: 1;
     margin-bottom: 0.5rem;
-    letter-spacing: 4px;
+    letter-spacing: 6px;
     transform: rotate(-5deg);
     display: flex;
     align-items: baseline;
     justify-content: center;
     flex-wrap: nowrap;
     white-space: nowrap;
+    width: 100%;
   }
 
   .grow-letter {
     display: inline-block;
-    font-size: calc(clamp(1.2rem, 3vw, 2rem) + var(--i) * clamp(0.15rem, 0.4vw, 0.35rem));
-    text-shadow: 3px 3px 0 rgba(0,0,0,0.5), -1px -1px 0 var(--orange);
-    -webkit-text-stroke: 1px rgba(0,0,0,0.2);
+    font-size: calc(clamp(2rem, 5vw, 3.5rem) + var(--i) * clamp(0.25rem, 0.7vw, 0.6rem));
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.5), -2px -2px 0 var(--orange);
+    -webkit-text-stroke: 2px rgba(0,0,0,0.2);
     color: var(--cream);
   }
 
   .grow-letter.spacer {
-    width: 0.4em;
+    width: 0.5em;
   }
 
   .hero-sub {
@@ -201,9 +204,44 @@ import ScoobyRun from '../components/ScoobyRun.astro';
     justify-content: center;
   }
 
+  .hero-characters {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0.5rem;
+    z-index: 2;
+    margin-top: -0.5rem;
+  }
+
+  .hero-char {
+    animation: heroFloat 3s ease-in-out infinite;
+  }
+
+  .hero-char:nth-child(1) { animation-delay: 0s; }
+  .hero-char:nth-child(2) { animation-delay: -1s; }
+  .hero-char:nth-child(3) { animation-delay: -2s; }
+
+  @keyframes heroFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .hero-char img {
+    height: clamp(120px, 18vw, 200px);
+    width: auto;
+    filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.4));
+    object-fit: contain;
+  }
+
   @media (max-width: 768px) {
     .hero-scatter { display: none; }
     .hero-bottom-bursts { display: none; }
+    .hero-char img { height: 100px; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-char img { height: 80px; }
   }
 
   /* === Vibes === */

@@ -5,8 +5,8 @@ import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
 
 const shows = [
-  { date: "MAY 2", venue: "The Owl Bar", city: "Sundance, UT", note: "", burst: "THOSE!", shape: "star" as const, burstBg: "#e8641b" },
-  { date: "MAY 16", venue: "Brewskis", city: "Ogden, UT", note: "", burst: "ONE!", shape: "pow" as const, burstBg: "#1a8a7d" },
+  { date: "MAY 2", venue: "The Owl Bar", city: "Sundance, UT", note: "", burst: "THOSE!", shape: "star" as const, burstBg: "#e8641b", address: "The Owl Bar, Sundance Mountain Resort, Sundance, UT" },
+  { date: "MAY 16", venue: "Brewskis", city: "Ogden, UT", note: "", burst: "ONE!", shape: "pow" as const, burstBg: "#1a8a7d", address: "Brewskis, Ogden, UT" },
 ];
 
 const miniWords = ["BAM!", "POW!", "ZAP!", "WHAM!", "CRASH!", "BOOM!"];
@@ -54,6 +54,7 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
           </div>
           <div class="show-action">
             <a href="#" class="btn btn-primary">Tickets</a>
+            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(show.address)}`} target="_blank" rel="noopener" class="btn btn-secondary">Directions</a>
           </div>
         </div>
       ))}
@@ -136,6 +137,12 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
   .show-mini-bursts {
     display: flex;
     gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .show-action {
+    display: flex;
+    gap: 0.5rem;
     flex-shrink: 0;
   }
 
