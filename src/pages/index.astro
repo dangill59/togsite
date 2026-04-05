@@ -14,11 +14,12 @@ import ScoobyRun from '../components/ScoobyRun.astro';
 
     <div class="hero-scatter">
       <div class="scatter s1"><ComicBurst text="BAM!" bg="#e8251b" shape="pow" size="sm" rotate={-20} float delay={200} /></div>
-      <div class="scatter s2"><ComicBurst text="POW!" bg="#ffe135" color="#5c3317" shape="jagged" size="xs" rotate={15} float delay={400} /></div>
+      <div class="scatter s2"><ComicBurst text="POW!" bg="#ffe135" color="#5c3317" shape="jagged" size="sm" rotate={15} float delay={400} /></div>
       <div class="scatter s3"><ComicBurst text="ZAP!" bg="#ff69b4" shape="zap" size="sm" rotate={-10} float delay={600} /></div>
-      <div class="scatter s4"><ComicBurst text="WHAM!" bg="#1e90ff" shape="bang" size="xs" rotate={25} float delay={800} /></div>
+      <div class="scatter s4"><ComicBurst text="WHAM!" bg="#1e90ff" shape="bang" size="sm" rotate={25} float delay={800} /></div>
       <div class="scatter s5"><ComicBurst text="KABOOM!" bg="#f5a623" color="#5c3317" shape="pow" size="sm" rotate={-15} float delay={300} /></div>
-      <div class="scatter s6"><ComicBurst text="CRASH!" bg="#1a8a7d" shape="jagged" size="xs" rotate={20} float delay={700} /></div>
+      <div class="scatter s6"><ComicBurst text="CRASH!" bg="#1a8a7d" shape="jagged" size="sm" rotate={20} float delay={700} /></div>
+      <div class="scatter s7"><ComicBurst text="KERPOW!" bg="#c0392b" shape="star" size="md" rotate={-22} float delay={500} /></div>
     </div>
 
     <div class="hero-main-bursts">
@@ -28,7 +29,9 @@ import ScoobyRun from '../components/ScoobyRun.astro';
     </div>
 
     <div class="hero-content">
-      <h1 class="hero-title comic-title">Those One Guys</h1>
+      <h1 class="hero-title comic-title">
+        <span class="grow-letter" style="--i:0">T</span><span class="grow-letter" style="--i:1">H</span><span class="grow-letter" style="--i:2">O</span><span class="grow-letter" style="--i:3">S</span><span class="grow-letter" style="--i:4">E</span><span class="grow-letter spacer" style="--i:5"> </span><span class="grow-letter" style="--i:6">O</span><span class="grow-letter" style="--i:7">N</span><span class="grow-letter" style="--i:8">E</span><span class="grow-letter spacer" style="--i:9"> </span><span class="grow-letter" style="--i:10">G</span><span class="grow-letter" style="--i:11">U</span><span class="grow-letter" style="--i:12">Y</span><span class="grow-letter" style="--i:13">S</span><span class="grow-letter" style="--i:14">!</span>
+      </h1>
       <p class="hero-sub">Loud guitars. Big grooves. Zero chill.</p>
       <div class="hero-buttons">
         <a href="/music" class="btn btn-primary">Listen Now</a>
@@ -53,7 +56,7 @@ import ScoobyRun from '../components/ScoobyRun.astro';
     <div class="section vibes-inner">
       <div class="burst-row">
         <ComicBurst text="THOSE!" bg="#1e90ff" shape="bang" size="sm" rotate={-12} />
-        <ComicBurst text="KAPOW!" bg="#e8251b" shape="pow" size="md" rotate={5} />
+        <ComicBurst text="KERPOW!" bg="#e8251b" shape="star" size="md" rotate={5} />
         <h2 class="section-title comic-title">The Vibe</h2>
         <ComicBurst text="WHAM!" bg="#ff69b4" shape="jagged" size="md" rotate={-8} />
         <ComicBurst text="ONE!" bg="#f5a623" color="#5c3317" shape="star" size="sm" rotate={15} />
@@ -91,6 +94,7 @@ import ScoobyRun from '../components/ScoobyRun.astro';
         <a href="/contact" class="btn btn-primary">Get In Touch</a>
       </div>
       <ComicBurst text="GUYS!" bg="#ff69b4" shape="star" size="sm" rotate={-15} float delay={300} />
+      <ComicBurst text="KERPOW!" bg="#f5a623" color="#5c3317" shape="star" size="md" rotate={-10} float delay={400} />
       <ComicBurst text="ZAP!" bg="#e8251b" shape="zap" size="lg" rotate={12} float />
     </div>
   </section>
@@ -115,7 +119,7 @@ import ScoobyRun from '../components/ScoobyRun.astro';
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 3;
+    z-index: 1;
   }
 
   .scatter {
@@ -123,11 +127,12 @@ import ScoobyRun from '../components/ScoobyRun.astro';
   }
 
   .s1 { top: 5%; left: 3%; }
-  .s2 { top: 8%; right: 8%; }
-  .s3 { top: 35%; left: 2%; }
-  .s4 { top: 30%; right: 3%; }
-  .s5 { bottom: 20%; left: 5%; }
-  .s6 { bottom: 15%; right: 5%; }
+  .s2 { top: 5%; right: 3%; }
+  .s3 { top: 38%; left: 2%; }
+  .s4 { top: 20%; right: 2%; }
+  .s5 { bottom: 10%; left: 3%; }
+  .s6 { bottom: 10%; right: 3%; }
+  .s7 { top: 50%; right: 2%; }
 
   .hero-main-bursts {
     position: relative;
@@ -148,12 +153,27 @@ import ScoobyRun from '../components/ScoobyRun.astro';
 
   .hero-title {
     font-family: var(--comic);
-    font-size: clamp(3rem, 9vw, 6.5rem);
     line-height: 1;
     margin-bottom: 0.5rem;
-    text-shadow: 5px 5px 0 rgba(0,0,0,0.5), -2px -2px 0 var(--orange);
-    letter-spacing: 8px;
-    -webkit-text-stroke: 2px rgba(0,0,0,0.2);
+    letter-spacing: 4px;
+    transform: rotate(-5deg);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .grow-letter {
+    display: inline-block;
+    font-size: calc(clamp(1.2rem, 3vw, 2rem) + var(--i) * clamp(0.15rem, 0.4vw, 0.35rem));
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.5), -1px -1px 0 var(--orange);
+    -webkit-text-stroke: 1px rgba(0,0,0,0.2);
+    color: var(--cream);
+  }
+
+  .grow-letter.spacer {
+    width: 0.4em;
   }
 
   .hero-sub {
