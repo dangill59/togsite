@@ -1,643 +1,135 @@
 ---
-// Scooby-Doo style chase scene - all three band members running across the screen
-// With looping background scroll and cartoon physics
+// Band heroes standing heroically with capes blowing in the wind
 ---
 
-<div class="chase-scene">
-  <div class="chase-bg">
-    <div class="bg-scroll">
-      <!-- Repeating background elements - buildings, trees, lampposts -->
-      <svg viewBox="0 0 2400 300" preserveAspectRatio="none" class="bg-svg">
-        <!-- Sky gradient is handled by parent bg -->
-        <!-- Repeating city elements - drawn twice for seamless loop -->
-        <g class="bg-set">
-          <!-- Trees -->
-          <circle cx="80" cy="220" r="35" fill="#2d7a27"/>
-          <circle cx="80" cy="200" r="30" fill="#3a9a32"/>
-          <rect x="74" y="240" width="12" height="40" fill="#5c3317"/>
-
-          <circle cx="320" cy="225" r="30" fill="#2d7a27"/>
-          <circle cx="320" cy="208" r="25" fill="#3a9a32"/>
-          <rect x="314" y="242" width="12" height="38" fill="#5c3317"/>
-
-          <!-- Building 1 -->
-          <rect x="140" y="120" width="80" height="160" fill="#8B7355"/>
-          <rect x="140" y="120" width="80" height="160" fill="none" stroke="#5c3317" stroke-width="2"/>
-          <rect x="155" y="140" width="15" height="20" fill="#ffe135" opacity="0.7"/>
-          <rect x="185" y="140" width="15" height="20" fill="#87CEEB" opacity="0.5"/>
-          <rect x="155" y="175" width="15" height="20" fill="#87CEEB" opacity="0.5"/>
-          <rect x="185" y="175" width="15" height="20" fill="#ffe135" opacity="0.7"/>
-          <rect x="155" y="210" width="15" height="20" fill="#ffe135" opacity="0.7"/>
-          <rect x="185" y="210" width="15" height="20" fill="#87CEEB" opacity="0.5"/>
-          <rect x="168" y="245" width="24" height="35" fill="#5c3317"/>
-
-          <!-- Lamppost -->
-          <rect x="260" y="200" width="4" height="80" fill="#333"/>
-          <ellipse cx="262" cy="198" rx="12" ry="6" fill="#333"/>
-          <circle cx="262" cy="195" r="5" fill="#ffe135" opacity="0.6"/>
-
-          <!-- Building 2 -->
-          <rect x="380" y="150" width="60" height="130" fill="#A0785A"/>
-          <rect x="380" y="150" width="60" height="130" fill="none" stroke="#5c3317" stroke-width="2"/>
-          <rect x="392" y="168" width="12" height="15" fill="#ffe135" opacity="0.7"/>
-          <rect x="416" y="168" width="12" height="15" fill="#87CEEB" opacity="0.5"/>
-          <rect x="392" y="198" width="12" height="15" fill="#87CEEB" opacity="0.5"/>
-          <rect x="416" y="198" width="12" height="15" fill="#ffe135" opacity="0.7"/>
-          <rect x="403" y="248" width="20" height="32" fill="#5c3317"/>
-
-          <!-- Fire hydrant -->
-          <rect x="470" y="258" width="12" height="18" rx="3" fill="#c0392b"/>
-          <rect x="466" y="256" width="20" height="5" rx="2" fill="#e74c3c"/>
-
-          <circle cx="560" cy="215" r="40" fill="#2d7a27"/>
-          <circle cx="560" cy="192" r="35" fill="#3a9a32"/>
-          <circle cx="545" cy="205" r="25" fill="#3a9a32"/>
-          <rect x="554" y="240" width="12" height="40" fill="#5c3317"/>
-
-          <!-- Building 3 - tall -->
-          <rect x="640" y="90" width="70" height="190" fill="#9B8B75"/>
-          <rect x="640" y="90" width="70" height="190" fill="none" stroke="#5c3317" stroke-width="2"/>
-          <rect x="655" y="108" width="12" height="15" fill="#ffe135" opacity="0.7"/>
-          <rect x="683" y="108" width="12" height="15" fill="#87CEEB" opacity="0.5"/>
-          <rect x="655" y="138" width="12" height="15" fill="#87CEEB" opacity="0.5"/>
-          <rect x="683" y="138" width="12" height="15" fill="#ffe135" opacity="0.7"/>
-          <rect x="655" y="168" width="12" height="15" fill="#ffe135" opacity="0.7"/>
-          <rect x="683" y="168" width="12" height="15" fill="#87CEEB" opacity="0.5"/>
-          <rect x="655" y="198" width="12" height="15" fill="#87CEEB" opacity="0.5"/>
-          <rect x="683" y="198" width="12" height="15" fill="#ffe135" opacity="0.7"/>
-          <rect x="665" y="248" width="20" height="32" fill="#5c3317"/>
-
-          <!-- Lamppost 2 -->
-          <rect x="760" y="200" width="4" height="80" fill="#333"/>
-          <ellipse cx="762" cy="198" rx="12" ry="6" fill="#333"/>
-          <circle cx="762" cy="195" r="5" fill="#ffe135" opacity="0.6"/>
-
-          <circle cx="840" cy="222" r="32" fill="#2d7a27"/>
-          <circle cx="840" cy="205" r="28" fill="#3a9a32"/>
-          <rect x="834" y="240" width="12" height="40" fill="#5c3317"/>
-
-          <!-- Building 4 -->
-          <rect x="900" y="130" width="90" height="150" fill="#B8A088"/>
-          <rect x="900" y="130" width="90" height="150" fill="none" stroke="#5c3317" stroke-width="2"/>
-          <rect x="915" y="148" width="15" height="18" fill="#ffe135" opacity="0.7"/>
-          <rect x="945" y="148" width="15" height="18" fill="#87CEEB" opacity="0.5"/>
-          <rect x="915" y="182" width="15" height="18" fill="#87CEEB" opacity="0.5"/>
-          <rect x="945" y="182" width="15" height="18" fill="#ffe135" opacity="0.7"/>
-          <rect x="915" y="216" width="15" height="18" fill="#ffe135" opacity="0.7"/>
-          <rect x="945" y="216" width="15" height="18" fill="#87CEEB" opacity="0.5"/>
-          <rect x="935" y="248" width="22" height="32" fill="#5c3317"/>
-
-          <!-- Bush -->
-          <ellipse cx="1040" cy="260" rx="30" ry="20" fill="#2d7a27"/>
-          <ellipse cx="1055" cy="255" rx="25" ry="18" fill="#3a9a32"/>
-
-          <!-- Bench -->
-          <rect x="1100" y="258" width="50" height="5" fill="#5c3317"/>
-          <rect x="1105" y="263" width="5" height="17" fill="#5c3317"/>
-          <rect x="1140" y="263" width="5" height="17" fill="#5c3317"/>
-          <rect x="1100" y="252" width="5" height="8" fill="#5c3317"/>
-          <rect x="1145" y="252" width="5" height="8" fill="#5c3317"/>
-        </g>
-
-        <!-- Ground -->
-        <rect x="0" y="278" width="2400" height="22" fill="#888"/>
-        <rect x="0" y="278" width="2400" height="3" fill="#aaa"/>
-        <!-- Sidewalk lines -->
-        <line x1="0" y1="285" x2="2400" y2="285" stroke="#999" stroke-width="1" stroke-dasharray="40,20"/>
-      </svg>
-      <!-- Duplicate for seamless loop -->
-      <svg viewBox="0 0 2400 300" preserveAspectRatio="none" class="bg-svg">
-        <use href="#bg-repeat"/>
-      </svg>
+<div class="heroes-scene">
+  <div class="heroes-bg">
+    <div class="wind-lines">
+      <div class="wind w1"></div>
+      <div class="wind w2"></div>
+      <div class="wind w3"></div>
+      <div class="wind w4"></div>
+      <div class="wind w5"></div>
+      <div class="wind w6"></div>
     </div>
   </div>
 
-  <!-- Dust clouds behind runners -->
-  <div class="dust-clouds">
-    <div class="dust d1"></div>
-    <div class="dust d2"></div>
-    <div class="dust d3"></div>
-    <div class="dust d4"></div>
-    <div class="dust d5"></div>
-  </div>
-
-  <!-- THE RUNNERS -->
-  <div class="runners">
-    <!-- P is in front (entered scene first) -->
-    <div class="runner runner-p">
-      <svg viewBox="0 0 120 200" class="runner-svg">
-        <!-- Body bob group -->
-        <g class="body-bob-p">
-          <!-- Back arm with drumstick -->
-          <g class="arm-back-p" style="transform-origin: 52px 82px;">
-            <rect x="40" y="82" width="12" height="42" rx="5" fill="#6B4019"/>
-            <rect x="32" y="118" width="6" height="30" rx="2" fill="#DEB887" transform="rotate(-20, 35, 118)"/>
-          </g>
-
-          <!-- Back leg -->
-          <g class="leg-back-p" style="transform-origin: 52px 135px;">
-            <rect x="44" y="135" width="14" height="45" rx="5" fill="#111"/>
-            <rect x="38" y="174" width="22" height="10" rx="5" fill="#333"/>
-          </g>
-
-          <!-- Body -->
-          <rect x="38" y="70" width="40" height="55" rx="10" fill="#2c2c54"/>
-          <!-- Vest -->
-          <path d="M42,72 L42,120 L55,120 L55,80 Z" fill="#1a1a3e"/>
-          <path d="M74,72 L74,120 L62,120 L62,80 Z" fill="#1a1a3e"/>
-          <!-- Tie flapping -->
-          <g class="tie-flap">
-            <polygon points="56,78 60,78 62,100 58,105 54,100" fill="#c0392b"/>
-          </g>
-
-          <!-- Front leg -->
-          <g class="leg-front-p" style="transform-origin: 62px 135px;">
-            <rect x="56" y="135" width="14" height="45" rx="5" fill="#1a1a1a"/>
-            <rect x="50" y="174" width="22" height="10" rx="5" fill="#3a3a3a"/>
-          </g>
-
-          <!-- Front arm with drumstick -->
-          <g class="arm-front-p" style="transform-origin: 65px 82px;">
-            <rect x="62" y="82" width="12" height="42" rx="5" fill="#8D5524"/>
-            <rect x="70" y="115" width="6" height="30" rx="2" fill="#DEB887" transform="rotate(15, 73, 115)"/>
-          </g>
-
-          <!-- Neck -->
-          <rect x="50" y="58" width="18" height="16" rx="5" fill="#8D5524"/>
-
-          <!-- Head -->
-          <g class="head-bob-p">
-            <ellipse cx="60" cy="42" rx="22" ry="24" fill="#8D5524"/>
-            <!-- Eyes -->
-            <circle cx="50" cy="40" r="2.5" fill="white"/>
-            <circle cx="68" cy="40" r="2.5" fill="white"/>
-            <circle cx="51" cy="40" r="1.5" fill="#1a1a1a"/>
-            <circle cx="69" cy="40" r="1.5" fill="#1a1a1a"/>
-            <!-- Goatee -->
-            <path d="M54,52 Q60,60 66,52" fill="#1a1a1a"/>
-            <!-- Hair -->
-            <path d="M38,35 Q40,15 60,12 Q80,15 82,35" fill="#1a1a1a"/>
-            <!-- Mouth - determined -->
-            <path d="M53,50 L67,48" stroke="#5a3015" stroke-width="1.5" stroke-linecap="round"/>
-          </g>
-        </g>
-      </svg>
+  <div class="heroes-lineup">
+    <div class="hero-figure hero-p">
+      <img src="/p.jpg" alt="P" class="hero-img" />
+      <span class="hero-label">P</span>
     </div>
-
-    <!-- Dano in middle -->
-    <div class="runner runner-dano">
-      <svg viewBox="0 0 120 200" class="runner-svg">
-        <g class="body-bob-dano">
-          <!-- Back arm -->
-          <g class="arm-back-dano" style="transform-origin: 48px 82px;">
-            <rect x="36" y="82" width="12" height="40" rx="5" fill="#EDBA9F"/>
-          </g>
-
-          <!-- Back leg - khakis -->
-          <g class="leg-back-dano" style="transform-origin: 50px 132px;">
-            <rect x="42" y="132" width="14" height="44" rx="5" fill="#B5A070"/>
-            <rect x="36" y="170" width="24" height="11" rx="6" fill="#ccc"/>
-            <text x="48" y="179" font-size="4" fill="#999" text-anchor="middle">NB</text>
-          </g>
-
-          <!-- Body - polo -->
-          <rect x="36" y="68" width="42" height="55" rx="10" fill="#4169E1"/>
-          <!-- Collar -->
-          <path d="M48,70 L57,78 L66,70" fill="none" stroke="#3155b0" stroke-width="2"/>
-          <!-- Polo buttons -->
-          <circle cx="57" cy="80" r="1.5" fill="white"/>
-          <circle cx="57" cy="86" r="1.5" fill="white"/>
-          <!-- Belt -->
-          <rect x="36" y="118" width="42" height="5" rx="2" fill="#5C4033"/>
-
-          <!-- Front leg -->
-          <g class="leg-front-dano" style="transform-origin: 62px 132px;">
-            <rect x="56" y="132" width="14" height="44" rx="5" fill="#C2B280"/>
-            <rect x="50" y="170" width="24" height="11" rx="6" fill="#DCDCDC"/>
-            <text x="62" y="179" font-size="4" fill="#999" text-anchor="middle">NB</text>
-          </g>
-
-          <!-- Front arm -->
-          <g class="arm-front-dano" style="transform-origin: 68px 82px;">
-            <rect x="66" y="82" width="12" height="40" rx="5" fill="#FDBCB4"/>
-          </g>
-
-          <!-- Guitar on back (bouncing) -->
-          <g class="guitar-bounce">
-            <ellipse cx="30" cy="95" rx="18" ry="22" fill="#f5a623" transform="rotate(-15, 30, 95)"/>
-            <ellipse cx="30" cy="95" rx="13" ry="17" fill="#DAA520" transform="rotate(-15, 30, 95)"/>
-            <circle cx="30" cy="95" r="5" fill="#1a1a1a"/>
-            <rect x="36" y="60" width="4" height="50" rx="2" fill="#8B4513" transform="rotate(-15, 38, 85)"/>
-          </g>
-
-          <!-- Neck -->
-          <rect x="48" y="56" width="18" height="16" rx="5" fill="#FDBCB4"/>
-
-          <!-- Head -->
-          <g class="head-bob-dano">
-            <ellipse cx="58" cy="40" rx="21" ry="23" fill="#FDBCB4"/>
-            <!-- Eyes - wide, slightly panicked grandpa -->
-            <circle cx="49" cy="38" r="3" fill="white"/>
-            <circle cx="67" cy="38" r="3" fill="white"/>
-            <circle cx="50" cy="37" r="2" fill="#6B4423"/>
-            <circle cx="68" cy="37" r="2" fill="#6B4423"/>
-            <!-- Grey hair flying back -->
-            <path d="M37,30 Q40,14 58,10 Q76,14 79,30" fill="#C0C0C0"/>
-            <path d="M37,30 Q32,22 38,15" fill="#C0C0C0"/>
-            <!-- Hair wisps flying -->
-            <line x1="36" y1="22" x2="25" y2="18" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round" class="hair-wisp"/>
-            <line x1="34" y1="28" x2="22" y2="26" stroke="#C0C0C0" stroke-width="1.5" stroke-linecap="round" class="hair-wisp"/>
-            <!-- Full beard -->
-            <path d="M42,45 Q40,56 46,62 Q58,68 70,62 Q76,56 74,45" fill="#aaa"/>
-            <ellipse cx="58" cy="52" rx="14" ry="10" fill="#aaa"/>
-            <!-- Mouth - huffing -->
-            <ellipse cx="58" cy="48" rx="5" ry="3" fill="#1a1a1a"/>
-            <!-- Nose -->
-            <ellipse cx="58" cy="43" rx="3" ry="2.5" fill="#F0A090"/>
-            <!-- Sweat drop -->
-            <g class="sweat-drop">
-              <path d="M78,28 Q80,22 82,28 Q80,32 78,28Z" fill="#87CEEB"/>
-            </g>
-          </g>
-        </g>
-      </svg>
+    <div class="hero-figure hero-dano">
+      <img src="/dano.jpg" alt="Dano" class="hero-img" />
+      <span class="hero-label">DANO</span>
     </div>
-
-    <!-- Darby in back -->
-    <div class="runner runner-darby">
-      <svg viewBox="0 0 120 200" class="runner-svg">
-        <g class="body-bob-darby">
-          <!-- Back arm -->
-          <g class="arm-back-darby" style="transform-origin: 50px 85px;">
-            <rect x="38" y="85" width="14" height="44" rx="6" fill="#EDBA9F"/>
-          </g>
-
-          <!-- Back leg -->
-          <g class="leg-back-darby" style="transform-origin: 52px 138px;">
-            <rect x="44" y="138" width="16" height="42" rx="6" fill="#1d4a17"/>
-            <rect x="38" y="174" width="26" height="12" rx="6" fill="#111"/>
-          </g>
-
-          <!-- Body - green henley, barrel chest -->
-          <rect x="34" y="72" width="48" height="58" rx="12" fill="#2d5a27"/>
-          <!-- Henley buttons -->
-          <line x1="58" y1="75" x2="58" y2="95" stroke="#1a4a15" stroke-width="1.5"/>
-          <circle cx="58" cy="80" r="1.5" fill="#DAA520"/>
-          <circle cx="58" cy="88" r="1.5" fill="#DAA520"/>
-          <!-- Belt -->
-          <rect x="34" y="125" width="48" height="6" rx="2" fill="#8B4513"/>
-          <rect x="53" y="123" width="10" height="10" rx="2" fill="#DAA520"/>
-
-          <!-- Bass on back (bouncing) -->
-          <g class="bass-bounce">
-            <ellipse cx="28" cy="100" rx="20" ry="25" fill="#c0392b" transform="rotate(10, 28, 100)"/>
-            <ellipse cx="28" cy="100" rx="15" ry="20" fill="#e74c3c" transform="rotate(10, 28, 100)"/>
-            <circle cx="28" cy="96" r="4" fill="#1a1a1a"/>
-            <circle cx="28" cy="106" r="4" fill="#1a1a1a"/>
-            <rect x="40" y="55" width="5" height="55" rx="2" fill="#8B4513" transform="rotate(10, 42, 82)"/>
-          </g>
-
-          <!-- Front leg -->
-          <g class="leg-front-darby" style="transform-origin: 64px 138px;">
-            <rect x="58" y="138" width="16" height="42" rx="6" fill="#2d5a27"/>
-            <rect x="52" y="174" width="26" height="12" rx="6" fill="#1a1a1a"/>
-          </g>
-
-          <!-- Front arm -->
-          <g class="arm-front-darby" style="transform-origin: 70px 85px;">
-            <rect x="66" y="85" width="14" height="44" rx="6" fill="#FDBCB4"/>
-          </g>
-
-          <!-- Neck -->
-          <rect x="48" y="58" width="20" height="18" rx="6" fill="#FDBCB4"/>
-
-          <!-- Head -->
-          <g class="head-bob-darby">
-            <ellipse cx="60" cy="40" rx="24" ry="26" fill="#FDBCB4"/>
-            <!-- Big red beard flying -->
-            <path d="M38,45 Q36,60 42,68 Q60,78 78,68 Q84,60 82,45" fill="#D2691E"/>
-            <ellipse cx="60" cy="52" rx="20" ry="12" fill="#D2691E"/>
-            <!-- Beard wisps flying back -->
-            <path d="M38,55 Q28,52 22,58" stroke="#D2691E" stroke-width="3" fill="none" stroke-linecap="round" class="beard-wisp"/>
-            <path d="M36,48 Q26,46 20,50" stroke="#D2691E" stroke-width="2.5" fill="none" stroke-linecap="round" class="beard-wisp"/>
-            <!-- Mouth - yelling -->
-            <ellipse cx="60" cy="48" rx="6" ry="4" fill="#1a1a1a"/>
-            <!-- Nose -->
-            <ellipse cx="60" cy="38" rx="4" ry="3" fill="#F0A090"/>
-            <!-- Eyes - wild -->
-            <circle cx="49" cy="33" r="5" fill="white"/>
-            <circle cx="71" cy="33" r="5" fill="white"/>
-            <circle cx="50" cy="33" r="3" fill="#2e8b57"/>
-            <circle cx="72" cy="33" r="3" fill="#2e8b57"/>
-            <circle cx="51" cy="32" r="1.5" fill="#1a1a1a"/>
-            <circle cx="73" cy="32" r="1.5" fill="#1a1a1a"/>
-            <!-- Wild red hair + flat cap -->
-            <path d="M36,28 Q38,8 60,5 Q82,8 84,28" fill="#D2691E"/>
-            <path d="M34,28 Q28,18 36,10" fill="#D2691E"/>
-            <path d="M86,28 Q92,18 84,10" fill="#D2691E"/>
-            <!-- Flat cap -->
-            <ellipse cx="60" cy="14" rx="28" ry="8" fill="#3a3a3a"/>
-            <path d="M32,14 Q35,4 60,2 Q85,4 88,14" fill="#4a4a4a"/>
-            <rect x="30" y="12" width="60" height="5" rx="2" fill="#3a3a3a"/>
-            <!-- Cap brim flying up -->
-            <path d="M88,14 Q95,10 100,12" fill="#3a3a3a" class="cap-brim"/>
-
-            <!-- Flying shamrock -->
-            <g class="flying-shamrock">
-              <text x="90" y="8" font-size="14" fill="#2d5a27">&#9752;</text>
-            </g>
-          </g>
-        </g>
-      </svg>
+    <div class="hero-figure hero-darby">
+      <img src="/darby.jpg" alt="Darby" class="hero-img" />
+      <span class="hero-label">DARBY</span>
     </div>
-  </div>
-
-  <!-- Speed lines -->
-  <div class="speed-streaks">
-    <div class="streak sk1"></div>
-    <div class="streak sk2"></div>
-    <div class="streak sk3"></div>
-    <div class="streak sk4"></div>
-    <div class="streak sk5"></div>
-    <div class="streak sk6"></div>
-    <div class="streak sk7"></div>
-    <div class="streak sk8"></div>
   </div>
 </div>
 
 <style>
-  .chase-scene {
+  .heroes-scene {
     position: relative;
     width: 100%;
-    height: 220px;
+    height: 200px;
     overflow: hidden;
-    background: linear-gradient(180deg, #87CEEB 0%, #B0D4E8 60%, #E8D8B8 85%, #888 95%);
+    background: linear-gradient(180deg, #87CEEB 0%, #B0D4E8 40%, #f5a623 85%, #e8641b 100%);
     border-top: 4px solid var(--brown);
     border-bottom: 4px solid var(--brown);
   }
 
-  /* === Scrolling Background === */
-  .chase-bg {
+  .heroes-bg {
     position: absolute;
     inset: 0;
     overflow: hidden;
   }
 
-  .bg-scroll {
-    display: flex;
-    width: 200%;
-    height: 100%;
-    animation: scrollBg 12s linear infinite;
-  }
-
-  .bg-svg {
-    width: 50%;
-    height: 100%;
-    flex-shrink: 0;
-  }
-
-  @keyframes scrollBg {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  /* === Runners === */
-  .runners {
+  /* Wind lines blowing across */
+  .wind-lines {
     position: absolute;
-    bottom: 18px;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .wind {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: windBlow 2s linear infinite;
+  }
+
+  .w1 { top: 20%; width: 120px; animation-delay: 0s; animation-duration: 1.8s; }
+  .w2 { top: 35%; width: 80px; animation-delay: 0.4s; animation-duration: 2.2s; }
+  .w3 { top: 50%; width: 150px; animation-delay: 0.8s; animation-duration: 1.6s; }
+  .w4 { top: 30%; width: 60px; animation-delay: 1.2s; animation-duration: 2s; }
+  .w5 { top: 45%; width: 100px; animation-delay: 0.2s; animation-duration: 2.4s; }
+  .w6 { top: 60%; width: 90px; animation-delay: 0.6s; animation-duration: 1.9s; }
+
+  @keyframes windBlow {
+    0% { left: -150px; opacity: 0; }
+    15% { opacity: 0.6; }
+    85% { opacity: 0.6; }
+    100% { left: 110%; opacity: 0; }
+  }
+
+  /* Heroes lineup */
+  .heroes-lineup {
+    position: absolute;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 8px;
+    align-items: flex-end;
+    gap: 1.5rem;
     z-index: 10;
   }
 
-  .runner {
+  .hero-figure {
     position: relative;
+    text-align: center;
+    animation: heroFloat 3s ease-in-out infinite;
   }
 
-  .runner-svg {
-    width: 80px;
-    height: 140px;
-    overflow: visible;
-  }
+  .hero-figure:nth-child(1) { animation-delay: 0s; }
+  .hero-figure:nth-child(2) { animation-delay: -1s; }
+  .hero-figure:nth-child(3) { animation-delay: -2s; }
 
-  .runner-p { z-index: 12; }
-  .runner-dano { z-index: 11; margin-left: -10px; }
-  .runner-darby { z-index: 10; margin-left: -10px; }
-
-  /* Whole group bouncing across */
-  .runners {
-    animation: runnersScoot 8s ease-in-out infinite;
-  }
-
-  @keyframes runnersScoot {
-    0% { left: -15%; }
-    45% { left: 55%; }
-    55% { left: 55%; }
-    100% { left: 115%; }
-  }
-
-  /* === Body Bob (up-down running bounce) === */
-  .body-bob-p,
-  .body-bob-dano,
-  .body-bob-darby {
-    animation: bodyBounce 0.28s ease-in-out infinite;
-  }
-
-  .body-bob-dano { animation-delay: -0.07s; }
-  .body-bob-darby { animation-delay: -0.14s; }
-
-  @keyframes bodyBounce {
+  @keyframes heroFloat {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
   }
 
-  /* === Head Bobs (slight lag behind body) === */
-  .head-bob-p,
-  .head-bob-dano,
-  .head-bob-darby {
-    animation: headBob 0.28s ease-in-out infinite;
+  .hero-img {
+    height: 140px;
+    width: auto;
+    filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.3));
+    object-fit: contain;
   }
 
-  .head-bob-dano { animation-delay: -0.07s; }
-  .head-bob-darby { animation-delay: -0.14s; }
-
-  @keyframes headBob {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    30% { transform: translateY(-2px) rotate(-2deg); }
-    70% { transform: translateY(1px) rotate(1deg); }
+  .hero-label {
+    display: block;
+    font-family: var(--comic);
+    font-size: 1.2rem;
+    color: var(--cream);
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+    margin-top: 0.25rem;
   }
 
-  /* === Leg Animations (opposite pairs) === */
-  /* P's legs */
-  .leg-front-p { animation: legSwingFront 0.28s ease-in-out infinite; }
-  .leg-back-p { animation: legSwingBack 0.28s ease-in-out infinite; }
-
-  /* Dano's legs */
-  .leg-front-dano { animation: legSwingFront 0.28s ease-in-out infinite; animation-delay: -0.07s; }
-  .leg-back-dano { animation: legSwingBack 0.28s ease-in-out infinite; animation-delay: -0.07s; }
-
-  /* Darby's legs */
-  .leg-front-darby { animation: legSwingFront 0.28s ease-in-out infinite; animation-delay: -0.14s; }
-  .leg-back-darby { animation: legSwingBack 0.28s ease-in-out infinite; animation-delay: -0.14s; }
-
-  @keyframes legSwingFront {
-    0% { transform: rotate(-35deg); }
-    50% { transform: rotate(35deg); }
-    100% { transform: rotate(-35deg); }
+  @media (max-width: 768px) {
+    .heroes-scene { height: 170px; }
+    .hero-img { height: 110px; }
+    .heroes-lineup { gap: 0.75rem; }
+    .hero-label { font-size: 0.9rem; }
   }
 
-  @keyframes legSwingBack {
-    0% { transform: rotate(35deg); }
-    50% { transform: rotate(-35deg); }
-    100% { transform: rotate(35deg); }
-  }
-
-  /* === Arm Animations === */
-  .arm-front-p { animation: armSwingFront 0.28s ease-in-out infinite; }
-  .arm-back-p { animation: armSwingBack 0.28s ease-in-out infinite; }
-  .arm-front-dano { animation: armSwingFront 0.28s ease-in-out infinite; animation-delay: -0.07s; }
-  .arm-back-dano { animation: armSwingBack 0.28s ease-in-out infinite; animation-delay: -0.07s; }
-  .arm-front-darby { animation: armSwingFront 0.28s ease-in-out infinite; animation-delay: -0.14s; }
-  .arm-back-darby { animation: armSwingBack 0.28s ease-in-out infinite; animation-delay: -0.14s; }
-
-  @keyframes armSwingFront {
-    0% { transform: rotate(30deg); }
-    50% { transform: rotate(-30deg); }
-    100% { transform: rotate(30deg); }
-  }
-
-  @keyframes armSwingBack {
-    0% { transform: rotate(-30deg); }
-    50% { transform: rotate(30deg); }
-    100% { transform: rotate(-30deg); }
-  }
-
-  /* === Instrument Bounce === */
-  .guitar-bounce {
-    animation: instrumentBounce 0.28s ease-in-out infinite;
-    animation-delay: -0.03s;
-  }
-
-  .bass-bounce {
-    animation: instrumentBounce 0.28s ease-in-out infinite;
-    animation-delay: -0.1s;
-  }
-
-  @keyframes instrumentBounce {
-    0%, 100% { transform: rotate(0deg) translateY(0); }
-    50% { transform: rotate(-4deg) translateY(-3px); }
-  }
-
-  /* === Tie flapping === */
-  .tie-flap {
-    animation: tieFlap 0.28s ease-in-out infinite;
-    transform-origin: 58px 78px;
-  }
-
-  @keyframes tieFlap {
-    0%, 100% { transform: rotate(-5deg); }
-    50% { transform: rotate(8deg); }
-  }
-
-  /* === Hair/Beard Wisps === */
-  .hair-wisp {
-    animation: wispFlutter 0.35s ease-in-out infinite;
-  }
-
-  .beard-wisp {
-    animation: wispFlutter 0.3s ease-in-out infinite alternate;
-  }
-
-  @keyframes wispFlutter {
-    0%, 100% { transform: translateX(0) rotate(0deg); }
-    50% { transform: translateX(-4px) rotate(-5deg); }
-  }
-
-  /* === Sweat Drop === */
-  .sweat-drop {
-    animation: sweatFly 0.8s ease-in-out infinite;
-  }
-
-  @keyframes sweatFly {
-    0% { transform: translate(0, 0); opacity: 1; }
-    100% { transform: translate(-15px, -10px); opacity: 0; }
-  }
-
-  /* === Flying Shamrock === */
-  .flying-shamrock {
-    animation: shamrockFly 1.2s ease-in-out infinite;
-  }
-
-  @keyframes shamrockFly {
-    0% { transform: translate(0, 0) rotate(0deg); opacity: 0.8; }
-    100% { transform: translate(-30px, -15px) rotate(-180deg); opacity: 0; }
-  }
-
-  /* === Dust Clouds === */
-  .dust-clouds {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-    z-index: 5;
-    animation: runnersScoot 8s ease-in-out infinite;
-  }
-
-  .dust {
-    position: absolute;
-    width: 20px;
-    height: 14px;
-    background: radial-gradient(ellipse, rgba(180, 160, 130, 0.6) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: dustPuff 0.5s ease-out infinite;
-  }
-
-  .d1 { left: -30px; bottom: 0; }
-  .d2 { left: -50px; bottom: 5px; animation-delay: 0.1s; }
-  .d3 { left: -70px; bottom: -2px; animation-delay: 0.2s; }
-  .d4 { left: -45px; bottom: 10px; animation-delay: 0.15s; width: 15px; height: 10px; }
-  .d5 { left: -65px; bottom: 8px; animation-delay: 0.25s; width: 18px; height: 12px; }
-
-  @keyframes dustPuff {
-    0% { opacity: 0.7; transform: scale(1) translateX(0); }
-    100% { opacity: 0; transform: scale(2.5) translateX(-20px); }
-  }
-
-  /* === Speed Streaks === */
-  .speed-streaks {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 4;
-    overflow: hidden;
-  }
-
-  .streak {
-    position: absolute;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-    animation: streakFly 0.6s linear infinite;
-  }
-
-  .sk1 { top: 30%; width: 80px; animation-delay: 0s; }
-  .sk2 { top: 45%; width: 60px; animation-delay: 0.15s; }
-  .sk3 { top: 55%; width: 100px; animation-delay: 0.3s; }
-  .sk4 { top: 35%; width: 50px; animation-delay: 0.08s; }
-  .sk5 { top: 65%; width: 70px; animation-delay: 0.22s; }
-  .sk6 { top: 25%; width: 90px; animation-delay: 0.38s; }
-  .sk7 { top: 50%; width: 55px; animation-delay: 0.12s; }
-  .sk8 { top: 40%; width: 75px; animation-delay: 0.28s; }
-
-  @keyframes streakFly {
-    0% { right: -100px; opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { right: 110%; opacity: 0; }
-  }
-
-  @media (max-width: 600px) {
-    .chase-scene { height: 180px; }
-    .runner-svg { width: 60px; height: 110px; }
+  @media (max-width: 480px) {
+    .heroes-scene { height: 140px; }
+    .hero-img { height: 85px; }
+    .heroes-lineup { gap: 0.5rem; }
+    .hero-label { font-size: 0.75rem; }
   }
 </style>
