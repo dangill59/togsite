@@ -1,0 +1,206 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ComicBurst from '../components/ComicBurst.astro';
+import Cityscape from '../components/Cityscape.astro';
+import SpeedLines from '../components/SpeedLines.astro';
+
+const products = [
+  { name: "TOG Tee", image: "/merch-black-t-shirt.png", price: "$25", desc: "Black tee with the growing THOSE ONE GUYS! and comic bursts." },
+  { name: "TOG Mug", image: "/merch-coffee-mug.png", price: "$15", desc: "Start your morning loud. Coffee tastes better with comic book energy." },
+  { name: "Enamel Pin", image: "/merch-enamel-pin.png", price: "$10", desc: "Slap it on your jacket, your bag, your soul. Collectible enamel pin." },
+  { name: "TOG Cap", image: "/merch-baseball-cap.png", price: "$20", desc: "Trucker cap with the retro starburst logo. Dad approved." },
+  { name: "Wristband", image: "/merch-sweatband-wristband.png", price: "$8", desc: "Rock hard. Sweat harder. Wristband for the committed fan." },
+  { name: "Headband", image: "/merch-headband.png", price: "$10", desc: "TOG headband. Keep the sweat out and the groove in." },
+  { name: "Bandana", image: "/merch-bandana.png", price: "$12", desc: "Comic burst bandana. Wear it, wave it, hang it on the wall." },
+  { name: "Squad Pin", image: "/merch-squad-pin.png", price: "$10", desc: "TOG Squad enamel pin. Prove you're in the squad." },
+  { name: "Squad Headband", image: "/merch-squad-headband.png", price: "$12", desc: "TOG Squad headband. Retro 70s vibes with the brown and orange stripes." },
+  { name: "Squad Bandana", image: "/merch-squad-bandana.png", price: "$12", desc: "TOG Squad bandana. Rep the squad at every show." },
+];
+---
+
+<BaseLayout title="Merch | Those One Guys">
+  <section class="merch-hero halftone">
+    <SpeedLines color="#fdf5e6" opacity={0.1} />
+    <Cityscape color="#1a0a05" opacity={0.25} />
+    <div class="merch-hero-inner">
+      <div class="burst-row">
+        <ComicBurst text="GRAB!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
+        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={18} />
+      </div>
+      <h1 class="page-hero-title comic-title">Merch</h1>
+      <div class="burst-row">
+        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="pow" size="sm" rotate={-8} />
+        <ComicBurst text="KERPOW!" bg="#1e90ff" shape="star" size="md" rotate={10} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="section-subtitle">Wear the noise. Rep the squad. Look incredibly cool doing it.</p>
+
+    <div class="merch-grid">
+      {products.map((product, i) => (
+        <div class="merch-card comic-panel">
+          <div class="merch-burst">
+            <ComicBurst
+              text={["BAM!", "POW!", "WHAM!", "CRASH!", "KERPOW!", "ZAP!", "BOOM!", "SMASH!", "YEAH!", "WHAP!"][i]}
+              bg={["#e8251b", "#ffe135", "#1e90ff", "#ff69b4", "#c0392b", "#1a8a7d", "#f5a623", "#6b2d5b", "#e8641b", "#1e90ff"][i]}
+              color={[1, 6].includes(i) ? "#5c3317" : "#fdf5e6"}
+              shape={["bang", "pow", "star", "jagged", "star", "zap", "pow", "bang", "star", "jagged"] [i] as "bang" | "pow" | "star" | "jagged" | "zap"}
+              size="sm"
+              rotate={[-10, 12, -8, 15, -12, 10, -15, 8, -10, 14][i]}
+            />
+          </div>
+          <div class="merch-img-wrap">
+            <img src={product.image} alt={product.name} class="merch-img" />
+          </div>
+          <h3 class="merch-name">{product.name}</h3>
+          <p class="merch-price">{product.price}</p>
+          <p class="merch-desc">{product.desc}</p>
+          <span class="merch-badge">Coming Soon</span>
+        </div>
+      ))}
+    </div>
+
+    <div class="merch-cta">
+      <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="md" rotate={-10} float />
+      <div class="merch-cta-text">
+        <h2 class="comic-title">Want First Dibs?</h2>
+        <p>TOG Hero Squad members get early access and exclusive merch drops. Join the squad.</p>
+        <a href="/fanclub" class="btn btn-primary">Join TOG Hero Squad</a>
+      </div>
+      <ComicBurst text="GUYS!" bg="#6b2d5b" shape="pow" size="md" rotate={8} float delay={200} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .merch-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--brown), var(--orange), var(--plum));
+    padding: 5rem 2rem;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .merch-hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .page-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .merch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .merch-card {
+    background: white;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s;
+  }
+
+  .merch-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .merch-burst {
+    position: absolute;
+    top: -15px;
+    right: -10px;
+    z-index: 5;
+  }
+
+  .merch-img-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .merch-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .merch-name {
+    font-family: var(--comic);
+    font-size: 1.4rem;
+    color: var(--brown);
+    letter-spacing: 2px;
+  }
+
+  .merch-price {
+    font-family: var(--comic);
+    font-size: 1.2rem;
+    color: var(--orange);
+    letter-spacing: 2px;
+    margin: 0.25rem 0;
+  }
+
+  .merch-desc {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-bottom: 1rem;
+    max-width: 250px;
+  }
+
+  .merch-badge {
+    font-family: var(--comic);
+    font-size: 0.8rem;
+    background: var(--brown);
+    color: var(--gold);
+    padding: 0.3rem 1rem;
+    border-radius: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .merch-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, var(--brown), var(--plum));
+    border: 4px solid var(--brown);
+    border-radius: 4px;
+    box-shadow: 6px 6px 0 var(--brown);
+    text-align: center;
+    flex-wrap: wrap;
+  }
+
+  .merch-cta-text {
+    max-width: 400px;
+  }
+
+  .merch-cta h2 {
+    color: var(--gold);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .merch-cta p {
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+  }
+</style>

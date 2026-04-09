@@ -29,11 +29,11 @@ export const POST: APIRoute = async ({ request }) => {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'gpt-image-1.5',
         prompt,
         n: 1,
         size: '1024x1024',
-        quality: 'standard',
+        quality: 'medium',
       }),
     });
 
@@ -43,12 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: data.error.message }), { status: 500 });
     }
 
-    const imageUrl = data.data[0].url;
-
-    // Download the image and return as base64 so we can store it
-    const imgRes = await fetch(imageUrl);
-    const imgBuffer = await imgRes.arrayBuffer();
-    const base64 = Buffer.from(imgBuffer).toString('base64');
+    const base64 = data.data[0].b64_json;
 
     return new Response(JSON.stringify({ image: `data:image/png;base64,${base64}` }), {
       status: 200,
