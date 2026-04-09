@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const allyVibe = memberStyle[favoriteMember] || memberStyle["Can't Pick - Love 'Em All"];
 
-  const prompt = `1970s Hanna-Barbera cartoon style superhero character, like Scooby-Doo or Josie and the Pussycats art style. A unique superhero rock band fan with a colorful cape and mask, striking a fun heroic pose. Their superpower is ${superpower} - show visual effects of this power around them. ${allyVibe}. Retro cartoon style, bold outlines, flat colors, white background, full body, single character, no text, no labels, no words.`;
+  const prompt = `Detailed comic book illustration style superhero character. A unique superhero rock band fan with a colorful cape and mask, striking a dynamic heroic pose. Their superpower is ${superpower} - show visual effects of this power around them. ${allyVibe}. Rich shading, detailed linework, dynamic pose, transparent background, full body, single character, no text, no labels, no words.`;
 
   try {
     const res = await fetch('https://api.openai.com/v1/images/generations', {
