@@ -84,8 +84,19 @@ import SpeedLines from '../components/SpeedLines.astro';
         </select>
         <input type="text" id="superpowerCustom" name="superpower" placeholder="Type your superpower..." style="display:none; margin-top: 0.5rem;" />
       </div>
+      <!-- Honeypot - hidden from humans, bots fill it -->
+      <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden;" aria-hidden="true">
+        <label for="website">Website</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <!-- Cloudflare Turnstile -->
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAC7u6cKnzwD0kImD" data-callback="onTurnstileSuccess" data-theme="dark"></div>
+
       <button type="submit" class="btn btn-primary">Get My Hero Card</button>
     </form>
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   </section>
 
   <!-- FAN CARD (hidden until signup) -->
@@ -476,6 +487,10 @@ import SpeedLines from '../components/SpeedLines.astro';
       },
     };
 
+    // === TURNSTILE ===
+    let turnstileToken: string | null = null;
+    (window as any).onTurnstileSuccess = (token: string) => { turnstileToken = token; };
+
     // === FORM LOGIC ===
     const form = document.getElementById('fanForm');
     const signupSection = document.getElementById('signup-section');
@@ -555,7 +570,7 @@ import SpeedLines from '../components/SpeedLines.astro';
       }
     }
 
-    async function generateHeroImage(name: string, superpower: string, favoriteMember: string): Promise<string | null> {
+    async function generateHeroImage(name: string, superpower: string, favoriteMember: string, email: string, signalCode: string): Promise<string | null> {
       const heroLoading = document.getElementById('heroLoading')!;
       const heroCanvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
       heroLoading.style.display = 'flex';
@@ -565,7 +580,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         const res = await fetch('/api/generate-hero', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, superpower, favoriteMember }),
+          body: JSON.stringify({ name, superpower, favoriteMember, email, signalCode, turnstileToken }),
         });
         const data = await res.json();
         heroLoading.style.display = 'none';
@@ -582,6 +597,16 @@ import SpeedLines from '../components/SpeedLines.astro';
     // === SIGNUP ===
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Honeypot check
+      const honeypot = (document.getElementById('website') as HTMLInputElement).value;
+      if (honeypot) return;
+
+      // Turnstile check
+      if (!turnstileToken) {
+        alert('Please complete the verification.');
+        return;
+      }
 
       const name = (document.getElementById('fanName') as HTMLInputElement).value.trim();
       const email = (document.getElementById('fanEmail') as HTMLInputElement).value.trim();
@@ -625,7 +650,7 @@ import SpeedLines from '../components/SpeedLines.astro';
       cardSection!.scrollIntoView({ behavior: 'smooth' });
 
       // Generate AI hero image in background
-      const heroImg = await generateHeroImage(name, power, favText);
+      const heroImg = await generateHeroImage(name, power, favText, email, signalCode);
       if (heroImg) {
         showCard(name, email, favText, power, signalCode, dateStr, heroImg);
       }
