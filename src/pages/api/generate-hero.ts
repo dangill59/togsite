@@ -3,11 +3,10 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ request }) => {
-  const { name, superpower, favoriteMember, email, signalCode, turnstileToken, website } = await request.json();
+  const { name, superpower, favoriteMember, email, signalCode, turnstileToken, website, selfie } = await request.json();
 
   // === PROTECTION 1: Honeypot ===
   if (website) {
-    // Bot filled the hidden field — silently return a fake success
     return new Response(JSON.stringify({ image: null }), { status: 200 });
   }
 
@@ -87,31 +86,64 @@ export const POST: APIRoute = async ({ request }) => {
 
   const allyVibe = memberStyle[favoriteMember] || memberStyle["Can't Pick - Love 'Em All"];
 
-  const prompt = `Detailed comic book illustration style superhero character. A unique superhero rock band fan with a colorful cape and mask, striking a dynamic heroic pose. Their superpower is ${superpower} - show visual effects of this power around them. ${allyVibe}. Rich shading, detailed linework, dynamic pose, transparent background, full body, single character, no text, no labels, no words.`;
-
   try {
-    const res = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-image-1.5',
-        prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'medium',
-      }),
-    });
+    let base64: string;
 
-    const data = await res.json();
+    if (selfie) {
+      // === With selfie: use image edit endpoint to create hero based on their face ===
+      const selfiePrompt = `Transform this person into a detailed comic book illustration style superhero character. Keep their facial features recognizable but stylize them in comic book art style. Give them a colorful superhero cape and mask, striking a dynamic heroic pose. Their superpower is ${superpower} - show visual effects of this power around them. ${allyVibe}. Rich shading, detailed linework, dynamic pose, transparent background, full body, single character, no text, no labels, no words.`;
 
-    if (data.error) {
-      return new Response(JSON.stringify({ error: data.error.message }), { status: 500 });
+      // Extract raw base64 from data URL
+      const selfieB64 = selfie.replace(/^data:image\/\w+;base64,/, '');
+      const selfieBuffer = Buffer.from(selfieB64, 'base64');
+      const selfieBlob = new Blob([selfieBuffer], { type: 'image/png' });
+
+      const formData = new FormData();
+      formData.append('model', 'gpt-image-1.5');
+      formData.append('image[]', selfieBlob, 'selfie.png');
+      formData.append('prompt', selfiePrompt);
+      formData.append('n', '1');
+      formData.append('size', '1024x1024');
+      formData.append('quality', 'medium');
+
+      const res = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        return new Response(JSON.stringify({ error: data.error.message }), { status: 500 });
+      }
+      base64 = data.data[0].b64_json;
+    } else {
+      // === Without selfie: generate from scratch ===
+      const prompt = `Detailed comic book illustration style superhero character. A unique superhero rock band fan with a colorful cape and mask, striking a dynamic heroic pose. Their superpower is ${superpower} - show visual effects of this power around them. ${allyVibe}. Rich shading, detailed linework, dynamic pose, transparent background, full body, single character, no text, no labels, no words.`;
+
+      const res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-image-1.5',
+          prompt,
+          n: 1,
+          size: '1024x1024',
+          quality: 'medium',
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        return new Response(JSON.stringify({ error: data.error.message }), { status: 500 });
+      }
+      base64 = data.data[0].b64_json;
     }
-
-    const base64 = data.data[0].b64_json;
 
     return new Response(JSON.stringify({ image: `data:image/png;base64,${base64}` }), {
       status: 200,

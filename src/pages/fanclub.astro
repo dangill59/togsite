@@ -84,6 +84,19 @@ import SpeedLines from '../components/SpeedLines.astro';
         </select>
         <input type="text" id="superpowerCustom" name="superpower" placeholder="Type your superpower..." style="display:none; margin-top: 0.5rem;" />
       </div>
+      <div class="form-group">
+        <label for="selfie">Your Selfie <span style="font-weight:normal;opacity:0.7;">(optional — makes your hero look like you!)</span></label>
+        <div class="selfie-upload" id="selfieUpload">
+          <input type="file" id="selfie" name="selfie" accept="image/*" capture="user" style="display:none;" />
+          <button type="button" class="btn btn-secondary selfie-btn" id="selfieBtn">Snap or Upload a Photo</button>
+          <div class="selfie-preview" id="selfiePreview" style="display:none;">
+            <img id="selfieImg" alt="Your selfie" />
+            <button type="button" class="selfie-remove" id="selfieRemove">x</button>
+          </div>
+          <p class="selfie-note">Your photo is used only to generate your hero card and is not stored.</p>
+        </div>
+      </div>
+
       <!-- Honeypot - hidden from humans, bots fill it -->
       <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden;" aria-hidden="true">
         <label for="website">Website</label>
@@ -176,7 +189,7 @@ import SpeedLines from '../components/SpeedLines.astro';
     </div>
 
     <div class="card-actions">
-      <button class="btn btn-secondary" id="screenshotBtn">Save Screenshot</button>
+      <button class="btn btn-secondary" id="downloadBtn">Download Card</button>
       <button class="btn btn-secondary" id="editBtn">Edit Profile</button>
       <button class="btn btn-danger" id="deleteBtn">Delete Profile</button>
     </div>
@@ -487,6 +500,49 @@ import SpeedLines from '../components/SpeedLines.astro';
       },
     };
 
+    // === SELFIE UPLOAD ===
+    let selfieBase64: string | null = null;
+    const selfieInput = document.getElementById('selfie') as HTMLInputElement;
+    const selfieBtn = document.getElementById('selfieBtn')!;
+    const selfiePreview = document.getElementById('selfiePreview')!;
+    const selfieImg = document.getElementById('selfieImg') as HTMLImageElement;
+    const selfieRemove = document.getElementById('selfieRemove')!;
+
+    selfieBtn.addEventListener('click', () => selfieInput.click());
+
+    selfieInput.addEventListener('change', () => {
+      const file = selfieInput.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Resize to max 512px to keep payload small
+          const maxSize = 512;
+          let w = img.width, h = img.height;
+          if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+          else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0, w, h);
+          selfieBase64 = canvas.toDataURL('image/png');
+          selfieImg.src = selfieBase64;
+          selfiePreview.style.display = 'flex';
+          selfieBtn.textContent = 'Change Photo';
+        };
+        img.src = e.target!.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    selfieRemove.addEventListener('click', () => {
+      selfieBase64 = null;
+      selfieInput.value = '';
+      selfiePreview.style.display = 'none';
+      selfieBtn.textContent = 'Snap or Upload a Photo';
+    });
+
     // === TURNSTILE ===
     let turnstileToken: string | null = null;
     (window as any).onTurnstileSuccess = (token: string) => { turnstileToken = token; };
@@ -570,7 +626,7 @@ import SpeedLines from '../components/SpeedLines.astro';
       }
     }
 
-    async function generateHeroImage(name: string, superpower: string, favoriteMember: string, email: string, signalCode: string): Promise<string | null> {
+    async function generateHeroImage(name: string, superpower: string, favoriteMember: string, email: string, signalCode: string, selfie?: string | null): Promise<string | null> {
       const heroLoading = document.getElementById('heroLoading')!;
       const heroCanvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
       heroLoading.style.display = 'flex';
@@ -580,7 +636,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         const res = await fetch('/api/generate-hero', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, superpower, favoriteMember, email, signalCode, turnstileToken }),
+          body: JSON.stringify({ name, superpower, favoriteMember, email, signalCode, turnstileToken, selfie: selfie || undefined }),
         });
         const data = await res.json();
         heroLoading.style.display = 'none';
@@ -650,7 +706,7 @@ import SpeedLines from '../components/SpeedLines.astro';
       cardSection!.scrollIntoView({ behavior: 'smooth' });
 
       // Generate AI hero image in background
-      const heroImg = await generateHeroImage(name, power, favText, email, signalCode);
+      const heroImg = await generateHeroImage(name, power, favText, email, signalCode, selfieBase64);
       if (heroImg) {
         showCard(name, email, favText, power, signalCode, dateStr, heroImg);
       }
@@ -691,8 +747,32 @@ import SpeedLines from '../components/SpeedLines.astro';
     }
 
     // === SCREENSHOT ===
-    document.getElementById('screenshotBtn')?.addEventListener('click', () => {
-      alert('Take a screenshot of your Hero Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
+    document.getElementById('downloadBtn')?.addEventListener('click', async () => {
+      const card = document.getElementById('fanCard')!;
+      const btn = document.getElementById('downloadBtn') as HTMLButtonElement;
+      btn.textContent = 'Generating...';
+      btn.disabled = true;
+      try {
+        const { default: html2canvas } = await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.esm.js');
+        const canvas = await html2canvas(card, { backgroundColor: null, scale: 2, useCORS: true });
+        const link = document.createElement('a');
+        link.download = 'tog-hero-card.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (err) {
+        // Fallback: if html2canvas fails, try using the hero image directly
+        const heroImg = document.getElementById('heroImage') as HTMLImageElement;
+        if (heroImg && heroImg.src && heroImg.src.startsWith('data:')) {
+          const link = document.createElement('a');
+          link.download = 'tog-hero-card.png';
+          link.href = heroImg.src;
+          link.click();
+        } else {
+          alert('Take a screenshot of your Hero Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
+        }
+      }
+      btn.textContent = 'Download Card';
+      btn.disabled = false;
     });
 
     // === EDIT PROFILE ===
@@ -855,6 +935,50 @@ import SpeedLines from '../components/SpeedLines.astro';
     outline: none;
     border-color: var(--orange);
     box-shadow: 4px 4px 0 var(--orange);
+  }
+
+  /* === Selfie Upload === */
+  .selfie-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .selfie-btn {
+    width: 100%;
+  }
+  .selfie-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .selfie-preview img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--orange);
+  }
+  .selfie-remove {
+    background: var(--dark);
+    color: var(--cream);
+    border: 2px solid var(--brown);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .selfie-remove:hover {
+    background: #e8251b;
+  }
+  .selfie-note {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    margin: 0;
   }
 
   /* === Hero Card === */
