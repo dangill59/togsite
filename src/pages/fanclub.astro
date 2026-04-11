@@ -109,6 +109,21 @@ import SpeedLines from '../components/SpeedLines.astro';
       <button type="submit" class="btn btn-primary">Get My Hero Card</button>
     </form>
 
+    <div class="already-member" id="alreadyMemberToggle">
+      <p>Already a member? <button class="link-btn" id="showLoginBtn">Log in with your email</button></p>
+    </div>
+
+    <div class="login-form comic-panel" id="loginForm" style="display:none;">
+      <h3 class="comic-title">Welcome Back, Hero!</h3>
+      <p>Enter your email to load your card.</p>
+      <div class="form-group">
+        <input type="email" id="loginEmail" placeholder="your@email.com" required />
+      </div>
+      <button class="btn btn-primary" id="loginBtn">Find My Card</button>
+      <button class="link-btn" id="backToSignupBtn">Back to sign up</button>
+      <p class="login-status" id="loginStatus" style="display:none;"></p>
+    </div>
+
     <script is:inline>
       // Must be global BEFORE Turnstile script loads
       window.onTurnstileSuccess = function(token) { window.__turnstileToken = token; };
@@ -680,20 +695,33 @@ import SpeedLines from '../components/SpeedLines.astro';
       submitBtn.textContent = 'Sending...';
       submitBtn.disabled = true;
 
+      // Check if this email already exists
+      const existing = await db.select(email);
+      if (existing && !localStorage.getItem('tog-fan')) {
+        // Existing member trying to sign up again — load their card instead
+        const dateStr = new Date(existing.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        showCard(existing.name, email, existing.favorite_member, existing.superpower || 'Mystery Power', existing.signal_code, dateStr);
+        cardSection!.scrollIntoView({ behavior: 'smooth' });
+        submitBtn.textContent = 'Get My Hero Card';
+        submitBtn.disabled = false;
+        // Generate fresh hero image
+        const heroImg = await generateHeroImage(existing.name, existing.superpower || 'Mystery Power', existing.favorite_member, email, existing.signal_code, selfieBase64);
+        if (heroImg) {
+          showCard(existing.name, email, existing.favorite_member, existing.superpower || 'Mystery Power', existing.signal_code, dateStr, heroImg);
+        }
+        return;
+      }
+
       const hash = makeHash(name, email);
       const signalCode = makeSignalCode(hash);
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-
-      // Check if fan exists (editing)
-      const existing = await db.select(email);
 
       if (existing) {
         await db.update(email, { name, favorite_member: favText, superpower: power, signal_code: signalCode });
       } else {
         const res = await db.insert({ name, email, favorite_member: favText, superpower: power, signal_code: signalCode });
         if (!res.ok) {
-          // Duplicate email - treat as update
           await db.update(email, { name, favorite_member: favText, superpower: power, signal_code: signalCode });
         }
       }
@@ -719,6 +747,56 @@ import SpeedLines from '../components/SpeedLines.astro';
 
       submitBtn.textContent = 'Get My Hero Card';
       submitBtn.disabled = false;
+    });
+
+    // === LOGIN FLOW ===
+    const loginForm = document.getElementById('loginForm')!;
+    const signupForm = document.getElementById('fanForm')!;
+    const alreadyToggle = document.getElementById('alreadyMemberToggle')!;
+
+    document.getElementById('showLoginBtn')?.addEventListener('click', () => {
+      signupForm.style.display = 'none';
+      alreadyToggle.style.display = 'none';
+      loginForm.style.display = 'block';
+    });
+
+    document.getElementById('backToSignupBtn')?.addEventListener('click', () => {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+      alreadyToggle.style.display = 'block';
+    });
+
+    document.getElementById('loginBtn')?.addEventListener('click', async () => {
+      const loginEmail = (document.getElementById('loginEmail') as HTMLInputElement).value.trim();
+      const loginStatus = document.getElementById('loginStatus')!;
+      const loginBtn = document.getElementById('loginBtn') as HTMLButtonElement;
+
+      if (!loginEmail) return;
+
+      loginBtn.textContent = 'Searching...';
+      loginBtn.disabled = true;
+      loginStatus.style.display = 'none';
+
+      const fan = await db.select(loginEmail);
+
+      if (fan) {
+        const dateStr = new Date(fan.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        showCard(fan.name, loginEmail, fan.favorite_member, fan.superpower || 'Mystery Power', fan.signal_code, dateStr);
+        cardSection!.scrollIntoView({ behavior: 'smooth' });
+
+        // Generate fresh hero image
+        const heroImg = await generateHeroImage(fan.name, fan.superpower || 'Mystery Power', fan.favorite_member, loginEmail, fan.signal_code);
+        if (heroImg) {
+          showCard(fan.name, loginEmail, fan.favorite_member, fan.superpower || 'Mystery Power', fan.signal_code, dateStr, heroImg);
+        }
+      } else {
+        loginStatus.textContent = "No hero found with that email. Sign up below!";
+        loginStatus.style.display = 'block';
+        loginStatus.style.color = '#e8251b';
+      }
+
+      loginBtn.textContent = 'Find My Card';
+      loginBtn.disabled = false;
     });
 
     // === CHECK IF ALREADY SIGNED UP (localStorage first, then verify with DB) ===
@@ -941,6 +1019,59 @@ import SpeedLines from '../components/SpeedLines.astro';
     outline: none;
     border-color: var(--orange);
     box-shadow: 4px 4px 0 var(--orange);
+  }
+
+  /* === Already Member / Login === */
+  .already-member {
+    text-align: center;
+    margin-top: 1rem;
+    opacity: 0.8;
+  }
+
+  .link-btn {
+    background: none;
+    border: none;
+    color: var(--orange);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+  }
+
+  .link-btn:hover {
+    color: var(--brown);
+  }
+
+  .login-form {
+    max-width: 400px;
+    margin: 1rem auto 0;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .login-form h3 {
+    color: var(--brown);
+    margin-bottom: 0.5rem;
+  }
+
+  .login-form p {
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
+
+  .login-form .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .login-form .link-btn {
+    display: block;
+    margin: 1rem auto 0;
+  }
+
+  .login-status {
+    margin-top: 1rem;
+    font-weight: bold;
   }
 
   /* === Selfie Upload === */
