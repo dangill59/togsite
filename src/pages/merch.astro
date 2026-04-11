@@ -381,14 +381,27 @@ const products = [
   });
 
   // Save mockup download
-  document.getElementById('saveMockupBtn')?.addEventListener('click', () => {
+  document.getElementById('saveMockupBtn')?.addEventListener('click', async () => {
     const mockupImg = document.getElementById('mockupImage') as HTMLImageElement;
-    if (mockupImg && mockupImg.src) {
+    if (!mockupImg || !mockupImg.src) return;
+    const btn = document.getElementById('saveMockupBtn') as HTMLButtonElement;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+    try {
+      const res = await fetch(mockupImg.src);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = `tog-custom-${currentProduct}-v${currentVar + 1}.png`;
-      link.href = mockupImg.src;
+      link.href = blobUrl;
       link.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      // Fallback: open in new tab
+      window.open(mockupImg.src, '_blank');
     }
+    btn.textContent = 'Save Mockup';
+    btn.disabled = false;
   });
 
   // Coming soon button
