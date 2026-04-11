@@ -145,7 +145,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         <div class="card-topbar">
           <img src="/logo-nav.png" alt="TOG" class="card-logo" />
           <div class="card-title-block">
-            <span class="card-band comic-title">THOSE ONE GUYS</span>
+            <span class="card-band">THOSE ONE GUYS</span>
             <span class="card-label">OFFICIAL TOG HERO SQUAD ID</span>
           </div>
         </div>
@@ -1234,8 +1234,10 @@ import SpeedLines from '../components/SpeedLines.astro';
     line-height: 1;
   }
 
-  .card-band {
+  .fan-card .card-band {
+    font-family: var(--comic), sans-serif;
     font-size: 0.85rem !important;
+    font-style: normal !important;
     letter-spacing: 2px;
     color: var(--gold);
     text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
