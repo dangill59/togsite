@@ -203,6 +203,7 @@ import SpeedLines from '../components/SpeedLines.astro';
 
     <div class="card-actions">
       <button class="btn btn-secondary" id="downloadBtn">Download Card</button>
+      <button class="btn btn-secondary" id="wallpaperBtn" style="display:none;">Download Wallpaper</button>
       <button class="btn btn-secondary" id="editBtn">Edit Profile</button>
       <button class="btn btn-danger" id="deleteBtn">Delete Profile</button>
     </div>
@@ -630,13 +631,16 @@ import SpeedLines from '../components/SpeedLines.astro';
       // Show AI image if available
       const heroImage = document.getElementById('heroImage') as HTMLImageElement;
       const heroCanvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
+      const wallpaperBtn = document.getElementById('wallpaperBtn') as HTMLButtonElement;
       if (heroImg) {
         heroImage.src = heroImg;
         heroImage.style.display = 'block';
         heroCanvas.style.display = 'none';
+        if (wallpaperBtn) wallpaperBtn.style.display = '';
       } else {
         heroImage.style.display = 'none';
         heroCanvas.style.display = 'block';
+        if (wallpaperBtn) wallpaperBtn.style.display = 'none';
       }
     }
 
@@ -851,6 +855,71 @@ import SpeedLines from '../components/SpeedLines.astro';
       }
       btn.textContent = 'Download Card';
       btn.disabled = false;
+    });
+
+    // === WALLPAPER DOWNLOAD ===
+    document.getElementById('wallpaperBtn')?.addEventListener('click', () => {
+      const heroImg = document.getElementById('heroImage') as HTMLImageElement;
+      if (!heroImg || !heroImg.src || !heroImg.src.startsWith('data:')) return;
+
+      const W = 1080, H = 1920;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d')!;
+
+      // Background gradient matching the site palette
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#1a0a05');
+      grad.addColorStop(0.4, '#5c3317');
+      grad.addColorStop(0.7, '#2a1510');
+      grad.addColorStop(1, '#6b2d5b');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Halftone dots
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      for (let y = 0; y < H; y += 12) {
+        for (let x = 0; x < W; x += 12) {
+          ctx.beginPath();
+          ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Draw hero image centered
+      const img = new Image();
+      img.onload = () => {
+        const heroSize = Math.min(W * 0.85, 900);
+        const hx = (W - heroSize) / 2;
+        const hy = (H - heroSize) / 2 - 60;
+        ctx.drawImage(img, hx, hy, heroSize, heroSize);
+
+        // Name at bottom
+        const saved = localStorage.getItem('tog-fan');
+        if (saved) {
+          try {
+            const data = JSON.parse(saved);
+            ctx.font = 'bold 48px Impact, sans-serif';
+            ctx.fillStyle = '#f5a623';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 8;
+            ctx.fillText(data.name?.toUpperCase() || '', W / 2, H - 200);
+
+            ctx.font = '24px Impact, sans-serif';
+            ctx.fillStyle = '#fdf5e6';
+            ctx.shadowBlur = 4;
+            ctx.fillText('TOG HERO SQUAD', W / 2, H - 150);
+            ctx.shadowBlur = 0;
+          } catch (e) {}
+        }
+
+        const link = document.createElement('a');
+        link.download = 'tog-hero-wallpaper.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      };
+      img.src = heroImg.src;
     });
 
     // === EDIT PROFILE ===
