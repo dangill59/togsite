@@ -100,8 +100,12 @@ const products = [
         </div>
 
         <div class="custom-mockup comic-panel" id="customMockup">
-          <canvas id="mockupCanvas" width="500" height="500"></canvas>
-          <p class="mockup-label">Your Custom Merch Preview</p>
+          <div class="mockup-loading" id="mockupLoading" style="display:none;">
+            <div class="mockup-spinner"></div>
+            <span>Generating your custom mockup...</span>
+          </div>
+          <img id="mockupImage" class="mockup-image" style="display:none;" alt="Your Custom Merch" />
+          <p class="mockup-label">Click a product to generate your custom preview</p>
         </div>
 
         <button class="btn btn-primary custom-order-btn" id="customOrderBtn">
@@ -123,60 +127,51 @@ const products = [
 </BaseLayout>
 
 <script>
-  // Product mockup configs: where to place the hero on each product
-  const productConfigs: Record<string, { img: string; heroX: number; heroY: number; heroW: number; heroH: number; bgColor?: string }> = {
-    tee:  { img: '/merch-black-t-shirt.png', heroX: 150, heroY: 120, heroW: 200, heroH: 200 },
-    mug:  { img: '/merch-coffee-mug.png',    heroX: 120, heroY: 130, heroW: 180, heroH: 180 },
-    pin:  { img: '/merch-enamel-pin.png',    heroX: 160, heroY: 140, heroW: 180, heroH: 180 },
-    cap:  { img: '/merch-baseball-cap.png',  heroX: 145, heroY: 80,  heroW: 190, heroH: 190 },
-  };
-
-  let currentProduct = 'tee';
   let heroImageSrc: string | null = null;
+  let heroName: string = '';
+  const mockupCache: Record<string, string> = {};
 
-  function renderMockup() {
-    const canvas = document.getElementById('mockupCanvas') as HTMLCanvasElement;
-    if (!canvas || !heroImageSrc) return;
-    const ctx = canvas.getContext('2d')!;
-    const config = productConfigs[currentProduct];
+  async function generateMockup(product: string) {
+    const loading = document.getElementById('mockupLoading')!;
+    const mockupImg = document.getElementById('mockupImage') as HTMLImageElement;
+    const label = document.querySelector('.mockup-label') as HTMLElement;
 
-    // Clear
-    ctx.clearRect(0, 0, 500, 500);
+    // Check cache first
+    if (mockupCache[product]) {
+      mockupImg.src = mockupCache[product];
+      mockupImg.style.display = 'block';
+      loading.style.display = 'none';
+      label.textContent = `${heroName.toUpperCase()}'s Custom ${product.charAt(0).toUpperCase() + product.slice(1)}`;
+      return;
+    }
 
-    // Light background
-    ctx.fillStyle = '#f8f8f8';
-    ctx.fillRect(0, 0, 500, 500);
+    loading.style.display = 'flex';
+    mockupImg.style.display = 'none';
+    label.textContent = 'Generating your custom mockup...';
 
-    // Load product image, then hero on top
-    const productImg = new Image();
-    productImg.crossOrigin = 'anonymous';
-    productImg.onload = () => {
-      // Draw product centered
-      ctx.drawImage(productImg, 0, 0, 500, 500);
+    try {
+      const res = await fetch('/api/generate-mockup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heroImage: heroImageSrc, product, heroName }),
+      });
+      const data = await res.json();
 
-      // Draw hero on the product
-      const hero = new Image();
-      hero.onload = () => {
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(hero, config.heroX, config.heroY, config.heroW, config.heroH);
-        ctx.globalAlpha = 1.0;
+      if (data.image) {
+        mockupCache[product] = data.image;
+        mockupImg.src = data.image;
+        mockupImg.style.display = 'block';
+        label.textContent = `${heroName.toUpperCase()}'s Custom ${product.charAt(0).toUpperCase() + product.slice(1)}`;
+      } else {
+        label.textContent = 'Generation failed — try again';
+        console.error('Mockup error:', data.error);
+      }
+    } catch (err) {
+      label.textContent = 'Generation failed — try again';
+      console.error('Mockup error:', err);
+    }
 
-        // Name label at bottom
-        const saved = localStorage.getItem('tog-fan');
-        if (saved) {
-          try {
-            const data = JSON.parse(saved);
-            ctx.font = 'bold 18px Impact, sans-serif';
-            ctx.fillStyle = '#5c3317';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${(data.name || '').toUpperCase()}'S CUSTOM ${currentProduct.toUpperCase()}`, 250, 480);
-            ctx.textAlign = 'left';
-          } catch (e) {}
-        }
-      };
-      hero.src = heroImageSrc!;
-    };
-    productImg.src = config.img;
+    loading.style.display = 'none';
   }
 
   // Check if user is a TOG Squad member
@@ -191,18 +186,18 @@ const products = [
         notMember.style.display = 'none';
         builder.style.display = 'block';
         heroImageSrc = data.heroImage;
-        renderMockup();
+        heroName = data.name || 'Hero';
       }
     } catch (e) {}
   }
 
-  // Product selection
+  // Product selection — generate mockup on click
   document.querySelectorAll('.custom-product-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.custom-product-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      currentProduct = (btn as HTMLElement).dataset.product!;
-      renderMockup();
+      const product = (btn as HTMLElement).dataset.product!;
+      generateMockup(product);
     });
   });
 
@@ -407,13 +402,42 @@ const products = [
     max-width: 520px;
     width: 100%;
     margin: 0 auto;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
-  .custom-mockup canvas {
+  .mockup-image {
     width: 100%;
     max-width: 480px;
-    height: auto;
     border-radius: 8px;
+  }
+
+  .mockup-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: var(--brown);
+    font-family: var(--comic);
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+  }
+
+  .mockup-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(92,51,23,0.2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: mockupSpin 0.8s linear infinite;
+  }
+
+  @keyframes mockupSpin {
+    to { transform: rotate(360deg); }
   }
 
   .mockup-label {
