@@ -140,19 +140,31 @@ const products = [
 <script>
   let heroImageSrc: string | null = null;
   let heroName: string = '';
+  let fanEmail: string = '';
   let currentProduct: string = '';
   let currentVar: number = 0;
   const MAX_VARS = 3;
 
-  // Mockups stored in memory (localStorage is too small for multiple base64 images)
+  // In-memory cache, loaded from Supabase on init
   const mockupCache: Record<string, string[]> = {};
 
   function getSavedMockups(): Record<string, string[]> {
     return mockupCache;
   }
 
-  function saveAllMockups(mockups: Record<string, string[]>) {
-    // Already in memory via mockupCache reference — nothing extra needed
+  // Load saved mockups from Supabase
+  async function loadMockupsFromDB() {
+    if (!fanEmail) return;
+    try {
+      const res = await fetch(`/api/generate-mockup?email=${encodeURIComponent(fanEmail)}`);
+      const data = await res.json();
+      for (const [product, urls] of Object.entries(data)) {
+        if (Array.isArray(urls)) mockupCache[product] = urls as string[];
+      }
+      updateProductBadges();
+    } catch (e) {
+      console.warn('Could not load saved mockups:', e);
+    }
   }
 
   function getProductMockups(product: string): string[] {
@@ -288,16 +300,14 @@ const products = [
       const res = await fetch('/api/generate-mockup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ heroImage: hero, product, heroName }),
+        body: JSON.stringify({ heroImage: hero, product, heroName, email: fanEmail }),
       });
       clearInterval(timer);
       const data = await res.json();
 
       if (data.image) {
-        const mockups = getSavedMockups();
-        if (!mockups[product]) mockups[product] = [];
-        mockups[product].push(data.image);
-        saveAllMockups(mockups);
+        if (!mockupCache[product]) mockupCache[product] = [];
+        mockupCache[product].push(data.image);
         currentProduct = product;
         currentVar = mockups[product].length - 1;
         showMockup(product, currentVar);
@@ -338,7 +348,9 @@ const products = [
         builder.style.display = 'block';
         heroImageSrc = data.heroImage;
         heroName = data.name || 'Hero';
-        updateProductBadges();
+        fanEmail = data.email || '';
+        // Load saved mockups from Supabase
+        loadMockupsFromDB();
       }
     } catch (e) {}
   }
