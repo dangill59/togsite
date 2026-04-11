@@ -32,6 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
     const heroBuffer = Buffer.from(heroB64, 'base64');
     const heroBlob = new Blob([heroBuffer], { type: 'image/png' });
 
+    // Resize hero image to reduce payload — cap at 512x512
     const formData = new FormData();
     formData.append('model', 'gpt-image-1.5');
     formData.append('image[]', heroBlob, 'hero.png');
@@ -40,15 +41,26 @@ export const POST: APIRoute = async ({ request }) => {
     formData.append('size', '1024x1024');
     formData.append('quality', 'medium');
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
+
     const res = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}` },
       body: formData,
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     const data = await res.json();
     if (data.error) {
+      console.error('OpenAI mockup error:', JSON.stringify(data.error));
       return new Response(JSON.stringify({ error: data.error.message }), { status: 500 });
+    }
+
+    if (!data.data || !data.data[0]) {
+      console.error('OpenAI mockup unexpected response:', JSON.stringify(data));
+      return new Response(JSON.stringify({ error: 'Unexpected API response' }), { status: 500 });
     }
 
     const base64 = data.data[0].b64_json;
@@ -57,6 +69,7 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    console.error('Mockup generation error:', err.message);
+    return new Response(JSON.stringify({ error: err.name === 'AbortError' ? 'Request timed out' : err.message }), { status: 500 });
   }
 };
