@@ -152,7 +152,25 @@ const products = [
   }
 
   function saveAllMockups(mockups: Record<string, string[]>) {
-    localStorage.setItem('tog-mockups', JSON.stringify(mockups));
+    try {
+      localStorage.setItem('tog-mockups', JSON.stringify(mockups));
+    } catch (e) {
+      // localStorage full — clear oldest mockups to make room
+      console.warn('localStorage full, clearing old mockups');
+      const keys = Object.keys(mockups);
+      if (keys.length > 1) {
+        // Keep only current product's mockups
+        const current = mockups[keys[keys.length - 1]];
+        const trimmed: Record<string, string[]> = {};
+        trimmed[keys[keys.length - 1]] = current;
+        try {
+          localStorage.setItem('tog-mockups', JSON.stringify(trimmed));
+        } catch (e2) {
+          // Still too big — just don't persist
+          console.warn('Cannot save mockups to localStorage');
+        }
+      }
+    }
   }
 
   function getProductMockups(product: string): string[] {
@@ -271,11 +289,12 @@ const products = [
         showMockup(product, currentVar);
       } else {
         loading.style.display = 'none';
-        label.textContent = 'Generation failed — try again';
+        label.textContent = `Failed: ${data.error || 'Unknown error'} — try again`;
       }
-    } catch (err) {
+    } catch (err: any) {
       loading.style.display = 'none';
-      label.textContent = 'Generation failed — try again';
+      label.textContent = `Failed: ${err.message || 'Network error'} — try again`;
+      console.error('Mockup error:', err);
     }
   }
 
