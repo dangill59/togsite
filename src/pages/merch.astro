@@ -309,7 +309,7 @@ const products = [
         if (!mockupCache[product]) mockupCache[product] = [];
         mockupCache[product].push(data.image);
         currentProduct = product;
-        currentVar = mockups[product].length - 1;
+        currentVar = mockupCache[product].length - 1;
         showMockup(product, currentVar);
       } else {
         loading.style.display = 'none';
