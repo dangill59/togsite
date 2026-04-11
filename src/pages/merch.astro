@@ -4,18 +4,10 @@ import ComicBurst from '../components/ComicBurst.astro';
 import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
 
-const products = [
-  { name: "TOG Tee", image: "/merch-black-t-shirt.png", price: "$25", desc: "Black tee with the growing THOSE ONE GUYS! and comic bursts." },
-  { name: "TOG Mug", image: "/merch-coffee-mug.png", price: "$15", desc: "Start your morning loud. Coffee tastes better with comic book energy." },
-  { name: "Enamel Pin", image: "/merch-enamel-pin.png", price: "$10", desc: "Slap it on your jacket, your bag, your soul. Collectible enamel pin." },
-  { name: "TOG Cap", image: "/merch-baseball-cap.png", price: "$20", desc: "Trucker cap with the retro starburst logo. Dad approved." },
-  { name: "Wristband", image: "/merch-sweatband-wristband.png", price: "$8", desc: "Rock hard. Sweat harder. Wristband for the committed fan." },
-  { name: "Headband", image: "/merch-headband.png", price: "$10", desc: "TOG headband. Keep the sweat out and the groove in." },
-  { name: "Bandana", image: "/merch-bandana.png", price: "$12", desc: "Comic burst bandana. Wear it, wave it, hang it on the wall." },
-  { name: "Squad Pin", image: "/merch-squad-pin.png", price: "$10", desc: "TOG Squad enamel pin. Prove you're in the squad." },
-  { name: "Squad Headband", image: "/merch-squad-headband.png", price: "$12", desc: "TOG Squad headband. Retro 70s vibes with the brown and orange stripes." },
-  { name: "Squad Bandana", image: "/merch-squad-bandana.png", price: "$12", desc: "TOG Squad bandana. Rep the squad at every show." },
-];
+import { products as allProducts, formatPrice } from '../lib/products';
+
+const slugs = ['tog-tee', 'tog-mug', 'enamel-pin', 'tog-cap', 'wristband', 'headband', 'bandana', 'squad-pin', 'squad-headband', 'squad-bandana'];
+const products = slugs.map(s => allProducts.find(p => p.slug === s)!);
 ---
 
 <BaseLayout title="Merch | Those One Guys">
@@ -55,9 +47,16 @@ const products = [
             <img src={product.image} alt={product.name} class="merch-img" />
           </div>
           <h3 class="merch-name">{product.name}</h3>
-          <p class="merch-price">{product.price}</p>
-          <p class="merch-desc">{product.desc}</p>
-          <span class="merch-badge">Coming Soon</span>
+          <p class="merch-price">{formatPrice(product.priceCents)}</p>
+          <p class="merch-desc">{product.description}</p>
+          {product.sizes && (
+            <select class="merch-size-select" data-slug={product.slug}>
+              {product.sizes.map(s => <option value={s}>{s}</option>)}
+            </select>
+          )}
+          <button class="merch-buy-btn btn btn-primary" data-slug={product.slug}>
+            Buy — {formatPrice(product.priceCents)}
+          </button>
         </div>
       ))}
     </div>
@@ -118,7 +117,7 @@ const products = [
           <button class="btn btn-secondary" id="saveMockupBtn" style="display:none;">Save Mockup</button>
           <button class="btn btn-secondary" id="newVariationBtn" style="display:none;">New Variation</button>
           <button class="btn btn-primary custom-order-btn" id="customOrderBtn">
-            Request Custom Order — Coming Soon
+            Order This Design
           </button>
         </div>
         <p class="mockup-slots" id="mockupSlots" style="display:none;"></p>
@@ -404,10 +403,78 @@ const products = [
     btn.disabled = false;
   });
 
-  // Coming soon button
-  document.getElementById('customOrderBtn')?.addEventListener('click', () => {
-    alert('Custom hero merch is coming soon! We\u2019ll notify TOG Squad members when it launches.');
+  // Custom hero order
+  document.getElementById('customOrderBtn')?.addEventListener('click', async () => {
+    const variations = getSavedMockups()[currentProduct];
+    if (!variations || variations.length === 0 || !fanEmail) {
+      alert('Generate a mockup first!');
+      return;
+    }
+    const mockupUrl = variations[currentVar];
+    const slug = `custom-hero-${currentProduct}`;
+    const btn = document.getElementById('customOrderBtn') as HTMLButtonElement;
+    btn.textContent = 'Redirecting to checkout...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: [{ slug, qty: 1, mockupUrl }], email: fanEmail }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert(data.error || 'Checkout failed');
+    } catch (e) { alert('Checkout failed — try again'); }
+    btn.textContent = 'Order This Design';
+    btn.disabled = false;
   });
+
+  // === Standard product buy buttons ===
+  document.querySelectorAll('.merch-buy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const slug = (btn as HTMLElement).dataset.slug!;
+      const card = btn.closest('.merch-card')!;
+      const sizeSelect = card.querySelector('.merch-size-select') as HTMLSelectElement | null;
+      const size = sizeSelect?.value || null;
+
+      // Get fan email from localStorage
+      let email = '';
+      const fanData = localStorage.getItem('tog-fan');
+      if (fanData) {
+        try { email = JSON.parse(fanData).email || ''; } catch {}
+      }
+      if (!email) {
+        email = prompt('Enter your email for order confirmation:') || '';
+        if (!email) return;
+      }
+
+      const b = btn as HTMLButtonElement;
+      b.textContent = 'Redirecting...';
+      b.disabled = true;
+      try {
+        const res = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: [{ slug, qty: 1, size }], email }),
+        });
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else alert(data.error || 'Checkout failed');
+      } catch (e) { alert('Checkout failed — try again'); }
+      b.textContent = 'Buy';
+      b.disabled = false;
+    });
+  });
+
+  // === Order status from URL ===
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('order') === 'success') {
+    alert('Order placed! You\'ll receive a confirmation email shortly.');
+    window.history.replaceState({}, '', '/merch');
+  } else if (urlParams.get('order') === 'cancelled') {
+    alert('Order cancelled. No charge was made.');
+    window.history.replaceState({}, '', '/merch');
+  }
 </script>
 
 <style>
@@ -499,15 +566,24 @@ const products = [
     max-width: 250px;
   }
 
-  .merch-badge {
+  .merch-size-select {
+    width: 100%;
+    max-width: 120px;
+    padding: 0.4rem;
+    border: 2px solid var(--brown);
+    border-radius: 4px;
     font-family: var(--comic);
     font-size: 0.8rem;
-    background: var(--brown);
-    color: var(--gold);
-    padding: 0.3rem 1rem;
-    border-radius: 4px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    background: white;
+    color: var(--brown);
+  }
+
+  .merch-buy-btn {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
   }
 
   /* === Custom Hero Merch === */
