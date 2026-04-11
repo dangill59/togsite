@@ -62,6 +62,60 @@ const products = [
       ))}
     </div>
 
+    <!-- Custom Hero Merch Section -->
+    <div class="custom-hero-section" id="customHeroSection">
+      <div class="custom-hero-header">
+        <ComicBurst text="YOUR!" bg="#e8251b" shape="bang" size="md" rotate={-10} />
+        <h2 class="comic-title section-title">Custom Hero Merch</h2>
+        <ComicBurst text="HERO!" bg="#1a8a7d" shape="star" size="md" rotate={12} />
+      </div>
+      <p class="section-subtitle">TOG Squad members — put YOUR superhero on a tee, mug, or pin. Your hero, your merch.</p>
+
+      <div id="customNotMember" class="custom-not-member">
+        <p>You need a Hero Card to create custom merch.</p>
+        <a href="/fanclub" class="btn btn-primary">Join TOG Hero Squad</a>
+      </div>
+
+      <div id="customBuilder" class="custom-builder" style="display:none;">
+        <div class="custom-preview-area">
+          <div class="custom-hero-display">
+            <img id="customHeroImg" alt="Your Hero" class="custom-hero-img" />
+            <p class="custom-hero-name" id="customHeroName"></p>
+          </div>
+
+          <div class="custom-product-select">
+            <h3 class="comic-title">Pick Your Product</h3>
+            <div class="custom-product-options">
+              <button class="custom-product-btn active" data-product="tee" data-bg="/merch-black-t-shirt.png">
+                <img src="/merch-black-t-shirt.png" alt="Tee" />
+                <span>Tee — $30</span>
+              </button>
+              <button class="custom-product-btn" data-product="mug" data-bg="/merch-coffee-mug.png">
+                <img src="/merch-coffee-mug.png" alt="Mug" />
+                <span>Mug — $18</span>
+              </button>
+              <button class="custom-product-btn" data-product="pin" data-bg="/merch-enamel-pin.png">
+                <img src="/merch-enamel-pin.png" alt="Pin" />
+                <span>Pin — $12</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="custom-mockup comic-panel" id="customMockup">
+          <div class="mockup-canvas" id="mockupCanvas">
+            <img id="mockupProduct" class="mockup-product-img" alt="Product" src="/merch-black-t-shirt.png" />
+            <img id="mockupHero" class="mockup-hero-overlay" alt="Your Hero" />
+          </div>
+          <p class="mockup-label">Preview</p>
+        </div>
+
+        <button class="btn btn-primary custom-order-btn" id="customOrderBtn">
+          Request Custom Order — Coming Soon
+        </button>
+      </div>
+    </div>
+
     <div class="merch-cta">
       <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="md" rotate={-10} float />
       <div class="merch-cta-text">
@@ -73,6 +127,45 @@ const products = [
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  // Check if user is a TOG Squad member (has hero card in localStorage)
+  const saved = localStorage.getItem('tog-fan');
+  const notMember = document.getElementById('customNotMember')!;
+  const builder = document.getElementById('customBuilder')!;
+  const heroImg = document.getElementById('customHeroImg') as HTMLImageElement;
+  const heroName = document.getElementById('customHeroName')!;
+  const mockupHero = document.getElementById('mockupHero') as HTMLImageElement;
+  const mockupProduct = document.getElementById('mockupProduct') as HTMLImageElement;
+
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      if (data.heroImage) {
+        notMember.style.display = 'none';
+        builder.style.display = 'block';
+        heroImg.src = data.heroImage;
+        mockupHero.src = data.heroImage;
+        heroName.textContent = data.name || 'Hero';
+      }
+    } catch (e) {}
+  }
+
+  // Product selection
+  document.querySelectorAll('.custom-product-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.custom-product-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const bg = (btn as HTMLElement).dataset.bg!;
+      mockupProduct.src = bg;
+    });
+  });
+
+  // Coming soon button
+  document.getElementById('customOrderBtn')?.addEventListener('click', () => {
+    alert('Custom hero merch is coming soon! We\u2019ll notify TOG Squad members when it launches.');
+  });
+</script>
 
 <style>
   .merch-hero {
@@ -172,6 +265,163 @@ const products = [
     border-radius: 4px;
     letter-spacing: 2px;
     text-transform: uppercase;
+  }
+
+  /* === Custom Hero Merch === */
+  .custom-hero-section {
+    margin-bottom: 4rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(92,51,23,0.05), rgba(232,100,27,0.08));
+    border: 4px solid var(--brown);
+    border-radius: 4px;
+    box-shadow: 6px 6px 0 var(--brown);
+  }
+
+  .custom-hero-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  .custom-not-member {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .custom-builder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .custom-preview-area {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .custom-hero-display {
+    text-align: center;
+  }
+
+  .custom-hero-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--orange);
+    box-shadow: 4px 4px 0 var(--brown);
+  }
+
+  .custom-hero-name {
+    font-family: var(--comic);
+    font-size: 1.2rem;
+    color: var(--brown);
+    letter-spacing: 2px;
+    margin-top: 0.5rem;
+  }
+
+  .custom-product-select h3 {
+    color: var(--brown);
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .custom-product-options {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .custom-product-btn {
+    background: white;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100px;
+  }
+
+  .custom-product-btn img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .custom-product-btn span {
+    font-family: var(--comic);
+    font-size: 0.7rem;
+    color: var(--brown);
+    letter-spacing: 1px;
+  }
+
+  .custom-product-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 0 var(--brown);
+  }
+
+  .custom-product-btn.active {
+    border-color: var(--orange);
+    box-shadow: 4px 4px 0 var(--orange);
+    background: var(--cream);
+  }
+
+  .custom-mockup {
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    max-width: 350px;
+    width: 100%;
+  }
+
+  .mockup-canvas {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 0 auto;
+  }
+
+  .mockup-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .mockup-hero-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+  }
+
+  .mockup-label {
+    font-family: var(--comic);
+    font-size: 0.8rem;
+    color: var(--brown);
+    letter-spacing: 2px;
+    margin-top: 0.75rem;
+    opacity: 0.6;
+  }
+
+  .custom-order-btn {
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
   }
 
   .merch-cta {
