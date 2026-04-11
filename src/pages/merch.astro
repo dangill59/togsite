@@ -296,13 +296,19 @@ const products = [
 
     try {
       const hero = await getCompressedHero();
-      loadingText.textContent = 'Sending to AI — this takes 20-30 seconds...';
+
+      let seconds = 0;
+      const timer = setInterval(() => {
+        seconds++;
+        loadingText.textContent = `Generating... ${seconds}s (usually takes 20-40s)`;
+      }, 1000);
 
       const res = await fetch('/api/generate-mockup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ heroImage: hero, product, heroName }),
       });
+      clearInterval(timer);
       const data = await res.json();
 
       if (data.image) {
