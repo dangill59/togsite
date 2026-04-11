@@ -109,6 +109,10 @@ import SpeedLines from '../components/SpeedLines.astro';
       <button type="submit" class="btn btn-primary">Get My Hero Card</button>
     </form>
 
+    <script is:inline>
+      // Must be global BEFORE Turnstile script loads
+      window.onTurnstileSuccess = function(token) { window.__turnstileToken = token; };
+    </script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   </section>
 
@@ -543,9 +547,10 @@ import SpeedLines from '../components/SpeedLines.astro';
       selfieBtn.textContent = 'Snap or Upload a Photo';
     });
 
-    // === TURNSTILE ===
-    let turnstileToken: string | null = null;
-    (window as any).onTurnstileSuccess = (token: string) => { turnstileToken = token; };
+    // === TURNSTILE (token set by global inline script above) ===
+    function getTurnstileToken(): string | null {
+      return (window as any).__turnstileToken || null;
+    }
 
     // === FORM LOGIC ===
     const form = document.getElementById('fanForm');
@@ -636,7 +641,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         const res = await fetch('/api/generate-hero', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, superpower, favoriteMember, email, signalCode, turnstileToken, selfie: selfie || undefined }),
+          body: JSON.stringify({ name, superpower, favoriteMember, email, signalCode, turnstileToken: getTurnstileToken(), selfie: selfie || undefined }),
         });
         const data = await res.json();
         heroLoading.style.display = 'none';
@@ -660,7 +665,7 @@ import SpeedLines from '../components/SpeedLines.astro';
 
       // Turnstile check — skip if widget couldn't load (graceful fallback)
       const turnstileLoaded = typeof (window as any).turnstile !== 'undefined' || document.querySelector('.cf-turnstile iframe');
-      if (turnstileLoaded && !turnstileToken) {
+      if (turnstileLoaded && !getTurnstileToken()) {
         alert('Please complete the verification.');
         return;
       }
