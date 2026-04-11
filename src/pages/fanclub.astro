@@ -658,8 +658,9 @@ import SpeedLines from '../components/SpeedLines.astro';
       const honeypot = (document.getElementById('website') as HTMLInputElement).value;
       if (honeypot) return;
 
-      // Turnstile check
-      if (!turnstileToken) {
+      // Turnstile check — skip if widget couldn't load (graceful fallback)
+      const turnstileLoaded = typeof (window as any).turnstile !== 'undefined' || document.querySelector('.cf-turnstile iframe');
+      if (turnstileLoaded && !turnstileToken) {
         alert('Please complete the verification.');
         return;
       }
