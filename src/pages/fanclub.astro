@@ -829,32 +829,173 @@ import SpeedLines from '../components/SpeedLines.astro';
     }
 
     // === SCREENSHOT ===
-    document.getElementById('downloadBtn')?.addEventListener('click', async () => {
-      const card = document.getElementById('fanCard')!;
+    document.getElementById('downloadBtn')?.addEventListener('click', () => {
       const btn = document.getElementById('downloadBtn') as HTMLButtonElement;
       btn.textContent = 'Generating...';
       btn.disabled = true;
-      try {
-        const { default: html2canvas } = await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.esm.js');
-        const canvas = await html2canvas(card, { backgroundColor: null, scale: 2, useCORS: true });
+
+      const saved = localStorage.getItem('tog-fan');
+      if (!saved) { btn.textContent = 'Download Card'; btn.disabled = false; return; }
+      const data = JSON.parse(saved);
+
+      const W = 1020, H = 640;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d')!;
+
+      // Background
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#2a1510');
+      grad.addColorStop(0.5, '#5c3317');
+      grad.addColorStop(1, '#1a0a05');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Halftone dots
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      for (let y = 0; y < H; y += 10) {
+        for (let x = 0; x < W; x += 10) {
+          ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      // Border
+      ctx.strokeStyle = '#f5a623';
+      ctx.lineWidth = 4;
+      ctx.roundRect(4, 4, W - 8, H - 8, 16);
+      ctx.stroke();
+
+      // Top bar line
+      ctx.strokeStyle = 'rgba(245,166,35,0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(20, 70); ctx.lineTo(W - 20, 70); ctx.stroke();
+
+      // Band name
+      ctx.font = 'bold 22px Impact, sans-serif';
+      ctx.fillStyle = '#f5a623';
+      ctx.textAlign = 'left';
+      ctx.shadowColor = 'rgba(0,0,0,0.4)';
+      ctx.shadowBlur = 2;
+      ctx.fillText('THOSE ONE GUYS', 60, 38);
+      ctx.shadowBlur = 0;
+
+      // Subtitle
+      ctx.font = '10px Impact, sans-serif';
+      ctx.fillStyle = 'rgba(253,245,230,0.5)';
+      ctx.fillText('OFFICIAL TOG HERO SQUAD ID', 60, 55);
+
+      // Logo placeholder circle
+      ctx.fillStyle = 'rgba(245,166,35,0.15)';
+      ctx.beginPath(); ctx.arc(35, 40, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.font = 'bold 8px Impact, sans-serif';
+      ctx.fillStyle = '#f5a623';
+      ctx.textAlign = 'center';
+      ctx.fillText('TOG', 35, 43);
+      ctx.textAlign = 'left';
+
+      // Photo frame
+      const photoX = 30, photoY = 90, photoW = 200, photoH = 240;
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.roundRect(photoX, photoY, photoW, photoH, 8);
+      ctx.fill();
+      ctx.strokeStyle = '#f5a623';
+      ctx.lineWidth = 2;
+      ctx.roundRect(photoX, photoY, photoW, photoH, 8);
+      ctx.stroke();
+
+      // Info fields
+      const infoX = 260;
+      let infoY = 100;
+
+      function drawField(label: string, value: string, y: number, fontSize?: number) {
+        ctx.font = '10px Impact, sans-serif';
+        ctx.fillStyle = 'rgba(245,166,35,0.6)';
+        ctx.fillText(label, infoX, y);
+        ctx.font = `bold ${fontSize || 28}px Impact, sans-serif`;
+        ctx.fillStyle = '#fdf5e6';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 2;
+        ctx.fillText(value, infoX, y + (fontSize || 28) + 2);
+        ctx.shadowBlur = 0;
+      }
+
+      drawField('NAME', (data.name || '---').toUpperCase(), infoY, 36);
+      infoY += 65;
+      drawField('SUPERPOWER', (data.power || '---').toUpperCase(), infoY, 22);
+      infoY += 50;
+
+      // Signal code + Since side by side
+      ctx.font = '10px Impact, sans-serif';
+      ctx.fillStyle = 'rgba(245,166,35,0.6)';
+      ctx.fillText('SIGNAL CODE', infoX, infoY);
+      ctx.fillText('SINCE', infoX + 280, infoY);
+      ctx.font = 'bold 22px Impact, sans-serif';
+      ctx.fillStyle = '#fdf5e6';
+      ctx.fillText(data.signalCode || '---', infoX, infoY + 24);
+      ctx.fillText(data.dateStr || '---', infoX + 280, infoY + 24);
+      infoY += 50;
+
+      drawField('ALLY', (data.favText || '---').toUpperCase(), infoY, 20);
+
+      // Bottom bar line
+      ctx.strokeStyle = 'rgba(245,166,35,0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(20, H - 80); ctx.lineTo(W - 20, H - 80); ctx.stroke();
+
+      // Bottom text
+      ctx.font = '9px Impact, sans-serif';
+      ctx.fillStyle = 'rgba(253,245,230,0.4)';
+      ctx.fillText('FLASH THIS CARD AT ANY SHOW FOR SURPRISE MERCH', 100, H - 50);
+      ctx.font = '10px Impact, sans-serif';
+      ctx.fillStyle = 'rgba(245,166,35,0.6)';
+      ctx.fillText('VALID INDEFINITELY', 100, H - 35);
+
+      // QR code placeholder
+      ctx.fillStyle = '#fdf5e6';
+      ctx.fillRect(30, H - 72, 50, 50);
+      ctx.fillStyle = '#1a0a05';
+      let qrSeed = Math.abs(makeHash(data.name || '', data.email || ''));
+      for (let qy = 0; qy < 8; qy++) {
+        for (let qx = 0; qx < 8; qx++) {
+          qrSeed = (qrSeed * 1103515245 + 12345) & 0x7fffffff;
+          if (qrSeed % 3 !== 0) ctx.fillRect(30 + qx * 6 + 1, H - 72 + qy * 6 + 1, 5, 5);
+        }
+      }
+
+      // VIP badge
+      ctx.fillStyle = '#e8251b';
+      ctx.beginPath(); ctx.arc(W - 50, H - 47, 20, 0, Math.PI * 2); ctx.fill();
+      ctx.font = 'bold 14px Impact, sans-serif';
+      ctx.fillStyle = '#fdf5e6';
+      ctx.textAlign = 'center';
+      ctx.fillText('VIP', W - 50, H - 43);
+      ctx.textAlign = 'left';
+
+      // Draw hero image on top of photo frame
+      const heroImg = document.getElementById('heroImage') as HTMLImageElement;
+      if (heroImg && heroImg.src && heroImg.src.startsWith('data:')) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.save();
+          ctx.roundRect(photoX + 2, photoY + 2, photoW - 4, photoH - 4, 6);
+          ctx.clip();
+          ctx.drawImage(img, photoX + 2, photoY + 2, photoW - 4, photoH - 4);
+          ctx.restore();
+          triggerDownload();
+        };
+        img.src = heroImg.src;
+      } else {
+        triggerDownload();
+      }
+
+      function triggerDownload() {
         const link = document.createElement('a');
         link.download = 'tog-hero-card.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-      } catch (err) {
-        // Fallback: if html2canvas fails, try using the hero image directly
-        const heroImg = document.getElementById('heroImage') as HTMLImageElement;
-        if (heroImg && heroImg.src && heroImg.src.startsWith('data:')) {
-          const link = document.createElement('a');
-          link.download = 'tog-hero-card.png';
-          link.href = heroImg.src;
-          link.click();
-        } else {
-          alert('Take a screenshot of your Hero Card! On iPhone: Side + Volume Up. On Android: Power + Volume Down.');
-        }
+        btn.textContent = 'Download Card';
+        btn.disabled = false;
       }
-      btn.textContent = 'Download Card';
-      btn.disabled = false;
     });
 
     // === WALLPAPER DOWNLOAD ===
