@@ -259,6 +259,27 @@ const products = [
     updateUI();
   }
 
+  // Compress hero image to reduce upload size on mobile
+  let compressedHero: string | null = null;
+  function getCompressedHero(): Promise<string> {
+    if (compressedHero) return Promise.resolve(compressedHero);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        const maxSize = 512;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+        else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+        c.width = w; c.height = h;
+        c.getContext('2d')!.drawImage(img, 0, 0, w, h);
+        compressedHero = c.toDataURL('image/jpeg', 0.8);
+        resolve(compressedHero);
+      };
+      img.src = heroImageSrc!;
+    });
+  }
+
   async function generateNewMockup(product: string) {
     const variations = getProductMockups(product);
     if (variations.length >= MAX_VARS) return;
@@ -266,16 +287,21 @@ const products = [
     const mockupImg = document.getElementById('mockupImage') as HTMLImageElement;
     const loading = document.getElementById('mockupLoading')!;
     const label = document.getElementById('mockupLabel')!;
+    const loadingText = loading.querySelector('span')!;
 
     loading.style.display = 'flex';
     mockupImg.style.display = 'none';
+    loadingText.textContent = 'Preparing image...';
     label.textContent = `Generating variation ${variations.length + 1} of ${MAX_VARS}...`;
 
     try {
+      const hero = await getCompressedHero();
+      loadingText.textContent = 'Sending to AI — this takes 20-30 seconds...';
+
       const res = await fetch('/api/generate-mockup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ heroImage: heroImageSrc, product, heroName }),
+        body: JSON.stringify({ heroImage: hero, product, heroName }),
       });
       const data = await res.json();
 
