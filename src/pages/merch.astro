@@ -144,33 +144,15 @@ const products = [
   let currentVar: number = 0;
   const MAX_VARS = 3;
 
-  // Mockups stored as { tee: [img1, img2, img3], mug: [img1], ... }
+  // Mockups stored in memory (localStorage is too small for multiple base64 images)
+  const mockupCache: Record<string, string[]> = {};
+
   function getSavedMockups(): Record<string, string[]> {
-    try {
-      return JSON.parse(localStorage.getItem('tog-mockups') || '{}');
-    } catch { return {}; }
+    return mockupCache;
   }
 
   function saveAllMockups(mockups: Record<string, string[]>) {
-    try {
-      localStorage.setItem('tog-mockups', JSON.stringify(mockups));
-    } catch (e) {
-      // localStorage full — clear oldest mockups to make room
-      console.warn('localStorage full, clearing old mockups');
-      const keys = Object.keys(mockups);
-      if (keys.length > 1) {
-        // Keep only current product's mockups
-        const current = mockups[keys[keys.length - 1]];
-        const trimmed: Record<string, string[]> = {};
-        trimmed[keys[keys.length - 1]] = current;
-        try {
-          localStorage.setItem('tog-mockups', JSON.stringify(trimmed));
-        } catch (e2) {
-          // Still too big — just don't persist
-          console.warn('Cannot save mockups to localStorage');
-        }
-      }
-    }
+    // Already in memory via mockupCache reference — nothing extra needed
   }
 
   function getProductMockups(product: string): string[] {
