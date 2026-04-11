@@ -141,68 +141,62 @@ import SpeedLines from '../components/SpeedLines.astro';
     <div class="fan-card" id="fanCard">
       <div class="card-bg"></div>
       <div class="card-content">
-        <div class="card-header">
-          <div class="card-bursts-left">
-            <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="xs" rotate={-10} />
-          </div>
-          <div class="card-title">
-            <span class="card-label">OFFICIAL FAN CARD</span>
+        <!-- Top bar -->
+        <div class="card-topbar">
+          <img src="/logo-nav.png" alt="TOG" class="card-logo" />
+          <div class="card-title-block">
             <span class="card-band comic-title">THOSE ONE GUYS</span>
-          </div>
-          <div class="card-bursts-right">
-            <ComicBurst text="GUYS!" bg="#6b2d5b" shape="pow" size="xs" rotate={10} />
+            <span class="card-label">OFFICIAL TOG HERO SQUAD ID</span>
           </div>
         </div>
 
-        <div class="card-body">
-          <div class="card-hero-row">
+        <!-- Main body: photo left, info right -->
+        <div class="card-main">
+          <div class="card-photo-col">
             <div class="card-avatar">
-              <canvas id="heroCanvas" width="130" height="190"></canvas>
+              <canvas id="heroCanvas" width="130" height="160"></canvas>
               <img id="heroImage" class="hero-image" style="display:none;" alt="Your Hero Character" />
               <div id="heroLoading" class="hero-loading" style="display:none;">
                 <div class="hero-loading-spinner"></div>
-                <span>Generating your hero...</span>
+                <span>Generating...</span>
               </div>
             </div>
-            <div class="card-info-col">
-              <div class="card-member-info">
-                <span class="card-field-label">HERO</span>
-                <span class="card-name" id="cardName">---</span>
+          </div>
+
+          <div class="card-info-col">
+            <div class="card-field">
+              <span class="card-field-label">NAME</span>
+              <span class="card-name" id="cardName">---</span>
+            </div>
+            <div class="card-field">
+              <span class="card-field-label">SUPERPOWER</span>
+              <span class="card-value card-power-text" id="cardPower">---</span>
+            </div>
+            <div class="card-row">
+              <div class="card-field">
+                <span class="card-field-label">SIGNAL CODE</span>
+                <span class="card-value" id="cardNumber">---</span>
               </div>
-              <div class="card-detail">
-                <span class="card-field-label">SUPERPOWER</span>
-                <span class="card-value card-power-text" id="cardPower">---</span>
+              <div class="card-field">
+                <span class="card-field-label">SINCE</span>
+                <span class="card-value" id="cardDate">---</span>
               </div>
-              <div class="card-details">
-                <div class="card-detail">
-                  <span class="card-field-label">SIGNAL CODE</span>
-                  <span class="card-value" id="cardNumber">---</span>
-                </div>
-                <div class="card-detail">
-                  <span class="card-field-label">SINCE</span>
-                  <span class="card-value" id="cardDate">---</span>
-                </div>
-              </div>
-              <div class="card-detail">
-                <span class="card-field-label">ALLY</span>
-                <span class="card-value" id="cardFav">---</span>
-              </div>
+            </div>
+            <div class="card-field">
+              <span class="card-field-label">ALLY</span>
+              <span class="card-value" id="cardFav">---</span>
             </div>
           </div>
         </div>
 
-        <div class="card-footer">
-          <div class="card-stamp">
-            <ComicBurst text="VIP!" bg="#e8251b" shape="bang" size="sm" rotate={-5} />
-          </div>
+        <!-- Bottom bar -->
+        <div class="card-bottombar">
           <div class="card-qr" id="cardQR"></div>
-          <div class="card-stamp">
-            <ComicBurst text="FAN!" bg="#1a8a7d" shape="star" size="sm" rotate={8} />
+          <div class="card-bottom-text">
+            <span>Flash this card at any show for surprise merch</span>
+            <span class="card-validity">VALID INDEFINITELY</span>
           </div>
-        </div>
-
-        <div class="card-bottom-text">
-          Flash this card at any Those One Guys show for surprise merch!
+          <ComicBurst text="VIP" bg="#e8251b" shape="star" size="xs" rotate={8} />
         </div>
       </div>
     </div>
@@ -1123,128 +1117,228 @@ import SpeedLines from '../components/SpeedLines.astro';
     text-align: center;
   }
 
+  /* === ID Card — license/credit card style === */
   .fan-card {
-    max-width: 480px;
+    max-width: 560px;
+    aspect-ratio: 3.375 / 2.125;
     margin: 0 auto;
-    border: 5px solid var(--brown);
-    border-radius: 8px;
-    box-shadow: 8px 8px 0 var(--brown);
+    border: 3px solid var(--gold);
+    border-radius: 12px;
     overflow: hidden;
     position: relative;
-    background: linear-gradient(145deg, #1a0a05, var(--brown), var(--plum), var(--orange));
+    background: linear-gradient(135deg, #1a0a05 0%, var(--brown) 40%, #2a1510 70%, var(--plum) 100%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(245,166,35,0.2);
   }
 
   .card-bg {
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
-    background-size: 8px 8px;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(135deg, transparent 40%, rgba(245,166,35,0.05) 50%, transparent 60%);
+    background-size: 6px 6px, 100% 100%;
     pointer-events: none;
   }
 
   .card-content {
     position: relative;
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     color: var(--cream);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 3px dashed rgba(245, 166, 35, 0.4);
-  }
-
-  .card-title {
+    height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Top bar */
+  .card-topbar {
+    display: flex;
     align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(245,166,35,0.3);
+  }
+
+  .card-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+  }
+
+  .card-title-block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-band {
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+    line-height: 1.1;
   }
 
   .card-label {
     font-family: var(--comic);
-    font-size: 0.75rem;
-    letter-spacing: 4px;
+    font-size: 0.55rem;
+    letter-spacing: 3px;
+    color: var(--cream);
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* Main body */
+  .card-main {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    padding: 0.75rem 0;
+    align-items: center;
+  }
+
+  .card-photo-col {
+    flex-shrink: 0;
+  }
+
+  .card-avatar {
+    width: 120px;
+    height: 140px;
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+    background: rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+
+  .card-avatar canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hero-loading {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
     color: var(--gold);
+    font-family: var(--comic);
+    font-size: 0.6rem;
+    letter-spacing: 1px;
     text-transform: uppercase;
   }
 
-  .card-band {
-    font-size: 1.8rem;
-    letter-spacing: 4px;
-    text-shadow: 3px 3px 0 rgba(0,0,0,0.4);
-    color: var(--gold);
+  .hero-loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(245, 166, 35, 0.3);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: heroSpin 0.8s linear infinite;
   }
 
-  .card-body {
-    margin-bottom: 1.5rem;
+  @keyframes heroSpin {
+    to { transform: rotate(360deg); }
   }
 
-  .card-member-info {
-    margin-bottom: 1.25rem;
+  /* Info column */
+  .card-info-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    text-align: left;
+  }
+
+  .card-field {
+    display: flex;
+    flex-direction: column;
   }
 
   .card-field-label {
-    display: block;
     font-family: var(--comic);
-    font-size: 0.65rem;
-    letter-spacing: 3px;
-    color: var(--gold);
-    opacity: 0.8;
-    margin-bottom: 0.15rem;
-  }
-
-  .card-name {
-    font-family: var(--comic);
-    font-size: 2rem;
-    letter-spacing: 4px;
-    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-    display: block;
-  }
-
-  .card-details {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .card-detail {
-    text-align: center;
-  }
-
-  .card-value {
-    font-family: var(--comic);
-    font-size: 1.1rem;
-    letter-spacing: 2px;
-    display: block;
-  }
-
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    padding-top: 1rem;
-    border-top: 3px dashed rgba(245, 166, 35, 0.4);
-    margin-bottom: 1rem;
-  }
-
-  .card-qr canvas {
-    border: 3px solid var(--gold);
-    border-radius: 4px;
-  }
-
-  .card-bottom-text {
-    font-family: var(--comic);
-    font-size: 0.75rem;
+    font-size: 0.5rem;
     letter-spacing: 2px;
     color: var(--gold);
     opacity: 0.7;
     text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .card-name {
+    font-family: var(--comic);
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+    display: block;
+    line-height: 1.2;
+  }
+
+  .card-value {
+    font-family: var(--comic);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    display: block;
+    line-height: 1.2;
+  }
+
+  .card-power-text {
+    color: var(--gold) !important;
+    font-size: 0.8rem !important;
+  }
+
+  .card-row {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  /* Bottom bar */
+  .card-bottombar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(245,166,35,0.2);
+  }
+
+  .card-qr canvas {
+    border: 2px solid var(--gold);
+    border-radius: 3px;
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  .card-bottom-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-bottom-text span:first-child {
+    font-family: var(--comic);
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    color: var(--cream);
+    opacity: 0.5;
+    text-transform: uppercase;
+  }
+
+  .card-validity {
+    font-family: var(--comic);
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: var(--gold);
+    opacity: 0.7;
   }
 
   .confirm-msg {
@@ -1255,74 +1349,11 @@ import SpeedLines from '../components/SpeedLines.astro';
     color: var(--orange);
   }
 
-  .card-hero-row {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 0.5rem;
-  }
-
-  .card-avatar {
-    flex-shrink: 0;
-    border: 3px solid var(--gold);
-    border-radius: 8px;
-    background: rgba(0,0,0,0.2);
-    overflow: hidden;
-  }
-
-  .card-avatar canvas {
-    display: block;
-  }
-
-  .hero-image {
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-    display: block;
-    border-radius: 4px;
-  }
-
-  .hero-loading {
-    width: 130px;
-    height: 190px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: var(--gold);
-    font-family: var(--comic);
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  .hero-loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(245, 166, 35, 0.3);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: heroSpin 0.8s linear infinite;
-  }
-
-  @keyframes heroSpin {
-    to { transform: rotate(360deg); }
-  }
-
-  .card-info-col {
-    flex: 1;
-    text-align: left;
-  }
-
-  .card-power-text {
-    color: var(--gold) !important;
-    font-size: 0.9rem !important;
-  }
-
   @media (max-width: 400px) {
-    .card-hero-row { flex-direction: column; text-align: center; }
+    .fan-card { aspect-ratio: auto; }
+    .card-main { flex-direction: column; text-align: center; }
     .card-info-col { text-align: center; }
+    .card-row { justify-content: center; }
   }
 
   .card-actions {
