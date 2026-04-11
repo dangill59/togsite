@@ -1188,81 +1188,76 @@ import SpeedLines from '../components/SpeedLines.astro';
 
   /* === ID Card — license/credit card style === */
   .fan-card {
-    max-width: 560px;
-    aspect-ratio: 3.375 / 2.125;
+    max-width: 520px;
     margin: 0 auto;
-    border: 3px solid var(--gold);
+    border: 2px solid var(--gold);
     border-radius: 12px;
     overflow: hidden;
     position: relative;
-    background: linear-gradient(135deg, #1a0a05 0%, var(--brown) 40%, #2a1510 70%, var(--plum) 100%);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(245,166,35,0.2);
+    background: linear-gradient(145deg, #2a1510 0%, var(--brown) 50%, #1a0a05 100%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   }
 
   .card-bg {
     position: absolute;
     inset: 0;
-    background-image:
-      radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(135deg, transparent 40%, rgba(245,166,35,0.05) 50%, transparent 60%);
-    background-size: 6px 6px, 100% 100%;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 6px 6px;
     pointer-events: none;
   }
 
   .card-content {
     position: relative;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1rem;
     color: var(--cream);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
 
-  /* Top bar */
+  /* Top bar — thin strip */
   .card-topbar {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid rgba(245,166,35,0.3);
+    gap: 0.5rem;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(245,166,35,0.25);
   }
 
   .card-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
   }
 
   .card-title-block {
     display: flex;
     flex-direction: column;
+    line-height: 1;
   }
 
   .card-band {
-    font-size: 1.1rem;
-    letter-spacing: 3px;
+    font-size: 0.85rem !important;
+    letter-spacing: 2px;
     color: var(--gold);
     text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
-    line-height: 1.1;
+    line-height: 1 !important;
+    transform: none !important;
   }
 
   .card-label {
     font-family: var(--comic);
-    font-size: 0.55rem;
-    letter-spacing: 3px;
+    font-size: 0.45rem;
+    letter-spacing: 2px;
     color: var(--cream);
     text-transform: uppercase;
-    opacity: 0.6;
+    opacity: 0.5;
   }
 
-  /* Main body */
+  /* Main body — photo left, info right */
   .card-main {
     display: flex;
-    gap: 1rem;
-    flex: 1;
-    padding: 0.75rem 0;
-    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    align-items: flex-start;
   }
 
   .card-photo-col {
@@ -1270,10 +1265,10 @@ import SpeedLines from '../components/SpeedLines.astro';
   }
 
   .card-avatar {
-    width: 120px;
-    height: 140px;
+    width: 100px;
+    height: 120px;
     border: 2px solid var(--gold);
-    border-radius: 6px;
+    border-radius: 4px;
     background: rgba(0,0,0,0.3);
     overflow: hidden;
   }
@@ -1302,14 +1297,14 @@ import SpeedLines from '../components/SpeedLines.astro';
     gap: 0.3rem;
     color: var(--gold);
     font-family: var(--comic);
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
 
   .hero-loading-spinner {
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
     border: 3px solid rgba(245, 166, 35, 0.3);
     border-top-color: var(--gold);
     border-radius: 50%;
@@ -1325,8 +1320,9 @@ import SpeedLines from '../components/SpeedLines.astro';
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.2rem;
     text-align: left;
+    min-width: 0;
   }
 
   .card-field {
@@ -1336,26 +1332,30 @@ import SpeedLines from '../components/SpeedLines.astro';
 
   .card-field-label {
     font-family: var(--comic);
-    font-size: 0.5rem;
+    font-size: 0.45rem;
     letter-spacing: 2px;
     color: var(--gold);
-    opacity: 0.7;
+    opacity: 0.6;
     text-transform: uppercase;
     line-height: 1;
+    margin-bottom: 1px;
   }
 
   .card-name {
     font-family: var(--comic);
-    font-size: 1.3rem;
-    letter-spacing: 3px;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
     text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
     display: block;
     line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .card-value {
     font-family: var(--comic);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     letter-spacing: 1px;
     display: block;
     line-height: 1.2;
@@ -1363,28 +1363,28 @@ import SpeedLines from '../components/SpeedLines.astro';
 
   .card-power-text {
     color: var(--gold) !important;
-    font-size: 0.8rem !important;
+    font-size: 0.7rem !important;
   }
 
   .card-row {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   /* Bottom bar */
   .card-bottombar {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding-top: 0.5rem;
+    gap: 0.5rem;
+    padding-top: 0.4rem;
     border-top: 1px solid rgba(245,166,35,0.2);
   }
 
   .card-qr canvas {
-    border: 2px solid var(--gold);
-    border-radius: 3px;
-    width: 50px !important;
-    height: 50px !important;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    width: 40px !important;
+    height: 40px !important;
   }
 
   .card-bottom-text {
@@ -1395,19 +1395,19 @@ import SpeedLines from '../components/SpeedLines.astro';
 
   .card-bottom-text span:first-child {
     font-family: var(--comic);
-    font-size: 0.5rem;
+    font-size: 0.4rem;
     letter-spacing: 1px;
     color: var(--cream);
-    opacity: 0.5;
+    opacity: 0.4;
     text-transform: uppercase;
   }
 
   .card-validity {
     font-family: var(--comic);
-    font-size: 0.55rem;
+    font-size: 0.45rem;
     letter-spacing: 2px;
     color: var(--gold);
-    opacity: 0.7;
+    opacity: 0.6;
   }
 
   .confirm-msg {
@@ -1419,9 +1419,8 @@ import SpeedLines from '../components/SpeedLines.astro';
   }
 
   @media (max-width: 400px) {
-    .fan-card { aspect-ratio: auto; }
-    .card-main { flex-direction: column; text-align: center; }
-    .card-info-col { text-align: center; }
+    .card-main { flex-direction: column; align-items: center; text-align: center; }
+    .card-info-col { text-align: center; align-items: center; }
     .card-row { justify-content: center; }
   }
 
