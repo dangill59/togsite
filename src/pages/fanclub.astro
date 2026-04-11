@@ -842,6 +842,7 @@ import SpeedLines from '../components/SpeedLines.astro';
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d')!;
+      const pad = 30;
 
       // Background
       const grad = ctx.createLinearGradient(0, 0, W, H);
@@ -861,125 +862,134 @@ import SpeedLines from '../components/SpeedLines.astro';
 
       // Border
       ctx.strokeStyle = '#f5a623';
-      ctx.lineWidth = 4;
-      ctx.roundRect(4, 4, W - 8, H - 8, 16);
+      ctx.lineWidth = 5;
+      ctx.roundRect(6, 6, W - 12, H - 12, 18);
       ctx.stroke();
 
-      // Top bar line
-      ctx.strokeStyle = 'rgba(245,166,35,0.3)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(20, 70); ctx.lineTo(W - 20, 70); ctx.stroke();
+      // === TOP BAR ===
+      const topH = 65;
+      // Logo circle
+      ctx.fillStyle = 'rgba(245,166,35,0.2)';
+      ctx.beginPath(); ctx.arc(pad + 22, topH / 2 + 5, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.font = 'bold 12px Impact, sans-serif';
+      ctx.fillStyle = '#f5a623';
+      ctx.textAlign = 'center';
+      ctx.fillText('TOG', pad + 22, topH / 2 + 9);
+      ctx.textAlign = 'left';
 
       // Band name
-      ctx.font = 'bold 22px Impact, sans-serif';
+      ctx.font = 'bold 32px Impact, sans-serif';
       ctx.fillStyle = '#f5a623';
-      ctx.textAlign = 'left';
       ctx.shadowColor = 'rgba(0,0,0,0.4)';
-      ctx.shadowBlur = 2;
-      ctx.fillText('THOSE ONE GUYS', 60, 38);
+      ctx.shadowBlur = 3;
+      ctx.fillText('THOSE ONE GUYS', pad + 55, topH / 2 + 12);
       ctx.shadowBlur = 0;
 
       // Subtitle
-      ctx.font = '10px Impact, sans-serif';
+      ctx.font = '14px Impact, sans-serif';
       ctx.fillStyle = 'rgba(253,245,230,0.5)';
-      ctx.fillText('OFFICIAL TOG HERO SQUAD ID', 60, 55);
+      ctx.fillText('OFFICIAL TOG HERO SQUAD ID', pad + 57, topH / 2 + 28);
 
-      // Logo placeholder circle
-      ctx.fillStyle = 'rgba(245,166,35,0.15)';
-      ctx.beginPath(); ctx.arc(35, 40, 18, 0, Math.PI * 2); ctx.fill();
-      ctx.font = 'bold 8px Impact, sans-serif';
-      ctx.fillStyle = '#f5a623';
-      ctx.textAlign = 'center';
-      ctx.fillText('TOG', 35, 43);
-      ctx.textAlign = 'left';
+      // Top bar line
+      ctx.strokeStyle = 'rgba(245,166,35,0.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(pad, topH + 10); ctx.lineTo(W - pad, topH + 10); ctx.stroke();
 
-      // Photo frame
-      const photoX = 30, photoY = 90, photoW = 200, photoH = 240;
+      // === MAIN BODY ===
+      const bodyTop = topH + 25;
+      const bodyH = H - bodyTop - 90;
+
+      // Photo frame — fill most of the left side
+      const photoX = pad, photoY = bodyTop;
+      const photoW = 280, photoH = bodyH;
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      ctx.roundRect(photoX, photoY, photoW, photoH, 8);
+      ctx.roundRect(photoX, photoY, photoW, photoH, 10);
       ctx.fill();
       ctx.strokeStyle = '#f5a623';
-      ctx.lineWidth = 2;
-      ctx.roundRect(photoX, photoY, photoW, photoH, 8);
+      ctx.lineWidth = 3;
+      ctx.roundRect(photoX, photoY, photoW, photoH, 10);
       ctx.stroke();
 
-      // Info fields
-      const infoX = 260;
-      let infoY = 100;
+      // Info fields — right side
+      const infoX = photoX + photoW + 30;
+      let infoY = bodyTop + 5;
+      const infoW = W - infoX - pad;
 
-      function drawField(label: string, value: string, y: number, fontSize?: number) {
-        ctx.font = '10px Impact, sans-serif';
-        ctx.fillStyle = 'rgba(245,166,35,0.6)';
-        ctx.fillText(label, infoX, y);
-        ctx.font = `bold ${fontSize || 28}px Impact, sans-serif`;
+      function drawField(label: string, value: string, y: number, fontSize: number) {
+        ctx.font = '14px Impact, sans-serif';
+        ctx.fillStyle = 'rgba(245,166,35,0.7)';
+        ctx.fillText(label, infoX, y + 12);
+        ctx.font = `bold ${fontSize}px Impact, sans-serif`;
         ctx.fillStyle = '#fdf5e6';
         ctx.shadowColor = 'rgba(0,0,0,0.3)';
         ctx.shadowBlur = 2;
-        ctx.fillText(value, infoX, y + (fontSize || 28) + 2);
+        ctx.fillText(value, infoX, y + 12 + fontSize + 4);
         ctx.shadowBlur = 0;
       }
 
-      drawField('NAME', (data.name || '---').toUpperCase(), infoY, 36);
+      drawField('NAME', (data.name || '---').toUpperCase(), infoY, 48);
+      infoY += 80;
+      drawField('SUPERPOWER', (data.power || '---').toUpperCase(), infoY, 32);
       infoY += 65;
-      drawField('SUPERPOWER', (data.power || '---').toUpperCase(), infoY, 22);
-      infoY += 50;
 
       // Signal code + Since side by side
-      ctx.font = '10px Impact, sans-serif';
-      ctx.fillStyle = 'rgba(245,166,35,0.6)';
-      ctx.fillText('SIGNAL CODE', infoX, infoY);
-      ctx.fillText('SINCE', infoX + 280, infoY);
-      ctx.font = 'bold 22px Impact, sans-serif';
+      ctx.font = '14px Impact, sans-serif';
+      ctx.fillStyle = 'rgba(245,166,35,0.7)';
+      ctx.fillText('SIGNAL CODE', infoX, infoY + 12);
+      ctx.fillText('SINCE', infoX + infoW * 0.55, infoY + 12);
+      ctx.font = 'bold 28px Impact, sans-serif';
       ctx.fillStyle = '#fdf5e6';
-      ctx.fillText(data.signalCode || '---', infoX, infoY + 24);
-      ctx.fillText(data.dateStr || '---', infoX + 280, infoY + 24);
-      infoY += 50;
+      ctx.fillText(data.signalCode || '---', infoX, infoY + 42);
+      ctx.fillText(data.dateStr || '---', infoX + infoW * 0.55, infoY + 42);
+      infoY += 60;
 
-      drawField('ALLY', (data.favText || '---').toUpperCase(), infoY, 20);
+      drawField('ALLY', (data.favText || '---').toUpperCase(), infoY, 26);
 
-      // Bottom bar line
-      ctx.strokeStyle = 'rgba(245,166,35,0.2)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(20, H - 80); ctx.lineTo(W - 20, H - 80); ctx.stroke();
+      // === BOTTOM BAR ===
+      const btmY = H - 80;
+      ctx.strokeStyle = 'rgba(245,166,35,0.25)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(pad, btmY); ctx.lineTo(W - pad, btmY); ctx.stroke();
 
-      // Bottom text
-      ctx.font = '9px Impact, sans-serif';
-      ctx.fillStyle = 'rgba(253,245,230,0.4)';
-      ctx.fillText('FLASH THIS CARD AT ANY SHOW FOR SURPRISE MERCH', 100, H - 50);
-      ctx.font = '10px Impact, sans-serif';
-      ctx.fillStyle = 'rgba(245,166,35,0.6)';
-      ctx.fillText('VALID INDEFINITELY', 100, H - 35);
-
-      // QR code placeholder
+      // QR code
+      const qrSize = 55, qrX = pad + 5, qrY = btmY + 10;
       ctx.fillStyle = '#fdf5e6';
-      ctx.fillRect(30, H - 72, 50, 50);
+      ctx.fillRect(qrX, qrY, qrSize, qrSize);
       ctx.fillStyle = '#1a0a05';
       let qrSeed = Math.abs(makeHash(data.name || '', data.email || ''));
-      for (let qy = 0; qy < 8; qy++) {
-        for (let qx = 0; qx < 8; qx++) {
+      for (let qy = 0; qy < 9; qy++) {
+        for (let qx = 0; qx < 9; qx++) {
           qrSeed = (qrSeed * 1103515245 + 12345) & 0x7fffffff;
-          if (qrSeed % 3 !== 0) ctx.fillRect(30 + qx * 6 + 1, H - 72 + qy * 6 + 1, 5, 5);
+          if (qrSeed % 3 !== 0) ctx.fillRect(qrX + qx * 6 + 1, qrY + qy * 6 + 1, 5, 5);
         }
       }
 
+      // Bottom text
+      ctx.font = '14px Impact, sans-serif';
+      ctx.fillStyle = 'rgba(253,245,230,0.45)';
+      ctx.fillText('FLASH THIS CARD AT ANY SHOW FOR SURPRISE MERCH', qrX + qrSize + 20, btmY + 30);
+      ctx.font = '15px Impact, sans-serif';
+      ctx.fillStyle = 'rgba(245,166,35,0.65)';
+      ctx.fillText('VALID INDEFINITELY', qrX + qrSize + 20, btmY + 52);
+
       // VIP badge
       ctx.fillStyle = '#e8251b';
-      ctx.beginPath(); ctx.arc(W - 50, H - 47, 20, 0, Math.PI * 2); ctx.fill();
-      ctx.font = 'bold 14px Impact, sans-serif';
+      ctx.beginPath(); ctx.arc(W - 55, btmY + 35, 28, 0, Math.PI * 2); ctx.fill();
+      ctx.font = 'bold 20px Impact, sans-serif';
       ctx.fillStyle = '#fdf5e6';
       ctx.textAlign = 'center';
-      ctx.fillText('VIP', W - 50, H - 43);
+      ctx.fillText('VIP', W - 55, btmY + 42);
       ctx.textAlign = 'left';
 
-      // Draw hero image on top of photo frame
+      // Draw hero image on photo frame
       const heroImg = document.getElementById('heroImage') as HTMLImageElement;
       if (heroImg && heroImg.src && heroImg.src.startsWith('data:')) {
         const img = new Image();
         img.onload = () => {
           ctx.save();
-          ctx.roundRect(photoX + 2, photoY + 2, photoW - 4, photoH - 4, 6);
+          ctx.roundRect(photoX + 3, photoY + 3, photoW - 6, photoH - 6, 8);
           ctx.clip();
-          ctx.drawImage(img, photoX + 2, photoY + 2, photoW - 4, photoH - 4);
+          ctx.drawImage(img, photoX + 3, photoY + 3, photoW - 6, photoH - 6);
           ctx.restore();
           triggerDownload();
         };
