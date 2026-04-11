@@ -108,12 +108,20 @@ const products = [
           <p class="mockup-label" id="mockupLabel">Click a product to generate your custom preview</p>
         </div>
 
+        <div class="mockup-variations" id="mockupVariations" style="display:none;">
+          <button class="var-btn active" data-var="0">1</button>
+          <button class="var-btn" data-var="1">2</button>
+          <button class="var-btn" data-var="2">3</button>
+        </div>
+
         <div class="custom-btn-row">
           <button class="btn btn-secondary" id="saveMockupBtn" style="display:none;">Save Mockup</button>
+          <button class="btn btn-secondary" id="newVariationBtn" style="display:none;">New Variation</button>
           <button class="btn btn-primary custom-order-btn" id="customOrderBtn">
             Request Custom Order — Coming Soon
           </button>
         </div>
+        <p class="mockup-slots" id="mockupSlots" style="display:none;"></p>
       </div>
     </div>
 
@@ -133,72 +141,117 @@ const products = [
   let heroImageSrc: string | null = null;
   let heroName: string = '';
   let currentProduct: string = '';
+  let currentVar: number = 0;
+  const MAX_VARS = 3;
 
-  // Load saved mockups from localStorage
-  function getSavedMockups(): Record<string, string> {
+  // Mockups stored as { tee: [img1, img2, img3], mug: [img1], ... }
+  function getSavedMockups(): Record<string, string[]> {
     try {
       return JSON.parse(localStorage.getItem('tog-mockups') || '{}');
     } catch { return {}; }
   }
 
-  function saveMockup(product: string, image: string) {
-    const mockups = getSavedMockups();
-    mockups[product] = image;
+  function saveAllMockups(mockups: Record<string, string[]>) {
     localStorage.setItem('tog-mockups', JSON.stringify(mockups));
   }
 
-  function showMockup(product: string, image: string) {
-    const mockupImg = document.getElementById('mockupImage') as HTMLImageElement;
-    const label = document.getElementById('mockupLabel')!;
-    const saveBtn = document.getElementById('saveMockupBtn')!;
-    const loading = document.getElementById('mockupLoading')!;
-
-    loading.style.display = 'none';
-    mockupImg.src = image;
-    mockupImg.style.display = 'block';
-    saveBtn.style.display = '';
-    const productName = product.charAt(0).toUpperCase() + product.slice(1);
-    label.textContent = `${heroName.toUpperCase()}'s Custom ${productName}`;
-    currentProduct = product;
-
-    // Update button states — mark this product as generated
-    updateProductButtons();
+  function getProductMockups(product: string): string[] {
+    return getSavedMockups()[product] || [];
   }
 
-  function updateProductButtons() {
+  function updateUI() {
+    const variations = getProductMockups(currentProduct);
+    const varBar = document.getElementById('mockupVariations')!;
+    const newVarBtn = document.getElementById('newVariationBtn')!;
+    const slotsText = document.getElementById('mockupSlots')!;
+    const saveBtn = document.getElementById('saveMockupBtn')!;
+
+    if (variations.length > 0) {
+      // Show variation buttons
+      varBar.style.display = 'flex';
+      document.querySelectorAll('.var-btn').forEach((btn, i) => {
+        const b = btn as HTMLElement;
+        if (i < variations.length) {
+          b.classList.remove('empty');
+          b.classList.toggle('active', i === currentVar);
+        } else {
+          b.classList.add('empty');
+          b.classList.remove('active');
+        }
+      });
+
+      saveBtn.style.display = '';
+
+      // Show "New Variation" if under limit
+      if (variations.length < MAX_VARS) {
+        newVarBtn.style.display = '';
+        slotsText.style.display = 'block';
+        slotsText.textContent = `${variations.length} of ${MAX_VARS} variations used`;
+      } else {
+        newVarBtn.style.display = 'none';
+        slotsText.style.display = 'block';
+        slotsText.textContent = `All ${MAX_VARS} variations used`;
+      }
+    } else {
+      varBar.style.display = 'none';
+      newVarBtn.style.display = 'none';
+      saveBtn.style.display = 'none';
+      slotsText.style.display = 'none';
+    }
+
+    updateProductBadges();
+  }
+
+  function updateProductBadges() {
     const mockups = getSavedMockups();
     document.querySelectorAll('.custom-product-btn').forEach(btn => {
       const product = (btn as HTMLElement).dataset.product!;
-      const badge = btn.querySelector('.product-badge') as HTMLElement;
-      if (mockups[product]) {
+      let badge = btn.querySelector('.product-badge') as HTMLElement;
+      const count = (mockups[product] || []).length;
+      if (count > 0) {
         if (!badge) {
-          const b = document.createElement('span');
-          b.className = 'product-badge';
-          b.textContent = '✓';
-          btn.appendChild(b);
+          badge = document.createElement('span');
+          badge.className = 'product-badge';
+          btn.appendChild(badge);
         }
+        badge.textContent = String(count);
+      } else if (badge) {
+        badge.remove();
       }
     });
   }
 
-  async function handleProductClick(product: string) {
-    const mockups = getSavedMockups();
+  function showMockup(product: string, varIndex: number) {
+    const variations = getProductMockups(product);
+    if (varIndex >= variations.length) return;
+
+    const mockupImg = document.getElementById('mockupImage') as HTMLImageElement;
+    const label = document.getElementById('mockupLabel')!;
+    const loading = document.getElementById('mockupLoading')!;
+
+    loading.style.display = 'none';
+    mockupImg.src = variations[varIndex];
+    mockupImg.style.display = 'block';
+    currentProduct = product;
+    currentVar = varIndex;
+
+    const productName = product.charAt(0).toUpperCase() + product.slice(1);
+    label.textContent = `${heroName.toUpperCase()}'s Custom ${productName} — Version ${varIndex + 1}`;
+
+    updateUI();
+  }
+
+  async function generateNewMockup(product: string) {
+    const variations = getProductMockups(product);
+    if (variations.length >= MAX_VARS) return;
+
     const mockupImg = document.getElementById('mockupImage') as HTMLImageElement;
     const loading = document.getElementById('mockupLoading')!;
     const label = document.getElementById('mockupLabel')!;
-    const saveBtn = document.getElementById('saveMockupBtn')!;
 
-    // If already generated, just show it
-    if (mockups[product]) {
-      showMockup(product, mockups[product]);
-      return;
-    }
-
-    // Generate new mockup
     loading.style.display = 'flex';
     mockupImg.style.display = 'none';
-    saveBtn.style.display = 'none';
-    label.textContent = 'Generating your custom mockup...';
+    label.textContent = `Generating variation ${variations.length + 1} of ${MAX_VARS}...`;
 
     try {
       const res = await fetch('/api/generate-mockup', {
@@ -209,17 +262,33 @@ const products = [
       const data = await res.json();
 
       if (data.image) {
-        saveMockup(product, data.image);
-        showMockup(product, data.image);
+        const mockups = getSavedMockups();
+        if (!mockups[product]) mockups[product] = [];
+        mockups[product].push(data.image);
+        saveAllMockups(mockups);
+        currentProduct = product;
+        currentVar = mockups[product].length - 1;
+        showMockup(product, currentVar);
       } else {
         loading.style.display = 'none';
         label.textContent = 'Generation failed — try again';
-        console.error('Mockup error:', data.error);
       }
     } catch (err) {
       loading.style.display = 'none';
       label.textContent = 'Generation failed — try again';
-      console.error('Mockup error:', err);
+    }
+  }
+
+  async function handleProductClick(product: string) {
+    currentProduct = product;
+    const variations = getProductMockups(product);
+
+    if (variations.length > 0) {
+      // Show first variation
+      showMockup(product, 0);
+    } else {
+      // Generate first mockup
+      await generateNewMockup(product);
     }
   }
 
@@ -236,7 +305,7 @@ const products = [
         builder.style.display = 'block';
         heroImageSrc = data.heroImage;
         heroName = data.name || 'Hero';
-        updateProductButtons();
+        updateProductBadges();
       }
     } catch (e) {}
   }
@@ -246,9 +315,24 @@ const products = [
     btn.addEventListener('click', () => {
       document.querySelectorAll('.custom-product-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const product = (btn as HTMLElement).dataset.product!;
-      handleProductClick(product);
+      handleProductClick((btn as HTMLElement).dataset.product!);
     });
+  });
+
+  // Variation toggle
+  document.querySelectorAll('.var-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt((btn as HTMLElement).dataset.var!);
+      const variations = getProductMockups(currentProduct);
+      if (idx < variations.length) {
+        showMockup(currentProduct, idx);
+      }
+    });
+  });
+
+  // New variation
+  document.getElementById('newVariationBtn')?.addEventListener('click', () => {
+    generateNewMockup(currentProduct);
   });
 
   // Save mockup download
@@ -256,7 +340,7 @@ const products = [
     const mockupImg = document.getElementById('mockupImage') as HTMLImageElement;
     if (mockupImg && mockupImg.src) {
       const link = document.createElement('a');
-      link.download = `tog-custom-${currentProduct}.png`;
+      link.download = `tog-custom-${currentProduct}-v${currentVar + 1}.png`;
       link.href = mockupImg.src;
       link.click();
     }
@@ -521,6 +605,49 @@ const products = [
   .custom-order-btn {
     font-size: 1.1rem;
     padding: 1rem 2rem;
+  }
+
+  .mockup-variations {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .var-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--brown);
+    background: white;
+    font-family: var(--comic);
+    font-size: 0.9rem;
+    color: var(--brown);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .var-btn.active {
+    background: var(--orange);
+    color: white;
+    border-color: var(--orange);
+    box-shadow: 2px 2px 0 var(--brown);
+  }
+
+  .var-btn.empty {
+    opacity: 0.3;
+    cursor: default;
+    border-style: dashed;
+  }
+
+  .mockup-slots {
+    font-family: var(--comic);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: var(--brown);
+    opacity: 0.5;
+    text-align: center;
+    margin-top: 0.5rem;
   }
 
   .product-badge {
