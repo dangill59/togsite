@@ -48,6 +48,12 @@ export const POST: APIRoute = async ({ request }) => {
       quantity: qty,
     });
 
+    // Resolve Printful variant ID
+    let variantId = product.printfulVariantId || null;
+    if (product.printfulVariants && item.size) {
+      variantId = product.printfulVariants[item.size] || null;
+    }
+
     orderItems.push({
       slug: item.slug,
       name: product.name,
@@ -57,6 +63,8 @@ export const POST: APIRoute = async ({ request }) => {
       fulfillment: product.fulfillment,
       mockup_url: item.mockupUrl || null,
       is_custom_hero: product.isCustomHero || false,
+      printful_variant_id: variantId,
+      image: product.image,
     });
   }
 

@@ -92,11 +92,11 @@ export const POST: APIRoute = async ({ request }) => {
             email: fanEmail || '',
           },
           items: printfulItems.map((item: any) => ({
-            variant_id: item.printful_variant_id || 4012, // Default variant, will be configured properly
+            variant_id: item.printful_variant_id || 1320,
             quantity: item.qty || 1,
             files: [
               {
-                type: 'default',
+                type: 'front',
                 url: item.mockup_url || `https://thoseoneguys.band${item.image || '/merch-black-t-shirt.png'}`,
               },
             ],
