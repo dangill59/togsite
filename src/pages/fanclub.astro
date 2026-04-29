@@ -800,28 +800,20 @@ import SpeedLines from '../components/SpeedLines.astro';
       try {
         const data = JSON.parse(saved);
 
-        // Try to load from DB to get latest data
-        const dbFan = await db.select(data.email);
+        // Hit the API directly so we can distinguish "not found" (200, fan=null)
+        // from "DB error" (non-2xx) — only wipe localStorage on the former.
+        const res = await fetch('/api/fans/check', { method: 'POST', headers: json, body: JSON.stringify({ email: data.email }) });
+        const body = await res.json().catch(() => ({}));
 
-        if (dbFan) {
-          const hash = makeHash(dbFan.name, dbFan.email);
+        if (res.ok && body.fan) {
+          const dbFan = body.fan;
           const dateStr = new Date(dbFan.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
           showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, data.heroImage || undefined);
-        } else {
-          // DB record gone but localStorage exists - show from local
-          const hash = makeHash(data.name, data.email);
-          fillCard(data.name, data.signalCode || data.memberNum, data.dateStr, data.favText, data.power || 'Mystery Power', hash);
-          signupSection!.style.display = 'none';
-          cardSection!.style.display = 'block';
-          // Show saved AI image if available
-          const heroImage = document.getElementById('heroImage') as HTMLImageElement;
-          const heroCanvas = document.getElementById('heroCanvas') as HTMLCanvasElement;
-          if (data.heroImage) {
-            heroImage.src = data.heroImage;
-            heroImage.style.display = 'block';
-            heroCanvas.style.display = 'none';
-          }
+        } else if (res.ok) {
+          // Confirmed no record for this email — clear stale localStorage and let them sign up fresh
+          localStorage.removeItem('tog-fan');
         }
+        // else: transient error — leave localStorage alone, user stays "logged in" until next visit
       } catch(e) {}
     }
 
