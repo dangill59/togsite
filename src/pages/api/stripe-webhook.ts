@@ -2,13 +2,14 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
+import { del } from '@vercel/blob';
+import { getSql } from '../../lib/db';
 
 export const POST: APIRoute = async ({ request }) => {
   const stripeKey = import.meta.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY;
   const webhookSecret = import.meta.env.STRIPE_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET;
   const printfulKey = import.meta.env.PRINTFUL_API_KEY || process.env.PRINTFUL_API_KEY;
-  const sbUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
-  const sbKey = import.meta.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY;
+  const blobToken = import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
 
   if (!stripeKey || !webhookSecret) {
     return new Response('Stripe not configured', { status: 500 });
@@ -35,17 +36,24 @@ export const POST: APIRoute = async ({ request }) => {
     const orderId = session.metadata?.order_id;
     const fanEmail = session.metadata?.fan_email || session.customer_email;
 
-    if (!orderId || !sbUrl || !sbKey) {
-      console.error('Missing order_id or Supabase config');
+    if (!orderId) {
+      console.error('Missing order_id in metadata');
       return new Response('OK', { status: 200 });
     }
 
-    const sbHeaders = { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}`, 'Content-Type': 'application/json' };
+    let sql;
+    try {
+      sql = getSql();
+    } catch (err: any) {
+      console.error('DB unavailable:', err.message);
+      return new Response('OK', { status: 200 });
+    }
 
     // Fetch the order
-    const orderRes = await fetch(`${sbUrl}/rest/v1/orders?id=eq.${orderId}&select=*&limit=1`, { headers: sbHeaders });
-    const orders = await orderRes.json();
-    if (!Array.isArray(orders) || orders.length === 0) {
+    const orders = await sql`
+      SELECT * FROM orders WHERE id = ${orderId}::uuid LIMIT 1
+    `;
+    if (orders.length === 0) {
       console.error('Order not found:', orderId);
       return new Response('OK', { status: 200 });
     }
@@ -61,17 +69,15 @@ export const POST: APIRoute = async ({ request }) => {
     const shippingName = session.shipping_details?.name;
 
     // Update order status
-    await fetch(`${sbUrl}/rest/v1/orders?id=eq.${orderId}`, {
-      method: 'PATCH',
-      headers: sbHeaders,
-      body: JSON.stringify({
-        status: 'paid',
-        stripe_session_id: session.id,
-        stripe_payment_intent: session.payment_intent,
-        shipping_address: session.shipping_details,
-        updated_at: new Date().toISOString(),
-      }),
-    });
+    await sql`
+      UPDATE orders SET
+        status = 'paid',
+        stripe_session_id = ${session.id},
+        stripe_payment_intent = ${session.payment_intent as string | null},
+        shipping_address = ${session.shipping_details ? JSON.stringify(session.shipping_details) : null}::jsonb,
+        updated_at = NOW()
+      WHERE id = ${orderId}::uuid
+    `;
 
     const items = order.items as any[];
     const printfulItems = items.filter((i: any) => i.fulfillment === 'printful');
@@ -115,15 +121,13 @@ export const POST: APIRoute = async ({ request }) => {
         const pfData = await pfRes.json();
 
         if (pfData.result?.id) {
-          await fetch(`${sbUrl}/rest/v1/orders?id=eq.${orderId}`, {
-            method: 'PATCH',
-            headers: sbHeaders,
-            body: JSON.stringify({
-              printful_order_id: String(pfData.result.id),
-              status: 'printful_submitted',
-              updated_at: new Date().toISOString(),
-            }),
-          });
+          await sql`
+            UPDATE orders SET
+              printful_order_id = ${String(pfData.result.id)},
+              status = 'printful_submitted',
+              updated_at = NOW()
+            WHERE id = ${orderId}::uuid
+          `;
         } else {
           console.error('Printful order failed:', JSON.stringify(pfData));
         }
@@ -140,7 +144,6 @@ export const POST: APIRoute = async ({ request }) => {
           ? `${shippingName}\n${shippingAddress.line1}\n${shippingAddress.line2 || ''}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postal_code}`
           : 'No address provided';
 
-        // Send via Formspree (same as fan club notifications)
         await fetch('https://formspree.io/f/xpqolkgy', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -163,11 +166,28 @@ export const POST: APIRoute = async ({ request }) => {
     for (const item of customItems) {
       const product = item.slug.replace('custom-hero-', ''); // tee, mug, cap, pin
       try {
-        // Delete from mockups table (frees up slots for new designs)
-        await fetch(`${sbUrl}/rest/v1/mockups?fan_email=eq.${encodeURIComponent(fanEmail || '')}&product=eq.${encodeURIComponent(product)}`, {
-          method: 'DELETE',
-          headers: sbHeaders,
-        });
+        // Fetch URLs we need to delete from blob storage
+        const rows = await sql`
+          SELECT image_url FROM mockups
+          WHERE fan_email = ${fanEmail || ''} AND product = ${product}
+        `;
+
+        // Delete blobs (best effort)
+        if (blobToken) {
+          for (const row of rows) {
+            try {
+              await del(row.image_url as string, { token: blobToken });
+            } catch (e: any) {
+              console.error('Blob delete failed:', e.message);
+            }
+          }
+        }
+
+        // Delete the rows
+        await sql`
+          DELETE FROM mockups
+          WHERE fan_email = ${fanEmail || ''} AND product = ${product}
+        `;
       } catch (err: any) {
         console.error('Mockup cleanup error:', err.message);
       }

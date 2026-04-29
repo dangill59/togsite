@@ -1,12 +1,8 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-
-function getSupabase() {
-  const url = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = import.meta.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY;
-  return { url, key };
-}
+import { put } from '@vercel/blob';
+import { getSql } from '../../lib/db';
 
 export const POST: APIRoute = async ({ request }) => {
   const { heroImage, product, heroName, email } = await request.json();
@@ -20,24 +16,25 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Missing hero image, product, or email' }), { status: 400 });
   }
 
-  const { url: sbUrl, key: sbKey } = getSupabase();
-  if (!sbUrl || !sbKey) {
+  const blobToken = import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+  let sql;
+  try {
+    sql = getSql();
+  } catch (err: any) {
     return new Response(JSON.stringify({ error: 'Storage not configured' }), { status: 500 });
   }
 
-  const sbHeaders = { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}` };
-
   // Check how many variations this fan already has for this product
-  const countRes = await fetch(
-    `${sbUrl}/rest/v1/mockups?fan_email=eq.${encodeURIComponent(email)}&product=eq.${encodeURIComponent(product)}&select=id,variation&order=variation.asc`,
-    { headers: { ...sbHeaders, 'Content-Type': 'application/json' } }
-  );
-  const existing = await countRes.json();
-  if (Array.isArray(existing) && existing.length >= 3) {
+  const existing = await sql`
+    SELECT id, variation FROM mockups
+    WHERE fan_email = ${email} AND product = ${product}
+    ORDER BY variation ASC
+  `;
+  if (existing.length >= 3) {
     return new Response(JSON.stringify({ error: 'Maximum 3 variations per product' }), { status: 429 });
   }
 
-  const nextVariation = Array.isArray(existing) ? existing.length + 1 : 1;
+  const nextVariation = existing.length + 1;
 
   // Each variation gets a distinctly different design style
   const variationStyles = [
@@ -113,27 +110,22 @@ export const POST: APIRoute = async ({ request }) => {
     const imgBase64 = data.data[0].b64_json;
     const imgBuffer = Buffer.from(imgBase64, 'base64');
 
-    // Upload to Supabase Storage
+    // Upload to Vercel Blob
     const sanitizedEmail = email.replace(/[^a-zA-Z0-9]/g, '_');
-    const fileName = `${sanitizedEmail}/${product}_v${nextVariation}.png`;
+    const fileName = `mockups/${sanitizedEmail}/${product}_v${nextVariation}.png`;
 
-    const uploadRes = await fetch(
-      `${sbUrl}/storage/v1/object/mockups/${fileName}`,
-      {
-        method: 'POST',
-        headers: {
-          ...sbHeaders,
-          'Content-Type': 'image/png',
-          'x-upsert': 'true',
-        },
-        body: imgBuffer,
-      }
-    );
-
-    if (!uploadRes.ok) {
-      const uploadErr = await uploadRes.text();
-      console.error('Storage upload error:', uploadErr);
-      // Still return the image even if storage fails
+    let imageUrl: string | null = null;
+    try {
+      const blob = await put(fileName, imgBuffer, {
+        access: 'public',
+        contentType: 'image/png',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        token: blobToken,
+      });
+      imageUrl = blob.url;
+    } catch (e: any) {
+      console.error('Blob upload error:', e.message);
       return new Response(JSON.stringify({
         image: `data:image/png;base64,${imgBase64}`,
         variation: nextVariation,
@@ -141,20 +133,13 @@ export const POST: APIRoute = async ({ request }) => {
       }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Get public URL
-    const imageUrl = `${sbUrl}/storage/v1/object/public/mockups/${fileName}`;
-
     // Save to mockups table
-    await fetch(`${sbUrl}/rest/v1/mockups`, {
-      method: 'POST',
-      headers: { ...sbHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fan_email: email,
-        product,
-        variation: nextVariation,
-        image_url: imageUrl,
-      }),
-    });
+    await sql`
+      INSERT INTO mockups (fan_email, product, variation, image_url)
+      VALUES (${email}, ${product}, ${nextVariation}, ${imageUrl})
+      ON CONFLICT (fan_email, product, variation)
+      DO UPDATE SET image_url = EXCLUDED.image_url, created_at = NOW()
+    `;
 
     return new Response(JSON.stringify({
       image: imageUrl,
@@ -175,28 +160,25 @@ export const GET: APIRoute = async ({ url }) => {
     return new Response(JSON.stringify({ error: 'Missing email' }), { status: 400 });
   }
 
-  const { url: sbUrl, key: sbKey } = getSupabase();
-  if (!sbUrl || !sbKey) {
+  let sql;
+  try {
+    sql = getSql();
+  } catch {
     return new Response(JSON.stringify({}), { status: 200 });
   }
 
-  const sbHeaders = { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}`, 'Content-Type': 'application/json' };
-
-  const res = await fetch(
-    `${sbUrl}/rest/v1/mockups?fan_email=eq.${encodeURIComponent(email)}&select=product,variation,image_url&order=product.asc,variation.asc`,
-    { headers: sbHeaders }
-  );
-
-  const rows = await res.json();
-  if (!Array.isArray(rows)) {
-    return new Response(JSON.stringify({}), { status: 200 });
-  }
+  const rows = await sql`
+    SELECT product, variation, image_url FROM mockups
+    WHERE fan_email = ${email}
+    ORDER BY product ASC, variation ASC
+  `;
 
   // Group by product: { tee: [url1, url2], mug: [url1] }
   const mockups: Record<string, string[]> = {};
   for (const row of rows) {
-    if (!mockups[row.product]) mockups[row.product] = [];
-    mockups[row.product].push(row.image_url);
+    const p = row.product as string;
+    if (!mockups[p]) mockups[p] = [];
+    mockups[p].push(row.image_url as string);
   }
 
   return new Response(JSON.stringify(mockups), {

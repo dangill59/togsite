@@ -1,6 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
+import { getSql } from '../../lib/db';
 
 export const POST: APIRoute = async ({ request }) => {
   const { name, superpower, favoriteMember, email, signalCode, turnstileToken, website, selfie } = await request.json();
@@ -24,12 +25,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
   }
 
-  // === Supabase config (used for rate limiting + fan verification) ===
-  const supabaseUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
-  const supabaseKey = import.meta.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY;
-
-  if (supabaseUrl && supabaseKey) {
-    const sbHeaders = { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' };
+  // === DB-backed protections (rate limit + fan verification) ===
+  try {
+    const sql = getSql();
 
     // === PROTECTION 3: Rate limiting (3 per hour per IP) ===
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -37,35 +35,37 @@ export const POST: APIRoute = async ({ request }) => {
       || 'unknown';
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const countRes = await fetch(
-      `${supabaseUrl}/rest/v1/rate_limits?ip_address=eq.${encodeURIComponent(ip)}&endpoint=eq.generate-hero&created_at=gte.${encodeURIComponent(oneHourAgo)}&select=id`,
-      { headers: sbHeaders }
-    );
-    const recentRequests = await countRes.json();
-    if (Array.isArray(recentRequests) && recentRequests.length >= 3) {
+    const recent = await sql`
+      SELECT id FROM rate_limits
+      WHERE ip_address = ${ip}
+        AND endpoint = 'generate-hero'
+        AND created_at >= ${oneHourAgo}
+    `;
+    if (recent.length >= 3) {
       return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429 });
     }
 
-    // === PROTECTION 4: Verify fan exists in Supabase ===
-    if (email && signalCode) {
-      const fanRes = await fetch(
-        `${supabaseUrl}/rest/v1/fans?email=eq.${encodeURIComponent(email)}&signal_code=eq.${encodeURIComponent(signalCode)}&select=id&limit=1`,
-        { headers: sbHeaders }
-      );
-      const fans = await fanRes.json();
-      if (!Array.isArray(fans) || fans.length === 0) {
-        return new Response(JSON.stringify({ error: 'Signup verification failed' }), { status: 403 });
-      }
-    } else {
+    // === PROTECTION 4: Verify fan exists ===
+    if (!email || !signalCode) {
       return new Response(JSON.stringify({ error: 'Missing signup credentials' }), { status: 403 });
+    }
+    const fans = await sql`
+      SELECT id FROM fans
+      WHERE email = ${email} AND signal_code = ${signalCode}
+      LIMIT 1
+    `;
+    if (fans.length === 0) {
+      return new Response(JSON.stringify({ error: 'Signup verification failed' }), { status: 403 });
     }
 
     // Log request for rate limiting
-    await fetch(`${supabaseUrl}/rest/v1/rate_limits`, {
-      method: 'POST',
-      headers: sbHeaders,
-      body: JSON.stringify({ ip_address: ip, endpoint: 'generate-hero' }),
-    });
+    await sql`
+      INSERT INTO rate_limits (ip_address, endpoint)
+      VALUES (${ip}, 'generate-hero')
+    `;
+  } catch (err: any) {
+    console.error('DB protection error:', err.message);
+    return new Response(JSON.stringify({ error: 'Service unavailable' }), { status: 503 });
   }
 
   // === Generate image ===

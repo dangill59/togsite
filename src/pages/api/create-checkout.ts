@@ -3,6 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
 import { getProduct } from '../../lib/products';
+import { getSql } from '../../lib/db';
 
 export const POST: APIRoute = async ({ request }) => {
   const stripeKey = import.meta.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY;
@@ -70,31 +71,19 @@ export const POST: APIRoute = async ({ request }) => {
 
   const fulfillmentType = hasPrintful && hasSelf ? 'mixed' : hasPrintful ? 'printful' : 'self';
 
-  // Pre-insert order into Supabase
-  const sbUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
-  const sbKey = import.meta.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY;
-
+  // Pre-insert order into Neon
   let orderId: string | null = null;
 
-  if (sbUrl && sbKey) {
-    const sbHeaders = { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
-
-    const orderRes = await fetch(`${sbUrl}/rest/v1/orders`, {
-      method: 'POST',
-      headers: sbHeaders,
-      body: JSON.stringify({
-        fan_email: email,
-        items: orderItems,
-        total_cents: totalCents,
-        fulfillment_type: fulfillmentType,
-        status: 'pending',
-      }),
-    });
-
-    const orderData = await orderRes.json();
-    if (Array.isArray(orderData) && orderData[0]) {
-      orderId = orderData[0].id;
-    }
+  try {
+    const sql = getSql();
+    const inserted = await sql`
+      INSERT INTO orders (fan_email, items, total_cents, fulfillment_type, status)
+      VALUES (${email}, ${JSON.stringify(orderItems)}::jsonb, ${totalCents}, ${fulfillmentType}, 'pending')
+      RETURNING id
+    `;
+    if (inserted[0]) orderId = inserted[0].id as string;
+  } catch (err: any) {
+    console.error('Order insert error:', err.message);
   }
 
   // Need shipping for physical goods
@@ -113,12 +102,17 @@ export const POST: APIRoute = async ({ request }) => {
   });
 
   // Update order with stripe session ID
-  if (orderId && sbUrl && sbKey) {
-    await fetch(`${sbUrl}/rest/v1/orders?id=eq.${orderId}`, {
-      method: 'PATCH',
-      headers: { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stripe_session_id: session.id }),
-    });
+  if (orderId) {
+    try {
+      const sql = getSql();
+      await sql`
+        UPDATE orders
+        SET stripe_session_id = ${session.id}, updated_at = NOW()
+        WHERE id = ${orderId}::uuid
+      `;
+    } catch (err: any) {
+      console.error('Order session update error:', err.message);
+    }
   }
 
   return new Response(JSON.stringify({ url: session.url }), {

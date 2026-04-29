@@ -491,26 +491,23 @@ import SpeedLines from '../components/SpeedLines.astro';
       ctx.shadowBlur = 0;
     }
 
-    // === SUPABASE (via REST API, no SDK needed) ===
-    const SUPABASE_URL = 'https://ysookbcxirqdogezjboo.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlzb29rYmN4aXJxZG9nZXpqYm9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNzAzMDUsImV4cCI6MjA5MDY0NjMwNX0._UNYB0wR74hlzTpfHuo34SDixc_Cj5E9qTku9TMG0Uw';
-    const hdrs = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
-
+    // === DB via internal API routes (Neon-backed) ===
+    const json = { 'Content-Type': 'application/json' };
     const db = {
       async select(email: string) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/fans?email=eq.${encodeURIComponent(email)}&limit=1`, { headers: hdrs });
+        const res = await fetch('/api/fans/check', { method: 'POST', headers: json, body: JSON.stringify({ email }) });
         const data = await res.json();
-        return data?.[0] || null;
+        return data?.fan || null;
       },
       async insert(fan: any) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/fans`, { method: 'POST', headers: hdrs, body: JSON.stringify(fan) });
+        const res = await fetch('/api/fans/upsert', { method: 'POST', headers: json, body: JSON.stringify(fan) });
         return res;
       },
       async update(email: string, fields: any) {
-        await fetch(`${SUPABASE_URL}/rest/v1/fans?email=eq.${encodeURIComponent(email)}`, { method: 'PATCH', headers: hdrs, body: JSON.stringify(fields) });
+        await fetch('/api/fans/upsert', { method: 'POST', headers: json, body: JSON.stringify({ email, ...fields }) });
       },
-      async remove(email: string) {
-        await fetch(`${SUPABASE_URL}/rest/v1/fans?email=eq.${encodeURIComponent(email)}`, { method: 'DELETE', headers: hdrs });
+      async remove(email: string, signal_code?: string) {
+        await fetch('/api/fans/delete', { method: 'POST', headers: json, body: JSON.stringify({ email, signal_code }) });
       },
     };
 
@@ -1110,7 +1107,7 @@ import SpeedLines from '../components/SpeedLines.astro';
         if (saved) {
           try {
             const data = JSON.parse(saved);
-            await db.remove(data.email);
+            await db.remove(data.email, data.signalCode);
           } catch(e) {}
         }
         localStorage.removeItem('tog-fan');
