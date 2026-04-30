@@ -77,6 +77,7 @@ export const POST: APIRoute = async ({ request }) => {
   const memberStyle: Record<string, string> = {
     'Darby (Bass & Vocals)': 'Irish themed with shamrocks and green accents, holding a bass guitar',
     'Dano (Guitar & Vocals)': 'dad rock themed with hamburgers and coffee floating around, holding an electric guitar',
+    'Mr P (Drums & Vocals)': 'intellectual themed with mathematical equations floating around, holding drumsticks',
     'P (Drums & Vocals)': 'intellectual themed with mathematical equations floating around, holding drumsticks',
     "Can't Pick - Love 'Em All": 'rock and roll themed with musical notes and lightning bolts',
   };
