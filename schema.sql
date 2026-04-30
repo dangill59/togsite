@@ -8,9 +8,13 @@ CREATE TABLE IF NOT EXISTS fans (
   favorite_member TEXT,
   superpower TEXT,
   signal_code TEXT,
+  unsubscribed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Run once on existing DBs:
+-- ALTER TABLE fans ADD COLUMN IF NOT EXISTS unsubscribed_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_fans_email ON fans(email);
 CREATE INDEX IF NOT EXISTS idx_fans_signal ON fans(signal_code);

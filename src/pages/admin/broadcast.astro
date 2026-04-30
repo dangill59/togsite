@@ -1,0 +1,249 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+const NAME_TOKEN = '{{name}}';
+const BODY_PLACEHOLDER = `Hey ${NAME_TOKEN},\n\nWe're playing The Bourbon this Friday at 9pm. Doors at 8.\n\nBring the squad.\n\n— TOG`;
+---
+
+<BaseLayout title="Broadcast | Admin">
+  <section class="admin">
+    <h1 class="comic-title">Broadcast to Squad</h1>
+
+    <!-- Password gate -->
+    <div id="gate" class="card">
+      <h2>Admin password</h2>
+      <input id="password" type="password" placeholder="Enter admin password" autocomplete="current-password" />
+      <button id="unlockBtn" class="btn btn-primary">Unlock</button>
+      <p id="gateError" class="error"></p>
+    </div>
+
+    <!-- Composer -->
+    <div id="composer" style="display:none;">
+      <div class="card">
+        <div class="stats" id="stats">Loading...</div>
+      </div>
+
+      <div class="card">
+        <label>Subject</label>
+        <input id="subject" type="text" placeholder="The Bourbon, Friday — be there" />
+
+        <label>Body (HTML allowed; <code set:html="&#123;&#123;name&#125;&#125;"></code> gets replaced with their first name)</label>
+        <textarea id="body" rows="12" placeholder={BODY_PLACEHOLDER}></textarea>
+
+        <div class="actions">
+          <input id="testEmail" type="email" placeholder="Test send to (your email)" />
+          <button id="testBtn" class="btn btn-secondary">Send test</button>
+          <button id="dryBtn" class="btn">Preview count</button>
+          <button id="sendBtn" class="btn btn-primary">Send to all</button>
+        </div>
+        <p id="status" class="status"></p>
+      </div>
+
+      <div class="card">
+        <h3>Subscribed fans</h3>
+        <ul id="fanList"></ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .admin {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+  }
+  .comic-title {
+    color: var(--brown);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+  }
+  .card {
+    background: #fff;
+    border: 3px solid var(--brown);
+    box-shadow: 4px 4px 0 var(--brown);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .card h2, .card h3 {
+    margin-top: 0;
+    color: var(--brown);
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+    color: var(--brown);
+    font-size: 0.95rem;
+  }
+  input, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font: inherit;
+    border: 2px solid var(--brown);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--brown);
+  }
+  textarea {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 0.92rem;
+    resize: vertical;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    align-items: center;
+  }
+  .actions input {
+    flex: 1;
+    min-width: 200px;
+  }
+  .btn {
+    padding: 0.7rem 1.4rem;
+    font-family: var(--comic);
+    font-size: 1rem;
+    border: 3px solid var(--brown);
+    border-radius: 4px;
+    background: var(--cream);
+    color: var(--brown);
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--brown);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--brown); }
+  .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--brown); }
+  .btn-primary { background: var(--orange); color: var(--cream); }
+  .btn-secondary { background: var(--teal); color: var(--cream); }
+  .stats {
+    font-family: var(--comic);
+    font-size: 1.3rem;
+    color: var(--brown);
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .stats strong { color: var(--orange); font-size: 1.6rem; }
+  .status, .error { margin-top: 1rem; font-weight: 600; }
+  .error { color: var(--rust); }
+  ul { padding-left: 1.5rem; }
+  ul li { margin-bottom: 0.4rem; font-size: 0.92rem; }
+  code {
+    background: var(--cream);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+  }
+</style>
+
+<script>
+  const $ = (id: string) => document.getElementById(id)!;
+  const PW_KEY = 'tog-admin-pw';
+
+  async function callApi(path: string, body: any, password: string) {
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  async function loadStats(password: string) {
+    const r = await callApi('/api/admin/list-fans', {}, password);
+    if (!r.ok) return false;
+    const subscribed = r.data.subscribed || [];
+    $('stats').innerHTML = `
+      <strong>${r.data.subscribedCount}</strong> subscribed &middot;
+      <strong>${r.data.unsubscribedCount}</strong> unsubscribed
+    `;
+    const list = $('fanList');
+    list.innerHTML = '';
+    for (const f of subscribed) {
+      const li = document.createElement('li');
+      li.textContent = `${f.name || 'unnamed'} <${f.email}>${f.favorite_member ? ' — ' + f.favorite_member : ''}`;
+      list.appendChild(li);
+    }
+    return true;
+  }
+
+  async function unlock() {
+    const password = ($('password') as HTMLInputElement).value.trim();
+    if (!password) return;
+    const ok = await loadStats(password);
+    if (ok) {
+      sessionStorage.setItem(PW_KEY, password);
+      $('gate').style.display = 'none';
+      $('composer').style.display = 'block';
+    } else {
+      $('gateError').textContent = 'Wrong password.';
+    }
+  }
+
+  $('unlockBtn').addEventListener('click', unlock);
+  ($('password') as HTMLInputElement).addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') unlock();
+  });
+
+  // Auto-unlock if we have a saved password
+  const saved = sessionStorage.getItem(PW_KEY);
+  if (saved) {
+    loadStats(saved).then((ok) => {
+      if (ok) {
+        $('gate').style.display = 'none';
+        $('composer').style.display = 'block';
+      } else {
+        sessionStorage.removeItem(PW_KEY);
+      }
+    });
+  }
+
+  function getCreds() {
+    return sessionStorage.getItem(PW_KEY) || ($('password') as HTMLInputElement).value.trim();
+  }
+
+  function getMessage() {
+    return {
+      subject: ($('subject') as HTMLInputElement).value.trim(),
+      body: ($('body') as HTMLTextAreaElement).value.trim(),
+    };
+  }
+
+  $('testBtn').addEventListener('click', async () => {
+    const { subject, body } = getMessage();
+    const testTo = ($('testEmail') as HTMLInputElement).value.trim();
+    if (!subject || !body) return ($('status').textContent = 'Subject and body are required.');
+    if (!testTo) return ($('status').textContent = 'Add a test email first.');
+    $('status').textContent = 'Sending test...';
+    const r = await callApi('/api/admin/broadcast', { subject, body, testTo }, getCreds());
+    $('status').textContent = r.ok ? `Test sent to ${testTo}.` : `Failed: ${r.data.error || 'unknown error'}`;
+  });
+
+  $('dryBtn').addEventListener('click', async () => {
+    const { subject, body } = getMessage();
+    if (!subject || !body) return ($('status').textContent = 'Subject and body are required.');
+    const r = await callApi('/api/admin/broadcast', { subject, body, dryRun: true }, getCreds());
+    $('status').textContent = r.ok ? `Would send to ${r.data.recipients} fan(s).` : `Failed: ${r.data.error || 'unknown error'}`;
+  });
+
+  $('sendBtn').addEventListener('click', async () => {
+    const { subject, body } = getMessage();
+    if (!subject || !body) return ($('status').textContent = 'Subject and body are required.');
+    const dry = await callApi('/api/admin/broadcast', { subject, body, dryRun: true }, getCreds());
+    if (!dry.ok) return ($('status').textContent = `Failed: ${dry.data.error || 'unknown error'}`);
+    if (!confirm(`Really send to ${dry.data.recipients} fan(s)? This is real.`)) return;
+    $('status').textContent = `Sending to ${dry.data.recipients}...`;
+    const r = await callApi('/api/admin/broadcast', { subject, body }, getCreds());
+    if (r.ok) {
+      $('status').textContent = `Sent: ${r.data.sent} / ${r.data.total}. Failed: ${r.data.failed}.`;
+    } else {
+      $('status').textContent = `Failed: ${r.data.error || 'unknown error'}`;
+    }
+  });
+</script>
