@@ -8,6 +8,9 @@ import { products as allProducts, formatPrice } from '../lib/products';
 
 const slugs = ['tog-tee', 'tog-mug', 'enamel-pin', 'tog-cap', 'wristband', 'headband', 'bandana', 'squad-pin', 'squad-headband', 'squad-bandana'];
 const products = slugs.map(s => allProducts.find(p => p.slug === s)!);
+
+// Flip to false to re-enable purchases everywhere on this page.
+const COMING_SOON = true;
 ---
 
 <BaseLayout title="Merch | Those One Guys">
@@ -30,6 +33,17 @@ const products = slugs.map(s => allProducts.find(p => p.slug === s)!);
   <section class="section">
     <p class="section-subtitle">Wear the noise. Rep the squad. Look incredibly cool doing it.</p>
 
+    {COMING_SOON && (
+      <div class="merch-soon-banner comic-panel">
+        <ComicBurst text="SOON!" bg="#e8641b" shape="star" size="md" rotate={-8} />
+        <div>
+          <h2 class="comic-title">Store opening soon</h2>
+          <p>We're getting the merch line ready. <a href="/fanclub">Join the TOG Hero Squad</a> and we'll let you know the second it drops.</p>
+        </div>
+        <ComicBurst text="STAY!" bg="#1a8a7d" shape="pow" size="md" rotate={10} />
+      </div>
+    )}
+
     <div class="merch-grid">
       {products.map((product, i) => (
         <div class="merch-card comic-panel">
@@ -49,14 +63,18 @@ const products = slugs.map(s => allProducts.find(p => p.slug === s)!);
           <h3 class="merch-name">{product.name}</h3>
           <p class="merch-price">{formatPrice(product.priceCents)}</p>
           <p class="merch-desc">{product.description}</p>
-          {product.sizes && (
+          {!COMING_SOON && product.sizes && (
             <select class="merch-size-select" data-slug={product.slug}>
               {product.sizes.map(s => <option value={s}>{s}</option>)}
             </select>
           )}
-          <button class="merch-buy-btn btn btn-primary" data-slug={product.slug}>
-            Buy — {formatPrice(product.priceCents)}
-          </button>
+          {COMING_SOON ? (
+            <span class="merch-soon-badge">Coming Soon</span>
+          ) : (
+            <button class="merch-buy-btn btn btn-primary" data-slug={product.slug}>
+              Buy — {formatPrice(product.priceCents)}
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -70,6 +88,13 @@ const products = slugs.map(s => allProducts.find(p => p.slug === s)!);
       </div>
       <p class="section-subtitle">TOG Squad members — put YOUR superhero on a tee, mug, or pin. Your hero, your merch.</p>
 
+      {COMING_SOON ? (
+        <div class="custom-not-member">
+          <p><strong>Coming soon.</strong> The custom hero merch builder is offline while we get the store ready.</p>
+          <a href="/fanclub" class="btn btn-primary">Join the Squad to be first in line</a>
+        </div>
+      ) : (
+      <>
       <div id="customNotMember" class="custom-not-member">
         <p>You need a Hero Card to create custom merch.</p>
         <a href="/fanclub" class="btn btn-primary">Join TOG Hero Squad</a>
@@ -122,6 +147,8 @@ const products = slugs.map(s => allProducts.find(p => p.slug === s)!);
         </div>
         <p class="mockup-slots" id="mockupSlots" style="display:none;"></p>
       </div>
+      </>
+      )}
     </div>
 
     <div class="merch-cta">
@@ -584,6 +611,48 @@ const products = slugs.map(s => allProducts.find(p => p.slug === s)!);
     width: 100%;
     font-size: 0.9rem;
     padding: 0.6rem 1rem;
+  }
+
+  .merch-soon-badge {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    padding: 0.7rem 1rem;
+    font-family: var(--comic);
+    font-size: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--cream);
+    color: var(--brown);
+    border: 3px dashed var(--brown);
+    border-radius: 4px;
+  }
+
+  .merch-soon-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    margin: 0 0 2.5rem;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    color: var(--cream);
+    flex-wrap: wrap;
+    text-align: center;
+  }
+  .merch-soon-banner h2 {
+    margin: 0 0 0.4rem;
+    font-size: 2rem;
+    color: var(--cream);
+  }
+  .merch-soon-banner p {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .merch-soon-banner a {
+    color: var(--cream);
+    text-decoration: underline;
+    font-weight: 600;
   }
 
   /* === Custom Hero Merch === */

@@ -1,9 +1,11 @@
 """
 TOG Venmo tip poster — same style + size as the squad poster.
-18 x 24 inches at 150 DPI = 2700 x 3600 (portrait).
 
-QR is a placeholder for now — pass --qr <path> to drop in the real one,
-or set VENMO_QR_PATH env var.
+Default: 18 x 24 inches at 150 DPI = 2700 x 3600 (portrait, web/preview).
+--print: 18 x 24 inches at 300 DPI with 0.125" bleed = 5476 x 7276
+         (commercial print: trim line is 38px in from each edge).
+
+QR: pass --qr <path> to drop in the real one, or set VENMO_QR_PATH env var.
 """
 import os
 import sys
@@ -13,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # Reuse helpers from the squad poster generator
 from gen_poster import (
-    DPI, W, H, PUBLIC, BANGERS, RIGHTEOUS,
+    PUBLIC, BANGERS, RIGHTEOUS,
     ORANGE, GOLD, BROWN, DARK_BROWN, CREAM, TEAL, PLUM,
     RUST, RED, YELLOW, PINK, BLUE,
     font, make_gradient, add_halftone, add_speed_lines,
@@ -60,12 +62,20 @@ def load_qr_placeholder(qr_path, size):
     return ph
 
 
-def build(qr_path=None):
+def build(qr_path=None, print_ready=False):
     random.seed(7)
-    print(f"Building {W}x{H} tip poster ({W/DPI}x{H/DPI} inches)…")
+
+    DPI = 300 if print_ready else 150
+    BLEED = int(0.125 * DPI) if print_ready else 0  # 0.125" bleed each side
+    s = DPI / 150  # scale factor for sizes/fonts hardcoded at 150 DPI
+    TRIM_W, TRIM_H = 18 * DPI, 24 * DPI
+    W, H = TRIM_W + 2 * BLEED, TRIM_H + 2 * BLEED
+
+    mode = "PRINT (300 DPI + 0.125\" bleed)" if print_ready else "WEB (150 DPI)"
+    print(f"Building {W}x{H} tip poster — {mode}")
 
     bg = make_gradient(W, H).convert("RGBA")
-    bg = add_halftone(bg, color=(0, 0, 0), opacity=22, spacing=24, radius=4)
+    bg = add_halftone(bg, color=(0, 0, 0), opacity=22, spacing=int(24*s), radius=int(4*s))
     bg = add_speed_lines(bg, color=CREAM, opacity=22, count=140)
     img = bg
 
@@ -86,34 +96,34 @@ def build(qr_path=None):
     main_y = int(0.10 * H)
     img = draw_comic_burst(img, int(0.28 * W), main_y, "BUY US!",
                            (*ORANGE, 255), fg=CREAM, size="lg", shape="star", rotate=-12)
-    img = draw_comic_burst(img, int(0.50 * W), main_y - 30, "A!",
+    img = draw_comic_burst(img, int(0.50 * W), main_y - int(30*s), "A!",
                            (*GOLD, 255), fg=BROWN, size="lg", shape="pow", rotate=8)
     img = draw_comic_burst(img, int(0.72 * W), main_y, "BEER!",
                            (*PLUM, 255), fg=CREAM, size="lg", shape="jagged", rotate=-5)
 
     # === Title (growing letters, climbing uphill left-to-right) ===
     img = draw_title(img, "TIP THE BAND!", W // 2, int(0.22 * H),
-                     base_size=170, grow_per_letter=12,
-                     rotate=0, uphill_per_letter=18)
+                     base_size=int(170*s), grow_per_letter=int(12*s),
+                     rotate=0, uphill_per_letter=int(18*s))
 
     # === Tagline ===
     d = ImageDraw.Draw(img)
     tag = "Loved the show? Show us the love."
-    f_tag = font(BANGERS, 90)
+    f_tag = font(BANGERS, int(90*s))
     bbox = d.textbbox((0, 0), tag, font=f_tag)
     tw = bbox[2] - bbox[0]
     tag_y = int(0.27 * H)
-    d.text(((W - tw) / 2 + 6, tag_y + 6), tag, font=f_tag, fill=(0, 0, 0, 160))
+    d.text(((W - tw) / 2 + int(6*s), tag_y + int(6*s)), tag, font=f_tag, fill=(0, 0, 0, 160))
     d.text(((W - tw) / 2, tag_y), tag, font=f_tag, fill=CREAM,
-           stroke_width=3, stroke_fill=BROWN)
+           stroke_width=int(3*s), stroke_fill=BROWN)
 
     # === Three characters (same as squad poster) ===
     char_y = int(0.44 * H)
-    char_h = 950
+    char_h = int(950*s)
     place_character(img, os.path.join(PUBLIC, "p.png"),
                     int(0.20 * W), char_y, char_h, rotate=-2)
     place_character(img, os.path.join(PUBLIC, "dano.png"),
-                    int(0.50 * W), char_y - 30, char_h + 60, rotate=0)
+                    int(0.50 * W), char_y - int(30*s), char_h + int(60*s), rotate=0)
     place_character(img, os.path.join(PUBLIC, "darby.png"),
                     int(0.80 * W), char_y, char_h, rotate=2)
 
@@ -123,67 +133,71 @@ def build(qr_path=None):
     panel = Image.new("RGBA", (int(W * 0.84), panel_h), (*CREAM, 240))
     pd = ImageDraw.Draw(panel)
     pd.rectangle((0, 0, panel.size[0] - 1, panel.size[1] - 1),
-                 outline=BROWN, width=14)
-    sh = Image.new("RGBA", (panel.size[0] + 24, panel.size[1] + 24), (0, 0, 0, 0))
+                 outline=BROWN, width=int(14*s))
+    sh = Image.new("RGBA", (panel.size[0] + int(24*s), panel.size[1] + int(24*s)), (0, 0, 0, 0))
     sd = ImageDraw.Draw(sh)
-    sd.rectangle((24, 24, panel.size[0] + 24, panel.size[1] + 24),
+    sd.rectangle((int(24*s), int(24*s), panel.size[0] + int(24*s), panel.size[1] + int(24*s)),
                  fill=(0, 0, 0, 140))
     px = int(W * 0.08)
-    img.alpha_composite(sh, (px, section_y - 24))
+    img.alpha_composite(sh, (px, section_y - int(24*s)))
     img.alpha_composite(panel, (px, section_y))
 
     # === Venmo header ===
-    f_venmo = font(BANGERS, 200)
+    f_venmo = font(BANGERS, int(200*s))
     venmo_text = "VENMO"
     d = ImageDraw.Draw(img)
     bbox = d.textbbox((0, 0), venmo_text, font=f_venmo)
     tw = bbox[2] - bbox[0]
-    venmo_y = section_y + 50
-    d.text(((W - tw) / 2 + 6, venmo_y + 6), venmo_text, font=f_venmo, fill=(0, 0, 0, 120))
+    venmo_y = section_y + int(50*s)
+    d.text(((W - tw) / 2 + int(6*s), venmo_y + int(6*s)), venmo_text, font=f_venmo, fill=(0, 0, 0, 120))
     d.text(((W - tw) / 2, venmo_y), venmo_text, font=f_venmo, fill=VENMO_BLUE,
-           stroke_width=5, stroke_fill=BROWN)
+           stroke_width=int(5*s), stroke_fill=BROWN)
 
     # Subtitle
-    f_sub = font(RIGHTEOUS, 60)
+    f_sub = font(RIGHTEOUS, int(60*s))
     sub = "Tap, pay, rock on."
     bbox = d.textbbox((0, 0), sub, font=f_sub)
     tw = bbox[2] - bbox[0]
-    d.text(((W - tw) / 2, venmo_y + 220), sub, font=f_sub, fill=BROWN)
+    d.text(((W - tw) / 2, venmo_y + int(220*s)), sub, font=f_sub, fill=BROWN)
 
     # === QR ===
-    qr_size = 640
+    qr_size = int(640*s)
     qr = load_qr_placeholder(qr_path, qr_size)
-    qr_frame = Image.new("RGBA", (qr_size + 60, qr_size + 60), (*CREAM, 255))
+    qr_frame = Image.new("RGBA", (qr_size + int(60*s), qr_size + int(60*s)), (*CREAM, 255))
     qfd = ImageDraw.Draw(qr_frame)
     qfd.rectangle((0, 0, qr_frame.size[0] - 1, qr_frame.size[1] - 1),
-                  outline=BROWN, width=10)
-    qr_x = (W - qr_size - 60) // 2
-    qr_y = section_y + 380
+                  outline=BROWN, width=int(10*s))
+    qr_x = (W - qr_size - int(60*s)) // 2
+    qr_y = section_y + int(380*s)
     img.alpha_composite(qr_frame, (qr_x, qr_y))
-    img.alpha_composite(qr, (qr_x + 30, qr_y + 30))
+    img.alpha_composite(qr, (qr_x + int(30*s), qr_y + int(30*s)))
 
     # SCAN/THANKS bursts beside QR
-    img = draw_comic_burst(img, qr_x + qr_size + 220, qr_y + 100, "SCAN!",
+    img = draw_comic_burst(img, qr_x + qr_size + int(220*s), qr_y + int(100*s), "SCAN!",
                            (*YELLOW, 255), fg=BROWN, size="md", shape="bang", rotate=15)
-    img = draw_comic_burst(img, qr_x - 180, qr_y + qr_size - 120, "THANKS!",
+    img = draw_comic_burst(img, qr_x - int(180*s), qr_y + qr_size - int(120*s), "THANKS!",
                            (*RED, 255), fg=CREAM, size="md", shape="star", rotate=-18)
 
     # Footer line
-    f_foot = font(BANGERS, 80)
+    f_foot = font(BANGERS, int(80*s))
     foot = "Every dollar = one extra riff"
     d = ImageDraw.Draw(img)
     bbox = d.textbbox((0, 0), foot, font=f_foot)
     tw = bbox[2] - bbox[0]
-    foot_y = qr_y + qr_size + 90
-    d.text(((W - tw) / 2 + 4, foot_y + 4), foot, font=f_foot, fill=(0, 0, 0, 140))
+    foot_y = qr_y + qr_size + int(90*s)
+    d.text(((W - tw) / 2 + int(4*s), foot_y + int(4*s)), foot, font=f_foot, fill=(0, 0, 0, 140))
     d.text(((W - tw) / 2, foot_y), foot, font=f_foot, fill=CREAM,
-           stroke_width=3, stroke_fill=BROWN)
+           stroke_width=int(3*s), stroke_fill=BROWN)
 
-    img = draw_border(img.convert("RGBA"), inset=40, thickness=20)
+    img = draw_border(img.convert("RGBA"), inset=int(40*s) + BLEED, thickness=int(20*s))
 
-    out_path = os.path.join(PUBLIC, "tog-tip-poster.png")
+    suffix = "-print" if print_ready else ""
+    out_path = os.path.join(PUBLIC, f"tog-tip-poster{suffix}.png")
     img.convert("RGB").save(out_path, "PNG", optimize=True)
-    print(f"Saved -> {out_path} ({os.path.getsize(out_path) // 1024} KB)")
+    kb = os.path.getsize(out_path) // 1024
+    inches = f"{TRIM_W/DPI:.0f}x{TRIM_H/DPI:.0f}\""
+    bleed_note = f" (+0.125\" bleed)" if print_ready else ""
+    print(f"Saved -> {out_path} ({kb} KB) [{inches} trim @ {DPI} DPI{bleed_note}]")
 
 
 if __name__ == "__main__":
@@ -192,4 +206,5 @@ if __name__ == "__main__":
         qr_path = sys.argv[sys.argv.index("--qr") + 1]
     elif os.environ.get("VENMO_QR_PATH"):
         qr_path = os.environ["VENMO_QR_PATH"]
-    build(qr_path)
+    print_ready = "--print" in sys.argv
+    build(qr_path, print_ready=print_ready)
