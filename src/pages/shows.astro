@@ -3,15 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ComicBurst from '../components/ComicBurst.astro';
 import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
-
-const shows = [
-  { date: "MAY 2", venue: "The Owl Bar", city: "Sundance, UT", note: "", burst: "THOSE!", shape: "star" as const, burstBg: "#e8641b", address: "The Owl Bar, Sundance Mountain Resort, Sundance, UT" },
-  { date: "MAY 16", venue: "Brewskis", city: "Ogden, UT", note: "", burst: "ONE!", shape: "pow" as const, burstBg: "#1a8a7d", address: "Brewskis, Ogden, UT" },
-];
-
-function slug(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
+import { shows, showSlug, showLabel } from '../lib/shows';
 
 const miniWords = ["BAM!", "POW!", "ZAP!", "WHAM!", "CRASH!", "BOOM!"];
 const miniColors = ["#e8251b", "#1e90ff", "#ff69b4", "#ffe135", "#f5a623", "#1a8a7d"];
@@ -40,10 +32,10 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
 
     <div class="shows-list">
       {shows.map((show, i) => {
-        const showId = slug(`${show.date}-${show.venue}`);
-        const showLabel = `${show.date} — ${show.venue}`;
+        const showId = showSlug(show);
+        const label = showLabel(show);
         return (
-        <div class="show-block">
+        <div class="show-block" id={showId}>
           <div class="show-row comic-panel">
             <div class="show-burst">
               <ComicBurst text={show.burst} bg={show.burstBg} shape={show.shape} size="md" rotate={i % 2 === 0 ? -10 : 10} />
@@ -65,7 +57,7 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
             </div>
           </div>
 
-          <div class="show-comments" data-show-id={showId} data-show-label={showLabel}>
+          <div class="show-comments" data-show-id={showId} data-show-label={label}>
             <button class="comments-toggle" type="button">
               <span class="ct-label">Squad chatter</span>
               <span class="ct-count" data-count="0">—</span>
@@ -515,5 +507,14 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
 
     // Pre-load count on page render so toggle shows actual number
     load();
+
+    // Auto-expand if the URL points to this show (e.g. /shows#may-2-the-owl-bar)
+    if (location.hash && location.hash.slice(1) === showId) {
+      panel.hidden = false;
+      showSquadUi();
+      load();
+      // Smooth-scroll into view shortly after expand to ensure layout settles
+      setTimeout(() => root.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
   });
 </script>

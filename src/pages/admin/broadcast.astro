@@ -1,8 +1,17 @@
 ---
 export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { shows, showSlug, showLabel } from '../../lib/shows';
 const NAME_TOKEN = '{{name}}';
 const BODY_PLACEHOLDER = `Hey ${NAME_TOKEN},\n\nWe're playing The Bourbon this Friday at 9pm. Doors at 8.\n\nBring the squad.\n\n— TOG`;
+
+// Build show options for the post-show preset dropdown
+const showOptions = shows.map((s) => ({
+  id: showSlug(s),
+  label: showLabel(s),
+  venue: s.venue,
+  date: s.date,
+}));
 ---
 
 <BaseLayout title="Broadcast | Admin">
@@ -21,6 +30,33 @@ const BODY_PLACEHOLDER = `Hey ${NAME_TOKEN},\n\nWe're playing The Bourbon this F
     <div id="composer" style="display:none;">
       <div class="card">
         <div class="stats" id="stats">Loading...</div>
+      </div>
+
+      <div class="card">
+        <h3>Templates</h3>
+        <p class="template-help">Pick one to pre-fill the subject and body. You can edit before sending.</p>
+        <div class="templates">
+          <div class="template-row">
+            <label>Post-show</label>
+            <select id="postShowSelect">
+              <option value="">— pick a show —</option>
+              {showOptions.map((s) => (
+                <option value={s.id} data-label={s.label} data-venue={s.venue} data-date={s.date}>{s.label}</option>
+              ))}
+            </select>
+            <button id="postShowFill" class="btn btn-secondary" type="button">Use template</button>
+          </div>
+          <div class="template-row">
+            <label>Upcoming-show heads-up</label>
+            <select id="upcomingSelect">
+              <option value="">— pick a show —</option>
+              {showOptions.map((s) => (
+                <option value={s.id} data-label={s.label} data-venue={s.venue} data-date={s.date}>{s.label}</option>
+              ))}
+            </select>
+            <button id="upcomingFill" class="btn btn-secondary" type="button">Use template</button>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -132,6 +168,45 @@ const BODY_PLACEHOLDER = `Hey ${NAME_TOKEN},\n\nWe're playing The Bourbon this F
   .error { color: var(--rust); }
   ul { padding-left: 1.5rem; }
   ul li { margin-bottom: 0.4rem; font-size: 0.92rem; }
+
+  .template-help {
+    margin: -0.5rem 0 0.75rem;
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+  .templates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .template-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) 2fr auto;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .template-row label {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .template-row select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--brown);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--brown);
+    font: inherit;
+  }
+  .template-row .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 600px) {
+    .template-row {
+      grid-template-columns: 1fr;
+    }
+  }
   code {
     background: var(--cream);
     padding: 2px 6px;
@@ -214,6 +289,71 @@ const BODY_PLACEHOLDER = `Hey ${NAME_TOKEN},\n\nWe're playing The Bourbon this F
       body: ($('body') as HTMLTextAreaElement).value.trim(),
     };
   }
+
+  // === Templates ===
+  function fillForm(subject: string, body: string) {
+    ($('subject') as HTMLInputElement).value = subject;
+    ($('body') as HTMLTextAreaElement).value = body;
+    $('subject').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function selectedShow(selectId: string): { id: string; label: string; venue: string; date: string } | null {
+    const sel = $(selectId) as HTMLSelectElement;
+    if (!sel.value) return null;
+    const opt = sel.options[sel.selectedIndex];
+    return {
+      id: sel.value,
+      label: opt.dataset.label || sel.value,
+      venue: opt.dataset.venue || '',
+      date: opt.dataset.date || '',
+    };
+  }
+
+  $('postShowFill').addEventListener('click', () => {
+    const show = selectedShow('postShowSelect');
+    if (!show) {
+      $('status').textContent = 'Pick a show first.';
+      return;
+    }
+    const subject = `Thanks for coming to ${show.venue}!`;
+    const threadUrl = `https://thoseoneguys.band/shows#${show.id}`;
+    const body = [
+      `Hey {{name}},`,
+      ``,
+      `Thanks for coming out to <strong>${show.venue}</strong> last night. The energy in the room was unreal — we appreciate every one of you who showed up.`,
+      ``,
+      `Drop a comment on the show thread and tell us your favorite moment (or which song almost blew the speakers):`,
+      ``,
+      `<a href="${threadUrl}" style="display:inline-block;background:#e8641b;color:#fdf5e6;font-family:Impact,'Arial Black',sans-serif;font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:12px 28px;border:3px solid #5c3317;box-shadow:4px 4px 0 #5c3317;text-decoration:none;">Open Squad Chatter</a>`,
+      ``,
+      `Bring your hero card to the next gig — we hook up squad members at the merch table.`,
+      ``,
+      `See you out there.`,
+      `— Dano, Darby & Mr P`,
+    ].join('\n');
+    fillForm(subject, body);
+  });
+
+  $('upcomingFill').addEventListener('click', () => {
+    const show = selectedShow('upcomingSelect');
+    if (!show) {
+      $('status').textContent = 'Pick a show first.';
+      return;
+    }
+    const subject = `${show.venue} on ${show.date} — be there`;
+    const threadUrl = `https://thoseoneguys.band/shows#${show.id}`;
+    const body = [
+      `Hey {{name}},`,
+      ``,
+      `Heads-up — we're playing <strong>${show.venue}</strong> on <strong>${show.date}</strong>. Bring the squad, bring your hero card, and come say hi at the merch table for some free swag.`,
+      ``,
+      `<a href="${threadUrl}" style="display:inline-block;background:#1a8a7d;color:#fdf5e6;font-family:Impact,'Arial Black',sans-serif;font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:12px 28px;border:3px solid #5c3317;box-shadow:4px 4px 0 #5c3317;text-decoration:none;">Show Details + Directions</a>`,
+      ``,
+      `Loud guitars. Big grooves. Zero chill.`,
+      `— TOG`,
+    ].join('\n');
+    fillForm(subject, body);
+  });
 
   $('testBtn').addEventListener('click', async () => {
     const { subject, body } = getMessage();
