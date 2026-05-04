@@ -9,6 +9,10 @@ const shows = [
   { date: "MAY 16", venue: "Brewskis", city: "Ogden, UT", note: "", burst: "ONE!", shape: "pow" as const, burstBg: "#1a8a7d", address: "Brewskis, Ogden, UT" },
 ];
 
+function slug(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
 const miniWords = ["BAM!", "POW!", "ZAP!", "WHAM!", "CRASH!", "BOOM!"];
 const miniColors = ["#e8251b", "#1e90ff", "#ff69b4", "#ffe135", "#f5a623", "#1a8a7d"];
 const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
@@ -35,28 +39,60 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
     <p class="section-subtitle">Come see us do the thing. Dates coming soon.</p>
 
     <div class="shows-list">
-      {shows.map((show, i) => (
-        <div class="show-row comic-panel">
-          <div class="show-burst">
-            <ComicBurst text={show.burst} bg={show.burstBg} shape={show.shape} size="md" rotate={i % 2 === 0 ? -10 : 10} />
+      {shows.map((show, i) => {
+        const showId = slug(`${show.date}-${show.venue}`);
+        const showLabel = `${show.date} — ${show.venue}`;
+        return (
+        <div class="show-block">
+          <div class="show-row comic-panel">
+            <div class="show-burst">
+              <ComicBurst text={show.burst} bg={show.burstBg} shape={show.shape} size="md" rotate={i % 2 === 0 ? -10 : 10} />
+            </div>
+            <div class="show-details">
+              <h3 class="comic-title">{show.venue}</h3>
+              <p class="show-city">{show.city}</p>
+              <p class="show-note">{show.note}</p>
+            </div>
+            <div class="show-date">
+              <span class="date-text">{show.date}</span>
+            </div>
+            <div class="show-mini-bursts">
+              <ComicBurst text={miniWords[i * 2]} bg={miniColors[i * 2]} color={miniColors[i * 2] === "#ffe135" ? "#5c3317" : "#fdf5e6"} shape={miniShapes[i * 2]} size="xs" rotate={-15 + i * 8} />
+              <ComicBurst text={miniWords[i * 2 + 1]} bg={miniColors[i * 2 + 1]} shape={miniShapes[i * 2 + 1]} size="xs" rotate={10 - i * 5} />
+            </div>
+            <div class="show-action">
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(show.address)}`} target="_blank" rel="noopener" class="btn btn-primary">Directions</a>
+            </div>
           </div>
-          <div class="show-details">
-            <h3 class="comic-title">{show.venue}</h3>
-            <p class="show-city">{show.city}</p>
-            <p class="show-note">{show.note}</p>
-          </div>
-          <div class="show-date">
-            <span class="date-text">{show.date}</span>
-          </div>
-          <div class="show-mini-bursts">
-            <ComicBurst text={miniWords[i * 2]} bg={miniColors[i * 2]} color={miniColors[i * 2] === "#ffe135" ? "#5c3317" : "#fdf5e6"} shape={miniShapes[i * 2]} size="xs" rotate={-15 + i * 8} />
-            <ComicBurst text={miniWords[i * 2 + 1]} bg={miniColors[i * 2 + 1]} shape={miniShapes[i * 2 + 1]} size="xs" rotate={10 - i * 5} />
-          </div>
-          <div class="show-action">
-            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(show.address)}`} target="_blank" rel="noopener" class="btn btn-primary">Directions</a>
+
+          <div class="show-comments" data-show-id={showId} data-show-label={showLabel}>
+            <button class="comments-toggle" type="button">
+              <span class="ct-label">Squad chatter</span>
+              <span class="ct-count" data-count="0">—</span>
+            </button>
+            <div class="comments-panel" hidden>
+              <div class="comments-form-wrap">
+                <div class="comments-form" hidden>
+                  <textarea class="comment-input" placeholder="What did you think of the show?" maxlength="1000" rows="3"></textarea>
+                  <input type="text" class="comment-honeypot" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                  <div class="comment-row">
+                    <span class="comment-as">Posting as <strong class="comment-as-name">…</strong></span>
+                    <button class="btn btn-primary comment-submit" type="button">Post</button>
+                  </div>
+                  <p class="comment-status"></p>
+                </div>
+                <div class="comments-gate">
+                  <p>Only TOG Hero Squad members can chime in. <a href="/fanclub">Join the squad</a> and come back to drop a comment.</p>
+                </div>
+              </div>
+              <ul class="comments-list">
+                <li class="comments-empty">No comments yet — be first.</li>
+              </ul>
+            </div>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   </section>
 
@@ -178,4 +214,306 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
 
   .book-us-text h2 { font-size: 2.6rem; margin-bottom: 0.75rem; }
   .book-us-text p { font-family: var(--comic); font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; letter-spacing: 1px; }
+
+  /* === Show comments === */
+  .show-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .show-comments {
+    background: var(--cream);
+    border: 3px solid var(--brown);
+    border-top: none;
+    margin-top: -3px;
+    padding: 0;
+  }
+
+  .comments-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--comic);
+    color: var(--brown);
+    font-size: 1.05rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .comments-toggle:hover { background: rgba(232, 100, 27, 0.06); }
+  .comments-toggle .ct-count {
+    background: var(--orange);
+    color: var(--cream);
+    border: 2px solid var(--brown);
+    border-radius: 999px;
+    padding: 1px 12px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    min-width: 28px;
+    text-align: center;
+  }
+  .comments-toggle .ct-count[data-count="0"] {
+    background: transparent;
+    color: var(--brown);
+  }
+
+  .comments-panel {
+    border-top: 2px dashed var(--brown);
+    padding: 1rem 1.25rem 1.25rem;
+  }
+
+  .comments-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .comment-input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--brown);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--brown);
+    resize: vertical;
+  }
+  .comment-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .comment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .comment-as {
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+  .comment-as strong {
+    color: var(--orange);
+  }
+  .comment-submit {
+    padding: 0.5rem 1.4rem;
+    font-size: 0.95rem;
+  }
+  .comment-status {
+    font-size: 0.85rem;
+    margin: 0;
+    color: var(--rust);
+    min-height: 1em;
+  }
+  .comment-status.ok { color: var(--teal); }
+
+  .comments-gate {
+    background: rgba(232, 100, 27, 0.08);
+    border: 2px dashed var(--orange);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+  .comments-gate p { margin: 0; }
+  .comments-gate a { color: var(--orange); font-weight: 600; }
+
+  .comments-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .comments-list li {
+    background: #fff;
+    border: 2px solid var(--brown);
+    border-radius: 4px;
+    padding: 0.6rem 0.85rem;
+  }
+  .comments-list li.comments-empty {
+    background: transparent;
+    border: 2px dashed rgba(92, 51, 23, 0.3);
+    color: var(--brown);
+    opacity: 0.7;
+    text-align: center;
+    font-style: italic;
+  }
+  .c-meta {
+    font-size: 0.78rem;
+    color: var(--brown);
+    opacity: 0.65;
+    margin-bottom: 0.25rem;
+  }
+  .c-meta strong { color: var(--orange); opacity: 1; font-weight: 600; }
+  .c-body {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
 </style>
+
+<script>
+  function fmtAgo(iso: string): string {
+    const t = new Date(iso).getTime();
+    const diff = Date.now() - t;
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 30) return `${d}d ago`;
+    return new Date(iso).toLocaleDateString();
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!)
+    );
+  }
+
+  type Comment = { id: number; fan_name: string | null; body: string; created_at: string };
+
+  function renderComment(c: Comment): string {
+    return `
+      <li>
+        <div class="c-meta"><strong>${escapeHtml(c.fan_name || 'A fan')}</strong> &middot; ${fmtAgo(c.created_at)}</div>
+        <p class="c-body">${escapeHtml(c.body)}</p>
+      </li>
+    `;
+  }
+
+  function getSquadFan(): { email: string; name: string; signal_code: string } | null {
+    try {
+      const raw = localStorage.getItem('tog-fan');
+      if (!raw) return null;
+      const f = JSON.parse(raw);
+      if (!f.email || !f.signalCode) return null;
+      return { email: f.email, name: f.name || '', signal_code: f.signalCode };
+    } catch { return null; }
+  }
+
+  document.querySelectorAll<HTMLElement>('.show-comments').forEach((root) => {
+    const showId = root.dataset.showId!;
+    const showLabel = root.dataset.showLabel || '';
+    const toggle = root.querySelector<HTMLButtonElement>('.comments-toggle')!;
+    const panel = root.querySelector<HTMLElement>('.comments-panel')!;
+    const list = root.querySelector<HTMLUListElement>('.comments-list')!;
+    const countEl = root.querySelector<HTMLElement>('.ct-count')!;
+    const form = root.querySelector<HTMLElement>('.comments-form')!;
+    const gate = root.querySelector<HTMLElement>('.comments-gate')!;
+    const input = root.querySelector<HTMLTextAreaElement>('.comment-input')!;
+    const honeypot = root.querySelector<HTMLInputElement>('.comment-honeypot')!;
+    const asName = root.querySelector<HTMLElement>('.comment-as-name')!;
+    const submit = root.querySelector<HTMLButtonElement>('.comment-submit')!;
+    const status = root.querySelector<HTMLElement>('.comment-status')!;
+
+    let loaded = false;
+
+    function paint(comments: Comment[]) {
+      countEl.textContent = comments.length === 0 ? '—' : String(comments.length);
+      countEl.dataset.count = String(comments.length);
+      if (comments.length === 0) {
+        list.innerHTML = '<li class="comments-empty">No comments yet — be first.</li>';
+      } else {
+        list.innerHTML = comments.map(renderComment).join('');
+      }
+    }
+
+    async function load() {
+      try {
+        const res = await fetch(`/api/comments/list?show_id=${encodeURIComponent(showId)}`);
+        const data = await res.json();
+        paint(data.comments || []);
+        loaded = true;
+      } catch (e) {
+        list.innerHTML = '<li class="comments-empty">Could not load comments.</li>';
+      }
+    }
+
+    function showSquadUi() {
+      const fan = getSquadFan();
+      if (fan) {
+        asName.textContent = fan.name || fan.email;
+        form.hidden = false;
+        gate.hidden = true;
+      } else {
+        form.hidden = true;
+        gate.hidden = false;
+      }
+    }
+
+    toggle.addEventListener('click', async () => {
+      const isOpen = !panel.hidden;
+      if (isOpen) {
+        panel.hidden = true;
+      } else {
+        panel.hidden = false;
+        showSquadUi();
+        if (!loaded) await load();
+      }
+    });
+
+    submit.addEventListener('click', async () => {
+      const fan = getSquadFan();
+      if (!fan) return;
+      const body = input.value.trim();
+      if (!body) {
+        status.textContent = 'Type something first.';
+        status.classList.remove('ok');
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = 'Posting...';
+      status.textContent = '';
+      try {
+        const res = await fetch('/api/comments/post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: fan.email,
+            signal_code: fan.signal_code,
+            show_id: showId,
+            show_label: showLabel,
+            body,
+            website: honeypot.value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          status.textContent = data.error || 'Could not post.';
+          status.classList.remove('ok');
+        } else {
+          input.value = '';
+          status.textContent = 'Posted!';
+          status.classList.add('ok');
+          await load();
+          setTimeout(() => { status.textContent = ''; status.classList.remove('ok'); }, 2000);
+        }
+      } catch (e) {
+        status.textContent = 'Network error.';
+        status.classList.remove('ok');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Post';
+      }
+    });
+
+    // Pre-load count on page render so toggle shows actual number
+    load();
+  });
+</script>

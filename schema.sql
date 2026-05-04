@@ -58,3 +58,17 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 
 CREATE INDEX IF NOT EXISTS idx_rate_limits_lookup
   ON rate_limits(ip_address, endpoint, created_at);
+
+CREATE TABLE IF NOT EXISTS show_comments (
+  id BIGSERIAL PRIMARY KEY,
+  show_id TEXT NOT NULL,
+  show_label TEXT,
+  fan_email TEXT NOT NULL,
+  fan_name TEXT,
+  body TEXT NOT NULL,
+  hidden_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_show_comments_lookup
+  ON show_comments(show_id, created_at DESC);
