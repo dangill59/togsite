@@ -655,6 +655,8 @@ import SpeedLines from '../components/SpeedLines.astro';
         });
         const data = await res.json();
         heroLoading.style.display = 'none';
+        // Server now returns imageUrl (Vercel Blob) preferred, falls back to base64 image
+        if (data.imageUrl) return data.imageUrl;
         if (data.image) return data.image;
         console.error('Hero generation failed:', data.error);
         return null;
@@ -695,14 +697,16 @@ import SpeedLines from '../components/SpeedLines.astro';
       if (existing && !localStorage.getItem('tog-fan')) {
         // Existing member trying to sign up again — load their card instead
         const dateStr = new Date(existing.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        showCard(existing.name, email, existing.favorite_member, existing.superpower || 'Mystery Power', existing.signal_code, dateStr);
+        showCard(existing.name, email, existing.favorite_member, existing.superpower || 'Mystery Power', existing.signal_code, dateStr, existing.hero_image_url || undefined);
         cardSection!.scrollIntoView({ behavior: 'smooth' });
         submitBtn.textContent = 'Get My Hero Card';
         submitBtn.disabled = false;
-        // Generate fresh hero image
-        const heroImg = await generateHeroImage(existing.name, existing.superpower || 'Mystery Power', existing.favorite_member, email, existing.signal_code, selfieBase64);
-        if (heroImg) {
-          showCard(existing.name, email, existing.favorite_member, existing.superpower || 'Mystery Power', existing.signal_code, dateStr, heroImg);
+        // Only regenerate if no stored hero or if a selfie was provided (always re-render with new face)
+        if (!existing.hero_image_url || selfieBase64) {
+          const heroImg = await generateHeroImage(existing.name, existing.superpower || 'Mystery Power', existing.favorite_member, email, existing.signal_code, selfieBase64);
+          if (heroImg) {
+            showCard(existing.name, email, existing.favorite_member, existing.superpower || 'Mystery Power', existing.signal_code, dateStr, heroImg);
+          }
         }
         return;
       }
@@ -776,13 +780,15 @@ import SpeedLines from '../components/SpeedLines.astro';
 
       if (fan) {
         const dateStr = new Date(fan.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        showCard(fan.name, loginEmail, fan.favorite_member, fan.superpower || 'Mystery Power', fan.signal_code, dateStr);
+        showCard(fan.name, loginEmail, fan.favorite_member, fan.superpower || 'Mystery Power', fan.signal_code, dateStr, fan.hero_image_url || undefined);
         cardSection!.scrollIntoView({ behavior: 'smooth' });
 
-        // Generate fresh hero image
-        const heroImg = await generateHeroImage(fan.name, fan.superpower || 'Mystery Power', fan.favorite_member, loginEmail, fan.signal_code);
-        if (heroImg) {
-          showCard(fan.name, loginEmail, fan.favorite_member, fan.superpower || 'Mystery Power', fan.signal_code, dateStr, heroImg);
+        // Only regenerate if we don't have a stored AI hero on file
+        if (!fan.hero_image_url) {
+          const heroImg = await generateHeroImage(fan.name, fan.superpower || 'Mystery Power', fan.favorite_member, loginEmail, fan.signal_code);
+          if (heroImg) {
+            showCard(fan.name, loginEmail, fan.favorite_member, fan.superpower || 'Mystery Power', fan.signal_code, dateStr, heroImg);
+          }
         }
       } else {
         loginStatus.textContent = "No hero found with that email. Sign up below!";
@@ -808,15 +814,18 @@ import SpeedLines from '../components/SpeedLines.astro';
         if (res.ok && body.fan) {
           const dbFan = body.fan;
           const dateStr = new Date(dbFan.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-          // Show whatever we have (cached image or canvas fallback) immediately,
-          // then regenerate the AI hero in the background so returning visitors
-          // always end up seeing the AI version.
-          showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, data.heroImage || undefined);
-          generateHeroImage(dbFan.name, dbFan.superpower || 'Mystery Power', dbFan.favorite_member, dbFan.email, dbFan.signal_code).then((heroImg) => {
-            if (heroImg) {
-              showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, heroImg);
-            }
-          });
+          // Prefer the persisted hero image URL from the DB (Vercel Blob) so we
+          // skip OpenAI on every revisit. Falls through to the localStorage cache
+          // and only triggers a regen if neither exists.
+          const storedImage = dbFan.hero_image_url || data.heroImage || undefined;
+          showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, storedImage);
+          if (!dbFan.hero_image_url) {
+            generateHeroImage(dbFan.name, dbFan.superpower || 'Mystery Power', dbFan.favorite_member, dbFan.email, dbFan.signal_code).then((heroImg) => {
+              if (heroImg) {
+                showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, heroImg);
+              }
+            });
+          }
         } else if (res.ok) {
           // Confirmed no record for this email — clear stale localStorage and let them sign up fresh
           localStorage.removeItem('tog-fan');

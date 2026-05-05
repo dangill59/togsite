@@ -12,7 +12,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const sql = getSql();
     const rows = await sql`
-      SELECT email, name, favorite_member, superpower, signal_code, created_at
+      SELECT email, name, favorite_member, superpower, signal_code, hero_image_url, created_at
       FROM fans
       WHERE email = ${email}
       LIMIT 1

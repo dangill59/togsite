@@ -1,6 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
+import { put } from '@vercel/blob';
 import { getSql } from '../../lib/db';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -143,7 +144,37 @@ export const POST: APIRoute = async ({ request }) => {
       base64 = data.data[0].b64_json;
     }
 
-    return new Response(JSON.stringify({ image: `data:image/png;base64,${base64}` }), {
+    // === Upload to Vercel Blob and persist URL on the fan record ===
+    let imageUrl: string | null = null;
+    try {
+      const blobToken = import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+      const sanitizedEmail = email.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `heroes/${sanitizedEmail}.png`;
+      const buffer = Buffer.from(base64, 'base64');
+      const blob = await put(fileName, buffer, {
+        access: 'public',
+        contentType: 'image/png',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        token: blobToken,
+      });
+      imageUrl = blob.url;
+
+      // Save URL on the fan row so future visits skip regeneration
+      const sql = getSql();
+      await sql`
+        UPDATE fans SET hero_image_url = ${imageUrl}, updated_at = NOW()
+        WHERE email = ${email}
+      `;
+    } catch (e: any) {
+      console.error('Hero image persist failed:', e.message);
+      // Fall through and still return base64 below so the page can show it
+    }
+
+    return new Response(JSON.stringify({
+      image: imageUrl ? null : `data:image/png;base64,${base64}`,
+      imageUrl,
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
