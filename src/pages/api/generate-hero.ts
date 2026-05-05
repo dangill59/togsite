@@ -188,18 +188,25 @@ export const POST: APIRoute = async ({ request }) => {
       // Fall through and still return base64 below so the page can show it
     }
 
-    // Fire welcome email on first successful generation (don't await — let response return fast)
+    // Fire welcome email on first successful generation. Await it: on Vercel
+    // serverless, fire-and-forget promises can be killed when the response
+    // returns and the function instance is torn down. Adds ~1s but ensures
+    // the email actually goes out.
     if (isFirstGen && fanForWelcome && imageUrl) {
       const dateStr = new Date(fanForWelcome.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      sendWelcomeEmail({
-        name: fanForWelcome.name,
-        email,
-        signalCode: fanForWelcome.signal_code || signalCode,
-        favoriteMember: fanForWelcome.favorite_member,
-        superpower: fanForWelcome.superpower,
-        heroImageUrl: imageUrl,
-        dateStr,
-      }).catch((e) => console.error('Welcome email error:', e.message));
+      try {
+        await sendWelcomeEmail({
+          name: fanForWelcome.name,
+          email,
+          signalCode: fanForWelcome.signal_code || signalCode,
+          favoriteMember: fanForWelcome.favorite_member,
+          superpower: fanForWelcome.superpower,
+          heroImageUrl: imageUrl,
+          dateStr,
+        });
+      } catch (e: any) {
+        console.error('Welcome email error:', e.message);
+      }
     }
 
     return new Response(JSON.stringify({
