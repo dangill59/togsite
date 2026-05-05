@@ -119,7 +119,7 @@ def build(palette: str = "comic", bg: str = "none",
             highlight_offset=int(2 * s),
             stroke_width=max(1, int(2 * s)),
             letter_spacing=int(6 * s),
-            rotate=-5,
+            rotate=5,
         )
 
         img = draw_simple_text(
