@@ -808,7 +808,15 @@ import SpeedLines from '../components/SpeedLines.astro';
         if (res.ok && body.fan) {
           const dbFan = body.fan;
           const dateStr = new Date(dbFan.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          // Show whatever we have (cached image or canvas fallback) immediately,
+          // then regenerate the AI hero in the background so returning visitors
+          // always end up seeing the AI version.
           showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, data.heroImage || undefined);
+          generateHeroImage(dbFan.name, dbFan.superpower || 'Mystery Power', dbFan.favorite_member, dbFan.email, dbFan.signal_code).then((heroImg) => {
+            if (heroImg) {
+              showCard(dbFan.name, dbFan.email, dbFan.favorite_member, dbFan.superpower || 'Mystery Power', dbFan.signal_code, dateStr, heroImg);
+            }
+          });
         } else if (res.ok) {
           // Confirmed no record for this email — clear stale localStorage and let them sign up fresh
           localStorage.removeItem('tog-fan');
