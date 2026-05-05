@@ -259,6 +259,80 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
     return img
 
 
+def draw_classic_title(img, text, cx, cy, base_size, grow_per_letter,
+                       font_path=None, color=None,
+                       shadow_color=(0, 0, 0, 128),
+                       highlight_color=None,
+                       stroke_color=(0, 0, 0, 51),
+                       shadow_offset=4, highlight_offset=2, stroke_width=2):
+    """
+    Replicates the home-page .grow-letter CSS exactly:
+      color: cream
+      text-shadow: 4px 4px 0 rgba(0,0,0,0.5), -2px -2px 0 orange
+      -webkit-text-stroke: 2px rgba(0,0,0,0.2)
+    Letters grow in font-size only (baseline-aligned, no uphill rotation).
+    """
+    fill_color = color if color else CREAM
+    hi_color = highlight_color if highlight_color else ORANGE
+    font_file = font_path if font_path else BANGERS
+
+    sizes = [int(base_size + i * grow_per_letter) for i in range(len(text))]
+    glyphs = []
+    for i, ch in enumerate(text):
+        sz = sizes[i]
+        f = font(font_file, sz)
+        tmp = Image.new("RGBA", (sz * 2, int(sz * 1.6)), (0, 0, 0, 0))
+        td = ImageDraw.Draw(tmp)
+        bbox = td.textbbox((0, 0), ch if ch != " " else "M", font=f)
+        gw = bbox[2] - bbox[0]
+        gh = bbox[3] - bbox[1]
+        if ch == " ":
+            glyphs.append((None, sz // 2, gh, sz))
+            continue
+        pad = max(20, shadow_offset * 4 + stroke_width * 2)
+        cw = gw + pad * 2
+        ch_h = gh + pad * 2
+        gl = Image.new("RGBA", (cw, ch_h), (0, 0, 0, 0))
+        gd = ImageDraw.Draw(gl)
+        ox, oy = pad - bbox[0], pad - bbox[1]
+        # 1) Drop shadow (rgba 0,0,0,0.5) at +4,+4
+        gd.text((ox + shadow_offset, oy + shadow_offset), ch, font=f,
+                fill=shadow_color)
+        # 2) Orange highlight at -2,-2
+        gd.text((ox - highlight_offset, oy - highlight_offset), ch, font=f,
+                fill=hi_color)
+        # 3) Cream face with subtle dark stroke
+        gd.text((ox, oy), ch, font=f, fill=fill_color,
+                stroke_width=stroke_width, stroke_fill=stroke_color)
+        glyphs.append((gl, gw, gh, sz))
+
+    # Layout: baseline-aligned, letters spaced by their natural advance width
+    total_w = 0
+    max_h = 0
+    for entry in glyphs:
+        g, gw, gh, sz = entry
+        if g is None:
+            total_w += gw + 12
+        else:
+            total_w += gw + max(12, sz // 8)
+            max_h = max(max_h, g.size[1])
+
+    canvas = Image.new("RGBA", (total_w + 40, max_h + 40), (0, 0, 0, 0))
+    x = 0
+    baseline = canvas.size[1] - 20
+    for entry in glyphs:
+        g, gw, gh, sz = entry
+        if g is None:
+            x += gw + 12
+            continue
+        canvas.alpha_composite(g, (x, baseline - g.size[1]))
+        x += gw + max(12, sz // 8)
+
+    img.alpha_composite(canvas, (int(cx - canvas.size[0] / 2),
+                                 int(cy - canvas.size[1] / 2)))
+    return img
+
+
 # === Comic panel border (matches .comic-panel) ===
 def draw_border(img, inset=40, thickness=18):
     d = ImageDraw.Draw(img)

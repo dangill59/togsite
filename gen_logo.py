@@ -1,15 +1,20 @@
 """
-TOG branded logo banner — uses the home-page hero style with swappable
-color palettes and backgrounds.
+TOG branded logo banner — two styles:
+  - classic: replicates the home-page CSS exactly (cream letters, drop
+             shadow + orange highlight, subtle stroke, no 3D, no uphill).
+             This is the canonical brand logo for emails / merch / web.
+  - comic:   3D-extruded multi-color uphill version (alt creative variant).
 
-Default: 1200 x 320 px transparent PNG with the 'comic' palette.
+Default: 1200 x 320 px transparent PNG, classic style.
 
 Usage:
-  python gen_logo.py                     # default: comic palette, transparent bg
-  python gen_logo.py --palette neon      # neon, fire, comic, tog, mono, rainbow
+  python gen_logo.py                     # default: classic, transparent bg
+  python gen_logo.py --style comic       # alt extruded multicolor variant
+  python gen_logo.py --palette neon      # comic-style only: neon/fire/comic/tog/mono/rainbow
   python gen_logo.py --bg gradient       # bg: none, gradient, dark, cream
+  python gen_logo.py --font marker       # bangers/bowlby/luckiest/sigmar/marker/blackops/knewave
   python gen_logo.py --print             # 3600x960 at 300 DPI
-  python gen_logo.py --all               # generate the whole palette/bg matrix
+  python gen_logo.py --all               # generate the whole palette/bg matrix (comic style)
 """
 import os
 import sys
@@ -20,7 +25,7 @@ from gen_poster import (
     PUBLIC, BANGERS, FONTS,
     ORANGE, GOLD, BROWN, DARK_BROWN, CREAM, TEAL, PLUM, RED, YELLOW, PINK, BLUE,
     font, make_gradient, add_halftone, add_speed_lines,
-    draw_title,
+    draw_title, draw_classic_title,
 )
 
 FONT_OPTIONS = {
@@ -68,7 +73,7 @@ def make_bg(W: int, H: int, mode: str, s: float):
 
 def build(palette: str = "comic", bg: str = "none",
           print_ready: bool = False, suffix_override: str = None,
-          font_name: str = "bangers"):
+          font_name: str = "bangers", style: str = "comic"):
     random.seed(11)
 
     if print_ready:
@@ -84,9 +89,45 @@ def build(palette: str = "comic", bg: str = "none",
         raise ValueError(f"Unknown bg: {bg}. Options: {', '.join(BACKGROUNDS)}")
     if font_name not in FONT_OPTIONS:
         raise ValueError(f"Unknown font: {font_name}. Options: {', '.join(FONT_OPTIONS)}")
+    if style not in ("comic", "classic"):
+        raise ValueError(f"Unknown style: {style}. Options: comic, classic")
     font_file = FONT_OPTIONS[font_name]
 
     img = make_bg(W, H, bg, s)
+
+    if style == "classic":
+        # Home-page CSS replica: cream letters, drop shadow, orange highlight,
+        # subtle dark stroke. No 3D extrusion, no uphill rotation.
+        img = draw_classic_title(
+            img, "THOSE ONE GUYS!",
+            cx=W // 2,
+            cy=int(H * 0.55),
+            base_size=int(56 * s),
+            grow_per_letter=int(3 * s),
+            font_path=font_file,
+            color=CREAM,
+            highlight_color=ORANGE,
+            shadow_offset=int(4 * s),
+            highlight_offset=int(2 * s),
+            stroke_width=max(1, int(2 * s)),
+        )
+        parts = ["tog-logo-classic"]
+        if bg != "none":
+            parts.append(bg)
+        if font_name != "bangers":
+            parts.append(font_name)
+        if print_ready:
+            parts.append("print")
+        out_path = os.path.join(PUBLIC, "-".join(parts) + ".png")
+        if suffix_override:
+            out_path = os.path.join(PUBLIC, suffix_override)
+        if bg == "none":
+            img.save(out_path, "PNG", optimize=True)
+        else:
+            img.convert("RGB").save(out_path, "PNG", optimize=True)
+        kb = os.path.getsize(out_path) // 1024
+        print(f"  -> {os.path.basename(out_path)} ({kb} KB)")
+        return
 
     # Pick shadow + highlight colors based on background brightness
     if bg == "cream":
@@ -173,14 +214,18 @@ if __name__ == "__main__":
     do_all = "--all" in args
 
     font_name = "bangers"
+    style = "classic"
     if "--palette" in args:
         palette = args[args.index("--palette") + 1]
     if "--bg" in args:
         bg = args[args.index("--bg") + 1]
     if "--font" in args:
         font_name = args[args.index("--font") + 1]
+    if "--style" in args:
+        style = args[args.index("--style") + 1]
 
     if do_all:
         build_all()
     else:
-        build(palette=palette, bg=bg, print_ready=print_ready, font_name=font_name)
+        build(palette=palette, bg=bg, print_ready=print_ready,
+              font_name=font_name, style=style)
