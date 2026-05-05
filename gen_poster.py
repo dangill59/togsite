@@ -170,7 +170,7 @@ def draw_comic_burst(img, cx, cy, text, bg, fg=CREAM, size="md",
 # === Growing letter title — each letter bigger and higher than the last ===
 def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
                uphill_per_letter=0, letter_colors=None, shadow_color=None,
-               highlight_color=None):
+               highlight_color=None, font_path=None):
     """
     Each letter grows slightly larger than the previous (matches .grow-letter).
     With uphill_per_letter > 0, each letter is also lifted that many pixels
@@ -184,6 +184,7 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
     fill_palette = letter_colors if letter_colors else [CREAM]
     shadow_rgb = shadow_color if shadow_color else BROWN
     highlight_rgb = highlight_color if highlight_color else ORANGE
+    font_file = font_path if font_path else BANGERS
     sizes = []
     for i, ch in enumerate(text):
         sizes.append(int(base_size + i * grow_per_letter))
@@ -193,7 +194,7 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
     fill_idx = 0  # only advance for non-space chars so spaces don't burn a color
     for i, ch in enumerate(text):
         sz = sizes[i]
-        f = font(BANGERS, sz)
+        f = font(font_file, sz)
         tmp = Image.new("RGBA", (sz * 2, int(sz * 1.6)), (0, 0, 0, 0))
         td = ImageDraw.Draw(tmp)
         bbox = td.textbbox((0, 0), ch if ch != " " else "M", font=f)

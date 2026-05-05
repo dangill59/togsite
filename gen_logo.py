@@ -17,11 +17,21 @@ import random
 from PIL import Image, ImageDraw
 
 from gen_poster import (
-    PUBLIC, BANGERS,
+    PUBLIC, BANGERS, FONTS,
     ORANGE, GOLD, BROWN, DARK_BROWN, CREAM, TEAL, PLUM, RED, YELLOW, PINK, BLUE,
     font, make_gradient, add_halftone, add_speed_lines,
     draw_title,
 )
+
+FONT_OPTIONS = {
+    "bangers":   os.path.join(FONTS, "Bangers-Regular.ttf"),
+    "bowlby":    os.path.join(FONTS, "BowlbyOne-Regular.ttf"),
+    "luckiest":  os.path.join(FONTS, "LuckiestGuy-Regular.ttf"),
+    "sigmar":    os.path.join(FONTS, "SigmarOne-Regular.ttf"),
+    "marker":    os.path.join(FONTS, "PermanentMarker-Regular.ttf"),
+    "blackops":  os.path.join(FONTS, "BlackOpsOne-Regular.ttf"),
+    "knewave":   os.path.join(FONTS, "Knewave-Regular.ttf"),
+}
 
 # === Palettes (cycled letter-by-letter) ===
 PALETTES = {
@@ -57,7 +67,8 @@ def make_bg(W: int, H: int, mode: str, s: float):
 
 
 def build(palette: str = "comic", bg: str = "none",
-          print_ready: bool = False, suffix_override: str = None):
+          print_ready: bool = False, suffix_override: str = None,
+          font_name: str = "bangers"):
     random.seed(11)
 
     if print_ready:
@@ -71,6 +82,9 @@ def build(palette: str = "comic", bg: str = "none",
         raise ValueError(f"Unknown palette: {palette}. Options: {', '.join(PALETTES)}")
     if bg not in BACKGROUNDS:
         raise ValueError(f"Unknown bg: {bg}. Options: {', '.join(BACKGROUNDS)}")
+    if font_name not in FONT_OPTIONS:
+        raise ValueError(f"Unknown font: {font_name}. Options: {', '.join(FONT_OPTIONS)}")
+    font_file = FONT_OPTIONS[font_name]
 
     img = make_bg(W, H, bg, s)
 
@@ -103,6 +117,7 @@ def build(palette: str = "comic", bg: str = "none",
         letter_colors=PALETTES[palette],
         shadow_color=shadow_color,
         highlight_color=highlight_color,
+        font_path=font_file,
     )
 
     # === Sub-tagline: growing voice from whisper to shout ===
@@ -119,12 +134,15 @@ def build(palette: str = "comic", bg: str = "none",
         letter_colors=PALETTES[palette],
         shadow_color=shadow_color,
         highlight_color=highlight_color,
+        font_path=font_file,
     )
 
-    # Filename: tog-logo-<palette>[-<bg>][-print].png
+    # Filename: tog-logo-<palette>[-<bg>][-<font>][-print].png
     parts = ["tog-logo", palette]
     if bg != "none":
         parts.append(bg)
+    if font_name != "bangers":
+        parts.append(font_name)
     if print_ready:
         parts.append("print")
     out_path = os.path.join(PUBLIC, "-".join(parts) + ".png")
@@ -154,12 +172,15 @@ if __name__ == "__main__":
     print_ready = "--print" in args
     do_all = "--all" in args
 
+    font_name = "bangers"
     if "--palette" in args:
         palette = args[args.index("--palette") + 1]
     if "--bg" in args:
         bg = args[args.index("--bg") + 1]
+    if "--font" in args:
+        font_name = args[args.index("--font") + 1]
 
     if do_all:
         build_all()
     else:
-        build(palette=palette, bg=bg, print_ready=print_ready)
+        build(palette=palette, bg=bg, print_ready=print_ready, font_name=font_name)
