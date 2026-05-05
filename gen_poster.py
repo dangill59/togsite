@@ -206,15 +206,20 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
             continue
         face_color = fill_palette[fill_idx % len(fill_palette)]
         fill_idx += 1
-        # Extrusion depth scales with letter size for consistent feel
-        depth = max(8, int(sz * 0.10))
-        cw = gw + 80 + depth
-        ch_h = gh + 80 + depth
+        # All offsets scale with letter size so tiny letters don't get
+        # buried under chunky chrome meant for big ones; capped so big
+        # letters look the same as the original (no shadow doubling).
+        depth = max(2, int(sz * 0.10))
+        shadow_offset = max(3, min(10, sz // 5))
+        hi_offset = max(1, min(3, sz // 18))
+        stroke = max(1, min(4, sz // 14))
+        cw = gw + 80 + depth + shadow_offset
+        ch_h = gh + 80 + depth + shadow_offset
         gl = Image.new("RGBA", (cw, ch_h), (0, 0, 0, 0))
         gd = ImageDraw.Draw(gl)
         ox, oy = 40 - bbox[0], 40 - bbox[1]
         # Soft drop shadow on the ground
-        gd.text((ox + depth + 10, oy + depth + 10), ch, font=f,
+        gd.text((ox + depth + shadow_offset, oy + depth + shadow_offset), ch, font=f,
                 fill=(0, 0, 0, 140))
         # 3D extrusion: stack of offset copies stepping down-right
         for d_off in range(depth, 0, -1):
@@ -224,16 +229,16 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
             b = int(shadow_rgb[2] * shade)
             gd.text((ox + d_off, oy + d_off), ch, font=f, fill=(r, g_, b))
         # Highlight peeking from top-left edge
-        gd.text((ox - 3, oy - 3), ch, font=f, fill=highlight_rgb)
+        gd.text((ox - hi_offset, oy - hi_offset), ch, font=f, fill=highlight_rgb)
         # Top face with dark stroke
         gd.text((ox, oy), ch, font=f, fill=face_color,
-                stroke_width=4, stroke_fill=shadow_rgb)
+                stroke_width=stroke, stroke_fill=shadow_rgb)
         glyphs.append((gl, gw, gh, sz))
         total_w += gw + max(12, sz // 8)
         max_h = max(max_h, ch_h)
 
     # Make canvas taller to accommodate uphill lift
-    total_lift = uphill_per_letter * max(0, len(text) - 1)
+    total_lift = int(uphill_per_letter * max(0, len(text) - 1))
     canvas_h = max_h + 60 + total_lift
     canvas = Image.new("RGBA", (total_w + 80, canvas_h), (0, 0, 0, 0))
     x = 0
@@ -242,7 +247,7 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
         if g is None:
             x += gw + 12
             continue
-        lift = uphill_per_letter * i
+        lift = int(uphill_per_letter * i)
         canvas.alpha_composite(g, (x, baseline - g.size[1] - lift))
         x += gw + max(12, sz // 8)
 

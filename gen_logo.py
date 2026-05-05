@@ -95,7 +95,7 @@ def build(palette: str = "comic", bg: str = "none",
     img = draw_title(
         img, "THOSE ONE GUYS!",
         cx=W // 2,
-        cy=int(H * 0.48),
+        cy=int(H * 0.40),
         base_size=int(54 * s),
         grow_per_letter=int(5 * s),
         rotate=0,
@@ -105,17 +105,21 @@ def build(palette: str = "comic", bg: str = "none",
         highlight_color=highlight_color,
     )
 
-    # === Tagline ===
-    d = ImageDraw.Draw(img)
-    tag = "LOUD GUITARS. BIG GROOVES. ZERO CHILL."
-    f_tag = font(BANGERS, int(36 * s))
-    bbox = d.textbbox((0, 0), tag, font=f_tag)
-    tw = bbox[2] - bbox[0]
-    tag_y = int(H * 0.83)
-    d.text(((W - tw) / 2 + int(2 * s), tag_y + int(2 * s)), tag,
-           font=f_tag, fill=(0, 0, 0, 160))
-    d.text(((W - tw) / 2, tag_y), tag, font=f_tag, fill=tagline_color,
-           stroke_width=max(1, int(1.5 * s)), stroke_fill=tagline_stroke)
+    # === Sub-tagline: growing voice from whisper to shout ===
+    # Same uphill+grow pattern as the title, but starts smaller and grows
+    # more aggressively so it reads like the voice rising into the !
+    img = draw_title(
+        img, "so now you must decide it!",
+        cx=W // 2,
+        cy=int(H * 0.80),
+        base_size=int(17 * s),
+        grow_per_letter=1.4 * s,
+        rotate=0,
+        uphill_per_letter=1.4 * s,
+        letter_colors=PALETTES[palette],
+        shadow_color=shadow_color,
+        highlight_color=highlight_color,
+    )
 
     # Filename: tog-logo-<palette>[-<bg>][-print].png
     parts = ["tog-logo", palette]
