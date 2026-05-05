@@ -7,6 +7,10 @@ import { getResend, wrapHtml, firstName, unsubscribeUrl, FROM, SITE } from '../.
 function welcomeBody(name: string, signalCode: string): string {
   const display = `Impact, 'Arial Black', sans-serif`;
   return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;"><tr><td align="center">
+      <div style="display:inline-block;background:#e8251b;color:#fdf5e6;font-family:${display};font-size:28px;letter-spacing:4px;text-transform:uppercase;padding:10px 26px;border:3px solid #5c3317;box-shadow:4px 4px 0 #5c3317;transform:rotate(-3deg);">Welcome${name ? ', ' + name : ''}!</div>
+    </td></tr></table>
+
     <p style="margin:0 0 16px;font-size:17px;">You're officially in the <strong>TOG Hero Squad</strong>. We're glad you're here.</p>
 
     <!-- Signal code as a comic panel box -->

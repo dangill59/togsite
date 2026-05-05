@@ -36,25 +36,41 @@ const showOptions = shows.map((s) => ({
         <h3>Templates</h3>
         <p class="template-help">Pick one to pre-fill the subject and body. You can edit before sending.</p>
         <div class="templates">
-          <div class="template-row">
-            <label>Post-show</label>
-            <select id="postShowSelect">
-              <option value="">— pick a show —</option>
-              {showOptions.map((s) => (
-                <option value={s.id} data-label={s.label} data-venue={s.venue} data-date={s.date}>{s.label}</option>
-              ))}
-            </select>
-            <button id="postShowFill" class="btn btn-secondary" type="button">Use template</button>
+          <div class="template-group">
+            <h4>How was the show? (post-show)</h4>
+            <div class="template-row">
+              <select id="postShowSelect">
+                <option value="">— pick a show —</option>
+                {showOptions.map((s) => (
+                  <option value={s.id} data-label={s.label} data-venue={s.venue} data-date={s.date}>{s.label}</option>
+                ))}
+              </select>
+              <select id="postVariant">
+                <option value="thanks">Thanks for coming</option>
+                <option value="favorite">Favorite moment?</option>
+                <option value="recap">Quick recap</option>
+                <option value="photos">Pics inbound</option>
+              </select>
+              <button id="postShowFill" class="btn btn-secondary" type="button">Use template</button>
+            </div>
           </div>
-          <div class="template-row">
-            <label>Upcoming-show heads-up</label>
-            <select id="upcomingSelect">
-              <option value="">— pick a show —</option>
-              {showOptions.map((s) => (
-                <option value={s.id} data-label={s.label} data-venue={s.venue} data-date={s.date}>{s.label}</option>
-              ))}
-            </select>
-            <button id="upcomingFill" class="btn btn-secondary" type="button">Use template</button>
+          <div class="template-group">
+            <h4>Upcoming show</h4>
+            <div class="template-row">
+              <select id="upcomingSelect">
+                <option value="">— pick a show —</option>
+                {showOptions.map((s) => (
+                  <option value={s.id} data-label={s.label} data-venue={s.venue} data-date={s.date}>{s.label}</option>
+                ))}
+              </select>
+              <select id="upcomingVariant">
+                <option value="headsup">Heads-up (week before)</option>
+                <option value="tonight">Tonight!</option>
+                <option value="doors">Doors at 8 (day-of)</option>
+                <option value="squad">Bring the squad (free swag)</option>
+              </select>
+              <button id="upcomingFill" class="btn btn-secondary" type="button">Use template</button>
+            </div>
           </div>
         </div>
       </div>
@@ -177,17 +193,21 @@ const showOptions = shows.map((s) => ({
   .templates {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1.25rem;
+  }
+  .template-group h4 {
+    margin: 0 0 0.5rem;
+    font-family: var(--comic);
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--brown);
+    text-transform: uppercase;
   }
   .template-row {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) 2fr auto;
+    grid-template-columns: 1.3fr 1.3fr auto;
     gap: 0.5rem;
     align-items: center;
-  }
-  .template-row label {
-    margin: 0;
-    font-size: 0.95rem;
   }
   .template-row select {
     width: 100%;
@@ -309,28 +329,146 @@ const showOptions = shows.map((s) => ({
     };
   }
 
+  // === On-theme styled blocks ===
+  const DISPLAY = "Impact, 'Arial Black', sans-serif";
+  const COL = { brown: '#5c3317', cream: '#fdf5e6', orange: '#e8641b', gold: '#f5a623', teal: '#1a8a7d', plum: '#6b2d5b', red: '#e8251b' };
+
+  function comicHeading(text: string, rotate: number = -1): string {
+    return `<div style="font-family:${DISPLAY};font-weight:900;color:${COL.brown};font-size:32px;letter-spacing:4px;text-transform:uppercase;text-align:center;text-shadow:3px 3px 0 rgba(0,0,0,0.15);transform:rotate(${rotate}deg);margin:0 0 18px;">${text}</div>`;
+  }
+
+  function comicBurst(text: string, bg: string, fg: string = COL.cream, rotate: number = -3): string {
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;"><tr><td align="center"><div style="display:inline-block;background:${bg};color:${fg};font-family:${DISPLAY};font-size:28px;letter-spacing:4px;text-transform:uppercase;padding:10px 26px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};transform:rotate(${rotate}deg);">${text}</div></td></tr></table>`;
+  }
+
+  function showPanel(venue: string, date: string): string {
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0 22px;"><tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border:4px solid ${COL.brown};box-shadow:5px 5px 0 ${COL.brown};"><tr><td style="padding:14px 32px;text-align:center;"><div style="font-family:${DISPLAY};font-size:28px;color:${COL.orange};letter-spacing:2px;line-height:1.1;">${venue}</div><div style="font-family:${DISPLAY};font-size:18px;color:${COL.brown};letter-spacing:3px;margin-top:4px;">${date}</div></td></tr></table></td></tr></table>`;
+  }
+
+  function ctaButton(href: string, label: string, color: string = COL.orange): string {
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0;"><tr><td align="center"><a href="${href}" style="display:inline-block;background:${color};color:${COL.cream};font-family:${DISPLAY};font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:14px 36px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};text-decoration:none;">${label}</a></td></tr></table>`;
+  }
+
+  function signoff(line: string = '— Dano, Darby &amp; Mr P'): string {
+    return `<p style="margin:24px 0 0;font-family:${DISPLAY};font-size:18px;letter-spacing:2px;color:${COL.brown};text-align:center;">${line}</p>`;
+  }
+
+  function p(text: string): string {
+    return `<p style="margin:0 0 14px;font-size:16px;">${text}</p>`;
+  }
+
+  // === Template builders ===
+  type Show = { id: string; label: string; venue: string; date: string };
+
+  const postShowTemplates: Record<string, (s: Show) => { subject: string; body: string }> = {
+    thanks: (s) => ({
+      subject: `Thanks for coming to ${s.venue}!`,
+      body: [
+        comicHeading('Thanks for coming!'),
+        p('Hey {{name}},'),
+        p(`Last night at <strong>${s.venue}</strong> was a blast. The energy from the crowd hit different — we appreciate every one of you who showed up.`),
+        showPanel(s.venue, s.date),
+        p('Drop a comment on the show thread and tell us your favorite moment (or which song almost blew the speakers):'),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'Open Squad Chatter', COL.orange),
+        p('Bring your hero card to the next gig — we hook up squad members at the merch table.'),
+        signoff(),
+      ].join('\n'),
+    }),
+    favorite: (s) => ({
+      subject: `Hey — what was your favorite moment at ${s.venue}?`,
+      body: [
+        comicBurst('What hit hardest?', COL.gold, COL.brown, -2),
+        p('Hey {{name}},'),
+        p(`Quick one: <strong>${s.venue}</strong> on <strong>${s.date}</strong> was wild — but we want to hear <em>your</em> take. Best song? Loudest moment? That one weird guy in the third row?`),
+        p('Drop it on the show thread:'),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'Drop your take', COL.teal),
+        p('Best comment gets a shoutout next show.'),
+        signoff(),
+      ].join('\n'),
+    }),
+    recap: (s) => ({
+      subject: `${s.venue} — what a night`,
+      body: [
+        comicHeading(`${s.venue} — what a night`),
+        p('Hey {{name}},'),
+        p(`Short and sweet: thanks for being part of <strong>${s.venue}</strong> on <strong>${s.date}</strong>. We left it all on the stage.`),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'Squad chatter →', COL.orange),
+        p('See you at the next one.'),
+        signoff('— TOG'),
+      ].join('\n'),
+    }),
+    photos: (s) => ({
+      subject: `${s.venue}: pics inbound`,
+      body: [
+        comicHeading('Pics inbound'),
+        p('Hey {{name}},'),
+        p(`The pics from <strong>${s.venue}</strong> on <strong>${s.date}</strong> are getting sorted — we'll drop them in the squad chat as soon as they're ready.`),
+        p('In the meantime, share your favorite moment in the show thread:'),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'Open Squad Chatter', COL.orange),
+        signoff('— TOG'),
+      ].join('\n'),
+    }),
+  };
+
+  const upcomingTemplates: Record<string, (s: Show) => { subject: string; body: string }> = {
+    headsup: (s) => ({
+      subject: `${s.venue} on ${s.date} — be there`,
+      body: [
+        comicHeading('Heads-up'),
+        p('Hey {{name}},'),
+        p(`We're playing <strong>${s.venue}</strong> on <strong>${s.date}</strong>. Bring the squad, bring your hero card, and come say hi at the merch table for some free swag.`),
+        showPanel(s.venue, s.date),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'Show Details + Directions', COL.teal),
+        p('<span style="opacity:0.75;font-size:14px;">Loud guitars. Big grooves. Zero chill.</span>'),
+        signoff('— TOG'),
+      ].join('\n'),
+    }),
+    tonight: (s) => ({
+      subject: `TONIGHT: ${s.venue}!`,
+      body: [
+        comicBurst('Tonight!', COL.red, COL.cream, -4),
+        p('Hey {{name}},'),
+        p(`It's tonight. <strong>${s.venue}</strong>. Don't miss it.`),
+        showPanel(s.venue, s.date),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'Get Directions', COL.orange),
+        p('See you there.'),
+        signoff('— TOG'),
+      ].join('\n'),
+    }),
+    doors: (s) => ({
+      subject: `Doors at 8 — ${s.venue} (${s.date})`,
+      body: [
+        comicHeading('Doors at 8'),
+        p('Hey {{name}},'),
+        p(`<strong>${s.venue}</strong> &middot; <strong>${s.date}</strong> &middot; Doors 8pm`),
+        p('We go on at 9. Get there early, grab a beer, save us a spot.'),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'Directions', COL.orange),
+        signoff('— TOG'),
+      ].join('\n'),
+    }),
+    squad: (s) => ({
+      subject: `Bring the squad to ${s.venue}`,
+      body: [
+        comicBurst('Bring the squad', COL.plum, COL.cream, -2),
+        p('Hey {{name}},'),
+        p(`<strong>${s.venue}</strong> on <strong>${s.date}</strong> — and a friendly reminder: <strong>squad members get free swag</strong> at the merch table when you show your hero card.`),
+        showPanel(s.venue, s.date),
+        p('Bring your friends. The more, the louder.'),
+        ctaButton(`https://thoseoneguys.band/shows#${s.id}`, 'RSVP + Directions', COL.teal),
+        signoff('— TOG'),
+      ].join('\n'),
+    }),
+  };
+
   $('postShowFill').addEventListener('click', () => {
     const show = selectedShow('postShowSelect');
     if (!show) {
       $('status').textContent = 'Pick a show first.';
       return;
     }
-    const subject = `Thanks for coming to ${show.venue}!`;
-    const threadUrl = `https://thoseoneguys.band/shows#${show.id}`;
-    const body = [
-      `Hey {{name}},`,
-      ``,
-      `Thanks for coming out to <strong>${show.venue}</strong> last night. The energy in the room was unreal — we appreciate every one of you who showed up.`,
-      ``,
-      `Drop a comment on the show thread and tell us your favorite moment (or which song almost blew the speakers):`,
-      ``,
-      `<a href="${threadUrl}" style="display:inline-block;background:#e8641b;color:#fdf5e6;font-family:Impact,'Arial Black',sans-serif;font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:12px 28px;border:3px solid #5c3317;box-shadow:4px 4px 0 #5c3317;text-decoration:none;">Open Squad Chatter</a>`,
-      ``,
-      `Bring your hero card to the next gig — we hook up squad members at the merch table.`,
-      ``,
-      `See you out there.`,
-      `— Dano, Darby & Mr P`,
-    ].join('\n');
+    const variant = ($('postVariant') as HTMLSelectElement).value;
+    const tpl = postShowTemplates[variant] || postShowTemplates.thanks;
+    const { subject, body } = tpl(show);
     fillForm(subject, body);
   });
 
@@ -340,18 +478,9 @@ const showOptions = shows.map((s) => ({
       $('status').textContent = 'Pick a show first.';
       return;
     }
-    const subject = `${show.venue} on ${show.date} — be there`;
-    const threadUrl = `https://thoseoneguys.band/shows#${show.id}`;
-    const body = [
-      `Hey {{name}},`,
-      ``,
-      `Heads-up — we're playing <strong>${show.venue}</strong> on <strong>${show.date}</strong>. Bring the squad, bring your hero card, and come say hi at the merch table for some free swag.`,
-      ``,
-      `<a href="${threadUrl}" style="display:inline-block;background:#1a8a7d;color:#fdf5e6;font-family:Impact,'Arial Black',sans-serif;font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:12px 28px;border:3px solid #5c3317;box-shadow:4px 4px 0 #5c3317;text-decoration:none;">Show Details + Directions</a>`,
-      ``,
-      `Loud guitars. Big grooves. Zero chill.`,
-      `— TOG`,
-    ].join('\n');
+    const variant = ($('upcomingVariant') as HTMLSelectElement).value;
+    const tpl = upcomingTemplates[variant] || upcomingTemplates.headsup;
+    const { subject, body } = tpl(show);
     fillForm(subject, body);
   });
 

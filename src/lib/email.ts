@@ -80,18 +80,9 @@ export function wrapHtml(bodyHtml: string, name: string, unsubUrl: string): stri
             </td>
           </tr>
 
-          <!-- Comic-burst-style "WELCOME!" label (rotated rectangle) -->
+          <!-- Body content (templates supply their own headline at the top) -->
           <tr>
-            <td align="center" style="background:${palette.cream};padding:24px 20px 0;">
-              <div style="display:inline-block;background:${palette.red};color:${palette.cream};font-family:${display};font-size:28px;letter-spacing:4px;text-transform:uppercase;padding:10px 26px;border:3px solid ${palette.brown};box-shadow:4px 4px 0 ${palette.brown};transform:rotate(-3deg);">
-                Welcome${name ? ', ' + name : ''}!
-              </div>
-            </td>
-          </tr>
-
-          <!-- Body content -->
-          <tr>
-            <td style="background:${palette.cream};padding:24px 32px 16px;font-size:16px;line-height:1.65;color:${palette.brown};">
+            <td style="background:${palette.cream};padding:32px 32px 16px;font-size:16px;line-height:1.65;color:${palette.brown};">
               ${bodyHtml}
             </td>
           </tr>
