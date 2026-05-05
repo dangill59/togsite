@@ -169,18 +169,28 @@ def draw_comic_burst(img, cx, cy, text, bg, fg=CREAM, size="md",
 
 # === Growing letter title — each letter bigger and higher than the last ===
 def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
-               uphill_per_letter=0):
+               uphill_per_letter=0, letter_colors=None, shadow_color=None,
+               highlight_color=None):
     """
     Each letter grows slightly larger than the previous (matches .grow-letter).
     With uphill_per_letter > 0, each letter is also lifted that many pixels
     above the previous one — creates a left-to-right uphill climb.
+
+    letter_colors: list of RGB(A) tuples cycled across non-space letters.
+                   If None, every letter is CREAM.
+    shadow_color:  RGB(A) for the 3D extrusion. Defaults to BROWN.
+    highlight_color: RGB(A) for the upper-left offset highlight. Defaults to ORANGE.
     """
+    fill_palette = letter_colors if letter_colors else [CREAM]
+    shadow_rgb = shadow_color if shadow_color else BROWN
+    highlight_rgb = highlight_color if highlight_color else ORANGE
     sizes = []
     for i, ch in enumerate(text):
         sizes.append(int(base_size + i * grow_per_letter))
     total_w = 0
     max_h = 0
     glyphs = []
+    fill_idx = 0  # only advance for non-space chars so spaces don't burn a color
     for i, ch in enumerate(text):
         sz = sizes[i]
         f = font(BANGERS, sz)
@@ -194,6 +204,8 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
             total_w += sz // 2 + 12
             max_h = max(max_h, gh)
             continue
+        face_color = fill_palette[fill_idx % len(fill_palette)]
+        fill_idx += 1
         # Extrusion depth scales with letter size for consistent feel
         depth = max(8, int(sz * 0.10))
         cw = gw + 80 + depth
@@ -207,15 +219,15 @@ def draw_title(img, text, cx, cy, base_size, grow_per_letter, rotate=0,
         # 3D extrusion: stack of offset copies stepping down-right
         for d_off in range(depth, 0, -1):
             shade = 1 - (d_off / depth) * 0.35
-            r = int(BROWN[0] * shade)
-            g_ = int(BROWN[1] * shade)
-            b = int(BROWN[2] * shade)
+            r = int(shadow_rgb[0] * shade)
+            g_ = int(shadow_rgb[1] * shade)
+            b = int(shadow_rgb[2] * shade)
             gd.text((ox + d_off, oy + d_off), ch, font=f, fill=(r, g_, b))
-        # Orange highlight peeking from top-left edge
-        gd.text((ox - 3, oy - 3), ch, font=f, fill=ORANGE)
-        # Bright cream top face with dark stroke
-        gd.text((ox, oy), ch, font=f, fill=CREAM,
-                stroke_width=4, stroke_fill=BROWN)
+        # Highlight peeking from top-left edge
+        gd.text((ox - 3, oy - 3), ch, font=f, fill=highlight_rgb)
+        # Top face with dark stroke
+        gd.text((ox, oy), ch, font=f, fill=face_color,
+                stroke_width=4, stroke_fill=shadow_rgb)
         glyphs.append((gl, gw, gh, sz))
         total_w += gw + max(12, sz // 8)
         max_h = max(max_h, ch_h)
