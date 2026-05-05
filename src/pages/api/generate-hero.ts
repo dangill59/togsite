@@ -26,27 +26,15 @@ export const POST: APIRoute = async ({ request }) => {
     }
   }
 
-  // === DB-backed protections (rate limit + fan verification) ===
+  // === DB-backed protections ===
+  // Order matters: verify the fan first so rate-limit logs don't fill up
+  // with bot attempts that would have failed verification anyway. Verified
+  // fans get a generous 10/hour cap; unverified requests are rejected before
+  // they ever count toward the limit.
   try {
     const sql = getSql();
 
-    // === PROTECTION 3: Rate limiting (3 per hour per IP) ===
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      || request.headers.get('x-real-ip')
-      || 'unknown';
-
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const recent = await sql`
-      SELECT id FROM rate_limits
-      WHERE ip_address = ${ip}
-        AND endpoint = 'generate-hero'
-        AND created_at >= ${oneHourAgo}
-    `;
-    if (recent.length >= 3) {
-      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429 });
-    }
-
-    // === PROTECTION 4: Verify fan exists ===
+    // === PROTECTION 3: Verify fan exists (no DB writes if this fails) ===
     if (!email || !signalCode) {
       return new Response(JSON.stringify({ error: 'Missing signup credentials' }), { status: 403 });
     }
@@ -59,7 +47,23 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: 'Signup verification failed' }), { status: 403 });
     }
 
-    // Log request for rate limiting
+    // === PROTECTION 4: Rate limit verified fans (10 per hour per IP) ===
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const recent = await sql`
+      SELECT id FROM rate_limits
+      WHERE ip_address = ${ip}
+        AND endpoint = 'generate-hero'
+        AND created_at >= ${oneHourAgo}
+    `;
+    if (recent.length >= 10) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429 });
+    }
+
+    // Log this request toward the cap
     await sql`
       INSERT INTO rate_limits (ip_address, endpoint)
       VALUES (${ip}, 'generate-hero')
