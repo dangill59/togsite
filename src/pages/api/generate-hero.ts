@@ -3,6 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { put } from '@vercel/blob';
 import { getSql } from '../../lib/db';
+import { sendWelcomeEmail } from '../../lib/email';
 
 export const POST: APIRoute = async ({ request }) => {
   const { name, superpower, favoriteMember, email, signalCode, turnstileToken, website, selfie } = await request.json();
@@ -150,6 +151,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     // === Upload to Vercel Blob and persist URL on the fan record ===
     let imageUrl: string | null = null;
+    let isFirstGen = false;
+    let fanForWelcome: any = null;
     try {
       const blobToken = import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
       const sanitizedEmail = email.replace(/[^a-zA-Z0-9]/g, '_');
@@ -164,8 +167,18 @@ export const POST: APIRoute = async ({ request }) => {
       });
       imageUrl = blob.url;
 
-      // Save URL on the fan row so future visits skip regeneration
+      // Check if this is the fan's first AI hero (so we can send welcome email)
       const sql = getSql();
+      const before = await sql`
+        SELECT name, favorite_member, superpower, signal_code, hero_image_url, created_at
+        FROM fans WHERE email = ${email} LIMIT 1
+      `;
+      if (before[0]) {
+        isFirstGen = !before[0].hero_image_url;
+        fanForWelcome = before[0];
+      }
+
+      // Save URL on the fan row so future visits skip regeneration
       await sql`
         UPDATE fans SET hero_image_url = ${imageUrl}, updated_at = NOW()
         WHERE email = ${email}
@@ -173,6 +186,20 @@ export const POST: APIRoute = async ({ request }) => {
     } catch (e: any) {
       console.error('Hero image persist failed:', e.message);
       // Fall through and still return base64 below so the page can show it
+    }
+
+    // Fire welcome email on first successful generation (don't await — let response return fast)
+    if (isFirstGen && fanForWelcome && imageUrl) {
+      const dateStr = new Date(fanForWelcome.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      sendWelcomeEmail({
+        name: fanForWelcome.name,
+        email,
+        signalCode: fanForWelcome.signal_code || signalCode,
+        favoriteMember: fanForWelcome.favorite_member,
+        superpower: fanForWelcome.superpower,
+        heroImageUrl: imageUrl,
+        dateStr,
+      }).catch((e) => console.error('Welcome email error:', e.message));
     }
 
     return new Response(JSON.stringify({

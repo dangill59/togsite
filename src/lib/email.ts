@@ -17,6 +17,116 @@ export function firstName(name: string | null | undefined): string {
   return (name || '').split(' ')[0] || '';
 }
 
+const DISPLAY = "Impact, 'Arial Black', sans-serif";
+const COL = {
+  brown: '#5c3317', darkBrown: '#1a0a05', cream: '#fdf5e6',
+  orange: '#e8641b', gold: '#f5a623', teal: '#1a8a7d',
+  plum: '#6b2d5b', red: '#e8251b',
+};
+
+export interface WelcomeData {
+  name: string | null;
+  email: string;
+  signalCode: string;
+  favoriteMember: string | null;
+  superpower: string | null;
+  heroImageUrl: string | null;
+  dateStr: string;
+}
+
+export function welcomeBody(d: WelcomeData): string {
+  const fname = firstName(d.name);
+  const heroImg = d.heroImageUrl
+    ? `<img src="${d.heroImageUrl}" width="280" height="280" style="display:block;width:280px;max-width:100%;height:auto;margin:0 auto;border:3px solid ${COL.gold};background:${COL.cream};" alt="Your Hero" />`
+    : `<div style="width:280px;height:280px;background:${COL.cream};border:3px solid ${COL.gold};margin:0 auto;display:inline-block;"></div>`;
+
+  // Email-rendered "license card" mirroring the on-site hero card
+  const card = `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;">
+      <tr><td>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${COL.darkBrown};background-image:linear-gradient(135deg,${COL.darkBrown},${COL.brown},${COL.plum});border:4px solid ${COL.brown};box-shadow:5px 5px 0 ${COL.brown};border-collapse:separate;">
+          <tr><td style="padding:14px 18px;border-bottom:2px solid rgba(245,166,35,0.4);">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+              <td valign="middle" width="56"><img src="${SITE}/logo-nav.png" width="48" height="48" style="display:block;border-radius:6px;border:2px solid ${COL.gold};" alt="TOG" /></td>
+              <td valign="middle" style="padding-left:14px;">
+                <div style="font-family:${DISPLAY};color:${COL.gold};font-size:20px;letter-spacing:3px;text-transform:uppercase;">Those One Guys</div>
+                <div style="font-family:${DISPLAY};color:${COL.cream};font-size:11px;letter-spacing:2px;opacity:0.7;text-transform:uppercase;">Official TOG Hero Squad ID</div>
+              </td>
+            </tr></table>
+          </td></tr>
+          <tr><td style="padding:18px 18px 8px;text-align:center;background:rgba(0,0,0,0.18);">
+            ${heroImg}
+          </td></tr>
+          <tr><td style="padding:18px;color:${COL.cream};">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr><td style="padding:5px 0;">
+                <div style="font-family:${DISPLAY};font-size:10px;letter-spacing:2px;color:rgba(253,245,230,0.6);text-transform:uppercase;">Name</div>
+                <div style="font-family:${DISPLAY};font-size:22px;color:${COL.cream};letter-spacing:2px;text-transform:uppercase;">${d.name || ''}</div>
+              </td></tr>
+              <tr><td style="padding:5px 0;">
+                <div style="font-family:${DISPLAY};font-size:10px;letter-spacing:2px;color:rgba(253,245,230,0.6);text-transform:uppercase;">Superpower</div>
+                <div style="font-family:${DISPLAY};font-size:18px;color:${COL.orange};letter-spacing:2px;">${d.superpower || 'Mystery Power'}</div>
+              </td></tr>
+              <tr><td style="padding:5px 0;">
+                <div style="font-family:${DISPLAY};font-size:10px;letter-spacing:2px;color:rgba(253,245,230,0.6);text-transform:uppercase;">Signal Code &middot; Since</div>
+                <div style="font-family:${DISPLAY};font-size:16px;color:${COL.cream};letter-spacing:3px;">${d.signalCode} &nbsp;&middot;&nbsp; ${d.dateStr}</div>
+              </td></tr>
+              <tr><td style="padding:5px 0;">
+                <div style="font-family:${DISPLAY};font-size:10px;letter-spacing:2px;color:rgba(253,245,230,0.6);text-transform:uppercase;">Ally</div>
+                <div style="font-family:${DISPLAY};font-size:14px;color:${COL.cream};letter-spacing:2px;">${d.favoriteMember || ''}</div>
+              </td></tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:10px 18px;background:rgba(0,0,0,0.3);text-align:center;">
+            <div style="font-family:${DISPLAY};font-size:11px;letter-spacing:2px;color:${COL.gold};text-transform:uppercase;">Flash this card at any show for surprise merch</div>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  `;
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;"><tr><td align="center">
+      <div style="display:inline-block;background:${COL.red};color:${COL.cream};font-family:${DISPLAY};font-size:28px;letter-spacing:4px;text-transform:uppercase;padding:10px 26px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};transform:rotate(-3deg);">Welcome${fname ? ', ' + fname : ''}!</div>
+    </td></tr></table>
+
+    <p style="margin:0 0 16px;font-size:17px;text-align:center;">You're officially in the <strong>TOG Hero Squad</strong>. Here's your card.</p>
+
+    ${card}
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 22px;"><tr><td align="center">
+      <a href="${SITE}/fanclub" style="display:inline-block;background:${COL.orange};color:${COL.cream};font-family:${DISPLAY};font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:14px 36px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};text-decoration:none;">Download My Card</a>
+    </td></tr></table>
+
+    <p style="margin:0 0 14px;font-family:${DISPLAY};font-size:22px;letter-spacing:2px;text-transform:uppercase;color:${COL.brown};text-align:center;">What the squad gets you</p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+      <tr><td valign="top" style="width:36px;padding:6px 10px 6px 0;font-family:${DISPLAY};font-size:22px;color:${COL.red};line-height:1;">&#9733;</td><td valign="top" style="padding:4px 0;">Heads-up emails on <strong>upcoming shows and special events</strong>.</td></tr>
+      <tr><td valign="top" style="width:36px;padding:6px 10px 6px 0;font-family:${DISPLAY};font-size:22px;color:${COL.teal};line-height:1;">&#9733;</td><td valign="top" style="padding:4px 0;">First-look at <strong>merch drops</strong> before they go public.</td></tr>
+      <tr><td valign="top" style="width:36px;padding:6px 10px 6px 0;font-family:${DISPLAY};font-size:22px;color:${COL.orange};line-height:1;">&#9733;</td><td valign="top" style="padding:4px 0;"><strong>Free swag at gigs</strong> &mdash; show your hero card at the merch table and we'll hook you up.</td></tr>
+      <tr><td valign="top" style="width:36px;padding:6px 10px 6px 0;font-family:${DISPLAY};font-size:22px;color:${COL.plum};line-height:1;">&#9733;</td><td valign="top" style="padding:4px 0;"><strong>Custom hero merch</strong> &mdash; your superhero on a tee, mug, pin, or cap once the store opens.</td></tr>
+    </table>
+
+    <p style="margin:24px 0 0;font-size:16px;text-align:center;">See you at a show.</p>
+    <p style="margin:6px 0 0;font-family:${DISPLAY};font-size:18px;letter-spacing:2px;color:${COL.brown};text-align:center;">&mdash; Dano, Darby &amp; Mr P</p>
+  `;
+}
+
+export async function sendWelcomeEmail(d: WelcomeData) {
+  try {
+    const resend = getResend();
+    const html = wrapHtml(welcomeBody(d), firstName(d.name), unsubscribeUrl(d.email, d.signalCode));
+    await resend.emails.send({
+      from: FROM,
+      to: [d.email],
+      subject: 'Welcome to the TOG Hero Squad!',
+      html,
+    });
+  } catch (err: any) {
+    console.error('Welcome email send failed:', err.message);
+  }
+}
+
 export function wrapHtml(bodyHtml: string, name: string, unsubUrl: string): string {
   // Email-safe: inline styles, table layout for Outlook, web-safe fonts.
   // Uses the site's palette and mirrors the home-page hero (gradient,
