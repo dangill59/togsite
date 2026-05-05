@@ -25,7 +25,7 @@ from gen_poster import (
     PUBLIC, BANGERS, FONTS,
     ORANGE, GOLD, BROWN, DARK_BROWN, CREAM, TEAL, PLUM, RED, YELLOW, PINK, BLUE,
     font, make_gradient, add_halftone, add_speed_lines,
-    draw_title, draw_classic_title,
+    draw_title, draw_classic_title, draw_simple_text,
 )
 
 FONT_OPTIONS = {
@@ -96,21 +96,44 @@ def build(palette: str = "comic", bg: str = "none",
     img = make_bg(W, H, bg, s)
 
     if style == "classic":
-        # Home-page CSS replica: cream letters, drop shadow, orange highlight,
-        # subtle dark stroke. No 3D extrusion, no uphill rotation.
+        # Replicates the home-page hero exactly: rotated growing title +
+        # tagline. For merch, web, emails — anywhere we need the brand.
+        if print_ready:
+            W, H = 4500, 1500
+            s = 3.0
+        else:
+            W, H = 1500, 500
+            s = 1.0
+        img = make_bg(W, H, bg, s)
+
         img = draw_classic_title(
             img, "THOSE ONE GUYS!",
             cx=W // 2,
-            cy=int(H * 0.55),
-            base_size=int(56 * s),
-            grow_per_letter=int(3 * s),
+            cy=int(H * 0.42),
+            base_size=int(80 * s),
+            grow_per_letter=int(5 * s),
             font_path=font_file,
             color=CREAM,
             highlight_color=ORANGE,
             shadow_offset=int(4 * s),
             highlight_offset=int(2 * s),
             stroke_width=max(1, int(2 * s)),
+            letter_spacing=int(6 * s),
+            rotate=-5,
         )
+
+        img = draw_simple_text(
+            img, "Loud guitars. Big grooves. Zero chill.",
+            cx=W // 2,
+            cy=int(H * 0.82),
+            size=int(36 * s),
+            font_path=font_file,
+            color=CREAM,
+            shadow_color=(0, 0, 0, 77),
+            shadow_offset=int(2 * s),
+            letter_spacing=int(3 * s),
+        )
+
         parts = ["tog-logo-classic"]
         if bg != "none":
             parts.append(bg)

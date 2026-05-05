@@ -264,7 +264,8 @@ def draw_classic_title(img, text, cx, cy, base_size, grow_per_letter,
                        shadow_color=(0, 0, 0, 128),
                        highlight_color=None,
                        stroke_color=(0, 0, 0, 51),
-                       shadow_offset=4, highlight_offset=2, stroke_width=2):
+                       shadow_offset=4, highlight_offset=2, stroke_width=2,
+                       letter_spacing=0, rotate=0):
     """
     Replicates the home-page .grow-letter CSS exactly:
       color: cream
@@ -317,17 +318,93 @@ def draw_classic_title(img, text, cx, cy, base_size, grow_per_letter,
             total_w += gw + max(12, sz // 8)
             max_h = max(max_h, g.size[1])
 
+    # Recompute total width with letter_spacing applied between every glyph
+    if letter_spacing:
+        total_w = 0
+        max_h = 0
+        for entry in glyphs:
+            g, gw, gh, sz = entry
+            if g is None:
+                total_w += gw + 12 + letter_spacing
+            else:
+                total_w += gw + max(12, sz // 8) + letter_spacing
+                max_h = max(max_h, g.size[1])
+
     canvas = Image.new("RGBA", (total_w + 40, max_h + 40), (0, 0, 0, 0))
     x = 0
     baseline = canvas.size[1] - 20
     for entry in glyphs:
         g, gw, gh, sz = entry
         if g is None:
-            x += gw + 12
+            x += gw + 12 + letter_spacing
             continue
         canvas.alpha_composite(g, (x, baseline - g.size[1]))
-        x += gw + max(12, sz // 8)
+        x += gw + max(12, sz // 8) + letter_spacing
 
+    if rotate:
+        canvas = canvas.rotate(rotate, resample=Image.BICUBIC, expand=True)
+    img.alpha_composite(canvas, (int(cx - canvas.size[0] / 2),
+                                 int(cy - canvas.size[1] / 2)))
+    return img
+
+
+def draw_simple_text(img, text, cx, cy, size, font_path=None,
+                     color=None, shadow_color=(0, 0, 0, 77),
+                     shadow_offset=2, letter_spacing=0):
+    """Cream Bangers text with a soft 2px drop shadow — matches .hero-sub."""
+    fill_color = color if color else CREAM
+    font_file = font_path if font_path else BANGERS
+    f = font(font_file, size)
+
+    if letter_spacing:
+        # Render letter-by-letter so we can apply per-letter tracking
+        # (PIL has no native letter-spacing on text drawing).
+        glyphs = []
+        for ch in text:
+            tmp = Image.new("RGBA", (size * 2, int(size * 1.6)), (0, 0, 0, 0))
+            td = ImageDraw.Draw(tmp)
+            bbox = td.textbbox((0, 0), ch if ch != " " else "M", font=f)
+            gw = bbox[2] - bbox[0]
+            gh = bbox[3] - bbox[1]
+            if ch == " ":
+                glyphs.append((None, gw, gh))
+                continue
+            pad = max(10, shadow_offset * 3)
+            cw = gw + pad * 2
+            ch_h = gh + pad * 2
+            gl = Image.new("RGBA", (cw, ch_h), (0, 0, 0, 0))
+            gd = ImageDraw.Draw(gl)
+            ox, oy = pad - bbox[0], pad - bbox[1]
+            gd.text((ox + shadow_offset, oy + shadow_offset), ch,
+                    font=f, fill=shadow_color)
+            gd.text((ox, oy), ch, font=f, fill=fill_color)
+            glyphs.append((gl, gw, gh))
+
+        total_w = sum(gw + letter_spacing for _, gw, _ in glyphs)
+        max_h = max((g.size[1] for g, _, _ in glyphs if g is not None), default=size)
+        canvas = Image.new("RGBA", (total_w + 40, max_h + 20), (0, 0, 0, 0))
+        x = 0
+        baseline = canvas.size[1] - 10
+        for g, gw, gh in glyphs:
+            if g is None:
+                x += gw + letter_spacing
+                continue
+            canvas.alpha_composite(g, (x, baseline - g.size[1]))
+            x += gw + letter_spacing
+        img.alpha_composite(canvas, (int(cx - canvas.size[0] / 2),
+                                     int(cy - canvas.size[1] / 2)))
+        return img
+
+    # No tracking: simple single-pass draw
+    bbox = ImageDraw.Draw(Image.new("RGBA", (1, 1))).textbbox((0, 0), text, font=f)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    pad = max(10, shadow_offset * 3)
+    canvas = Image.new("RGBA", (tw + pad * 2, th + pad * 2), (0, 0, 0, 0))
+    cd = ImageDraw.Draw(canvas)
+    ox, oy = pad - bbox[0], pad - bbox[1]
+    cd.text((ox + shadow_offset, oy + shadow_offset), text, font=f, fill=shadow_color)
+    cd.text((ox, oy), text, font=f, fill=fill_color)
     img.alpha_composite(canvas, (int(cx - canvas.size[0] / 2),
                                  int(cy - canvas.size[1] / 2)))
     return img
