@@ -202,6 +202,7 @@ export const POST: APIRoute = async ({ request }) => {
           favoriteMember: fanForWelcome.favorite_member,
           superpower: fanForWelcome.superpower,
           heroImageUrl: imageUrl,
+          heroImageBuffer: Buffer.from(base64, 'base64'),
           dateStr,
         });
       } catch (e: any) {

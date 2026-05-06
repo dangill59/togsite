@@ -31,13 +31,20 @@ export interface WelcomeData {
   favoriteMember: string | null;
   superpower: string | null;
   heroImageUrl: string | null;
+  // Optional raw PNG bytes for the hero image. When provided the image is
+  // attached inline (CID) and embedded via <img src="cid:...">, which renders
+  // even in clients (Yahoo, Outlook) that block remote images by default.
+  heroImageBuffer?: Buffer;
   dateStr: string;
 }
 
+const HERO_CID = 'tog-hero';
+
 export function welcomeBody(d: WelcomeData): string {
   const fname = firstName(d.name);
-  const heroImg = d.heroImageUrl
-    ? `<img src="${d.heroImageUrl}" width="280" height="280" style="display:block;width:280px;max-width:100%;height:auto;margin:0 auto;border:3px solid ${COL.gold};background:${COL.cream};" alt="Your Hero" />`
+  const heroSrc = d.heroImageBuffer ? `cid:${HERO_CID}` : d.heroImageUrl;
+  const heroImg = heroSrc
+    ? `<img src="${heroSrc}" width="280" height="280" style="display:block;width:280px;max-width:100%;height:auto;margin:0 auto;border:3px solid ${COL.gold};background:${COL.cream};" alt="Your Hero" />`
     : `<div style="width:280px;height:280px;background:${COL.cream};border:3px solid ${COL.gold};margin:0 auto;display:inline-block;"></div>`;
 
   // Email-rendered "license card" mirroring the on-site hero card
@@ -116,12 +123,20 @@ export async function sendWelcomeEmail(d: WelcomeData) {
   try {
     const resend = getResend();
     const html = wrapHtml(welcomeBody(d), firstName(d.name), unsubscribeUrl(d.email, d.signalCode));
-    await resend.emails.send({
+    const payload: any = {
       from: FROM,
       to: [d.email],
       subject: 'Welcome to the TOG Hero Squad!',
       html,
-    });
+    };
+    if (d.heroImageBuffer) {
+      payload.attachments = [{
+        filename: 'hero.png',
+        content: d.heroImageBuffer.toString('base64'),
+        contentId: HERO_CID,
+      }];
+    }
+    await resend.emails.send(payload);
   } catch (err: any) {
     console.error('Welcome email send failed:', err.message);
   }
