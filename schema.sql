@@ -74,3 +74,18 @@ CREATE TABLE IF NOT EXISTS show_comments (
 
 CREATE INDEX IF NOT EXISTS idx_show_comments_lookup
   ON show_comments(show_id, created_at DESC);
+
+-- Records each pre-show ("pre") and post-show ("post") notification email
+-- sent to a fan, keyed by (fan_email, show_slug, kind) so the daily cron
+-- can be idempotent: it queries this table to skip fans already notified.
+CREATE TABLE IF NOT EXISTS show_notifications (
+  id BIGSERIAL PRIMARY KEY,
+  fan_email TEXT NOT NULL,
+  show_slug TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('pre', 'post')),
+  sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (fan_email, show_slug, kind)
+);
+
+CREATE INDEX IF NOT EXISTS idx_show_notifications_lookup
+  ON show_notifications(show_slug, kind);

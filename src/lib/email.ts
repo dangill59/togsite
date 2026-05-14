@@ -142,6 +142,93 @@ export async function sendWelcomeEmail(d: WelcomeData) {
   }
 }
 
+export interface ShowEmailData {
+  name: string | null;
+  email: string;
+  signalCode: string | null;
+  show: {
+    slug: string;
+    date: string;       // display, e.g. "MAY 16"
+    venue: string;
+    city: string;
+    address: string;
+  };
+}
+
+export function showReminderBody(d: ShowEmailData): string {
+  const fname = firstName(d.name);
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(d.show.address)}`;
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;"><tr><td align="center">
+      <div style="display:inline-block;background:${COL.orange};color:${COL.cream};font-family:${DISPLAY};font-size:26px;letter-spacing:4px;text-transform:uppercase;padding:10px 26px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};transform:rotate(-3deg);">2 Days Out!</div>
+    </td></tr></table>
+
+    <p style="margin:0 0 16px;font-size:17px;text-align:center;">${fname ? fname + ', we' : 'We'} hit the stage in 2 days &mdash; come holler.</p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;">
+      <tr><td style="background:${COL.darkBrown};background-image:linear-gradient(135deg,${COL.darkBrown},${COL.brown},${COL.plum});border:4px solid ${COL.brown};box-shadow:5px 5px 0 ${COL.brown};padding:24px 22px;color:${COL.cream};text-align:center;">
+        <div style="font-family:${DISPLAY};font-size:14px;letter-spacing:3px;color:${COL.gold};text-transform:uppercase;opacity:0.85;">${d.show.date}</div>
+        <div style="font-family:${DISPLAY};font-size:30px;letter-spacing:3px;color:${COL.cream};margin-top:6px;text-transform:uppercase;">${d.show.venue}</div>
+        <div style="font-family:${DISPLAY};font-size:14px;letter-spacing:2px;color:${COL.cream};margin-top:4px;opacity:0.85;">${d.show.city}</div>
+      </td></tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;"><tr><td align="center">
+      <a href="${directionsUrl}" style="display:inline-block;background:${COL.orange};color:${COL.cream};font-family:${DISPLAY};font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:14px 32px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};text-decoration:none;">Get Directions</a>
+    </td></tr></table>
+
+    <p style="margin:0 0 14px;font-size:15px;text-align:center;">
+      Flash your hero card at the merch table for <strong>free swag</strong>.
+    </p>
+
+    <p style="margin:20px 0 0;font-size:16px;text-align:center;">See you there.</p>
+    <p style="margin:6px 0 0;font-family:${DISPLAY};font-size:18px;letter-spacing:2px;color:${COL.brown};text-align:center;">&mdash; Dano, Darby &amp; Mr P</p>
+  `;
+}
+
+export function showThankYouBody(d: ShowEmailData): string {
+  const fname = firstName(d.name);
+  const commentsUrl = `${SITE}/shows#${d.show.slug}`;
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;"><tr><td align="center">
+      <div style="display:inline-block;background:${COL.teal};color:${COL.cream};font-family:${DISPLAY};font-size:26px;letter-spacing:4px;text-transform:uppercase;padding:10px 26px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};transform:rotate(-2deg);">Thanks${fname ? ', ' + fname : ''}!</div>
+    </td></tr></table>
+
+    <p style="margin:0 0 18px;font-size:17px;text-align:center;">You showed up at <strong>${d.show.venue}</strong> &mdash; that means everything.</p>
+
+    <p style="margin:0 0 22px;font-size:16px;text-align:center;">How was it? Drop a line on the show page so the rest of the squad can see.</p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;"><tr><td align="center">
+      <a href="${commentsUrl}" style="display:inline-block;background:${COL.orange};color:${COL.cream};font-family:${DISPLAY};font-size:18px;letter-spacing:3px;text-transform:uppercase;padding:14px 32px;border:3px solid ${COL.brown};box-shadow:4px 4px 0 ${COL.brown};text-decoration:none;">Leave a Comment</a>
+    </td></tr></table>
+
+    <p style="margin:20px 0 0;font-size:16px;text-align:center;">Til next time, hero.</p>
+    <p style="margin:6px 0 0;font-family:${DISPLAY};font-size:18px;letter-spacing:2px;color:${COL.brown};text-align:center;">&mdash; Dano, Darby &amp; Mr P</p>
+  `;
+}
+
+export async function sendShowReminderEmail(d: ShowEmailData) {
+  const resend = getResend();
+  const html = wrapHtml(showReminderBody(d), firstName(d.name), unsubscribeUrl(d.email, d.signalCode));
+  await resend.emails.send({
+    from: FROM,
+    to: [d.email],
+    subject: `TOG at ${d.show.venue} in 2 days — ${d.show.date}`,
+    html,
+  });
+}
+
+export async function sendShowThankYouEmail(d: ShowEmailData) {
+  const resend = getResend();
+  const html = wrapHtml(showThankYouBody(d), firstName(d.name), unsubscribeUrl(d.email, d.signalCode));
+  await resend.emails.send({
+    from: FROM,
+    to: [d.email],
+    subject: `Thanks for rocking with us at ${d.show.venue}`,
+    html,
+  });
+}
+
 export function wrapHtml(bodyHtml: string, name: string, unsubUrl: string): string {
   // Email-safe: inline styles, table layout for Outlook, web-safe fonts.
   // Uses the site's palette and mirrors the home-page hero (gradient,
