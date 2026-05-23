@@ -88,6 +88,28 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
     </div>
   </section>
 
+  <section class="fb-feed-section">
+    <h2 class="comic-title fb-feed-title">Latest From Facebook</h2>
+    <p class="fb-feed-subtitle">What we're posting between gigs.</p>
+    <div class="fb-feed-frame comic-panel">
+      <iframe
+        src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FRocksSLC&tabs=timeline&width=500&height=700&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false"
+        width="500"
+        height="700"
+        style="border:none;overflow:hidden;width:100%;max-width:500px;"
+        scrolling="no"
+        frameborder="0"
+        allowfullscreen="true"
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        loading="lazy"
+        title="Those One Guys on Facebook"
+      ></iframe>
+    </div>
+    <p class="fb-feed-cta">
+      <a href="https://www.facebook.com/RocksSLC" target="_blank" rel="noopener">Follow us on Facebook &rarr;</a>
+    </p>
+  </section>
+
   <section class="book-us halftone">
     <Cityscape color="#1a0a05" opacity={0.2} />
     <SpeedLines color="#fdf5e6" opacity={0.08} />
@@ -176,6 +198,55 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
   @media (max-width: 768px) {
     .show-row { flex-direction: column; text-align: center; gap: 1rem; }
     .show-mini-bursts { justify-content: center; }
+  }
+
+  /* === Facebook feed === */
+  .fb-feed-section {
+    background: var(--cream);
+    padding: 4rem 2rem 5rem;
+    text-align: center;
+  }
+
+  .fb-feed-title {
+    font-size: 2.4rem;
+    color: var(--brown);
+    margin-bottom: 0.4rem;
+  }
+
+  .fb-feed-subtitle {
+    font-size: 1rem;
+    opacity: 0.7;
+    margin-bottom: 2rem;
+  }
+
+  .fb-feed-frame {
+    display: inline-block;
+    background: #fff;
+    padding: 8px;
+    max-width: 516px;
+    width: 100%;
+  }
+
+  .fb-feed-frame iframe {
+    display: block;
+  }
+
+  .fb-feed-cta {
+    margin-top: 1.25rem;
+    font-family: var(--comic);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .fb-feed-cta a {
+    color: var(--orange);
+    border-bottom: 2px solid var(--orange);
+    padding-bottom: 2px;
+  }
+
+  .fb-feed-cta a:hover {
+    color: var(--brown);
+    border-bottom-color: var(--brown);
   }
 
   .book-us {
