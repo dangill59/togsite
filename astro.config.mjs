@@ -4,6 +4,7 @@ import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://thoseoneguys.band',
   adapter: vercel({
     maxDuration: 120,
   }),
