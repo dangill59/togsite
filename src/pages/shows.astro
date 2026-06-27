@@ -5,6 +5,13 @@ import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
 import { shows, showSlug, showLabel } from '../lib/shows';
 
+// Render upcoming shows first (soonest → furthest), then past shows
+// (most-recent → oldest). Today is UTC-anchored to match the cron.
+const todayIso = new Date().toISOString().slice(0, 10);
+const upcoming = shows.filter((s) => s.isoDate >= todayIso).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+const past = shows.filter((s) => s.isoDate < todayIso).sort((a, b) => b.isoDate.localeCompare(a.isoDate));
+const sortedShows = [...upcoming, ...past];
+
 const miniWords = ["BAM!", "POW!", "ZAP!", "WHAM!", "CRASH!", "BOOM!"];
 const miniColors = ["#e8251b", "#1e90ff", "#ff69b4", "#ffe135", "#f5a623", "#1a8a7d"];
 const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
@@ -31,7 +38,7 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
     <p class="section-subtitle">Come see us do the thing. Dates coming soon.</p>
 
     <div class="shows-list">
-      {shows.map((show, i) => {
+      {sortedShows.map((show, i) => {
         const showId = showSlug(show);
         const label = showLabel(show);
         return (
