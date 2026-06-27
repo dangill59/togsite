@@ -11,8 +11,10 @@ export interface Show {
 }
 
 export const shows: Show[] = [
-  { date: "MAY 2",  isoDate: "2026-05-02", venue: "The Owl Bar", city: "Sundance, UT", note: "", burst: "THOSE!", shape: "star", burstBg: "#e8641b", address: "The Owl Bar, Sundance Mountain Resort, Sundance, UT" },
-  { date: "MAY 16", isoDate: "2026-05-16", venue: "Brewskis",    city: "Ogden, UT",    note: "", burst: "ONE!",   shape: "pow",  burstBg: "#1a8a7d", address: "Brewskis, Ogden, UT" },
+  { date: "MAY 2",  isoDate: "2026-05-02", venue: "The Owl Bar", city: "Sundance, UT", note: "", burst: "THOSE!", shape: "star",   burstBg: "#e8641b", address: "The Owl Bar, Sundance Mountain Resort, Sundance, UT" },
+  { date: "MAY 16", isoDate: "2026-05-16", venue: "Brewskis",    city: "Ogden, UT",    note: "", burst: "ONE!",   shape: "pow",    burstBg: "#1a8a7d", address: "Brewskis, Ogden, UT" },
+  { date: "AUG 7",  isoDate: "2026-08-07", venue: "The Owl Bar", city: "Sundance, UT", note: "", burst: "GUYS!",  shape: "jagged", burstBg: "#6b2d5b", address: "The Owl Bar, Sundance Mountain Resort, Sundance, UT" },
+  { date: "AUG 15", isoDate: "2026-08-15", venue: "Brewskis",    city: "Ogden, UT",    note: "", burst: "POW!",   shape: "bang",   burstBg: "#e8251b", address: "Brewskis, Ogden, UT" },
 ];
 
 export function showSlug(show: { date: string; venue: string }): string {
