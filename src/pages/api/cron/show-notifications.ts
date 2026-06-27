@@ -115,6 +115,7 @@ export const GET: APIRoute = async ({ request, url }) => {
   // hear the same beat on the same day. Idempotent via fb_posts UNIQUE(show_slug, kind).
   // Skipped entirely if FB env isn't configured yet, on dry runs, or on testTo runs.
   const fbResults: any[] = [];
+  console.log(`[fb] configured=${isFbConfigured()} dryRun=${dryRun} preShows=${preShows.length} postShows=${postShows.length}`);
   if (isFbConfigured() && !dryRun) {
     // T-2 reminder posts
     for (const show of preShows) {
@@ -176,6 +177,21 @@ async function postFbForShow(
     `;
     return { posted: true, fb_post_id: postId };
   } catch (err: any) {
+    // Log to Vercel function output so we can see the FB error body without
+    // having to re-query Graph API or stash the secret in a debug endpoint.
+    console.error(`[fb] post failed for ${slug} (${kind}):`, err.message);
+    // Record the error in fb_posts so we have a paper trail and don't retry blindly
+    // on every cron tick. Manually NULL the error row in SQL to allow a retry.
+    try {
+      await sql`
+        INSERT INTO fb_posts (show_slug, kind, error)
+        VALUES (${slug}, ${kind}, ${err.message})
+        ON CONFLICT (show_slug, kind) DO UPDATE
+          SET error = EXCLUDED.error, posted_at = NOW()
+      `;
+    } catch (logErr: any) {
+      console.error(`[fb] also failed to record error:`, logErr.message);
+    }
     return { posted: false, error: err.message };
   }
 }
