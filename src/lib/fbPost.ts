@@ -40,13 +40,17 @@ export async function postText(message: string): Promise<string> {
 
 // imageUrl must be publicly reachable (FB fetches it server-side). Our public/
 // assets satisfy this at https://thoseoneguys.band/...
-export async function postPhoto(imageUrl: string, caption: string): Promise<string> {
+//
+// `message` is what creates the timeline story. We learned the hard way that
+// `caption` on /photos is the alt-text only — using it alone uploads the image
+// to the album but creates no feed post. Always send the post copy as `message`.
+export async function postPhoto(imageUrl: string, message: string): Promise<string> {
   const { pageId, token } = env();
   const url = `https://graph.facebook.com/${GRAPH_VERSION}/${pageId}/photos`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url: imageUrl, caption, access_token: token }),
+    body: JSON.stringify({ url: imageUrl, message, published: true, access_token: token }),
   });
   const data: any = await res.json();
   if (!res.ok || data.error) {
