@@ -89,3 +89,20 @@ CREATE TABLE IF NOT EXISTS show_notifications (
 
 CREATE INDEX IF NOT EXISTS idx_show_notifications_lookup
   ON show_notifications(show_slug, kind);
+
+-- Records each Facebook post fanned out by the cron. One row per (show, kind)
+-- so the UNIQUE constraint makes the cron idempotent: a redrive can't double-post.
+-- Successful posts store fb_post_id; failures store error so we can retry next tick
+-- (the cron deletes failed rows before re-attempting).
+CREATE TABLE IF NOT EXISTS fb_posts (
+  id BIGSERIAL PRIMARY KEY,
+  show_slug TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('announcement', 'pre', 'post')),
+  fb_post_id TEXT,
+  error TEXT,
+  posted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (show_slug, kind)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fb_posts_lookup
+  ON fb_posts(show_slug, kind);

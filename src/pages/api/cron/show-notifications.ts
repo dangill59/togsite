@@ -4,6 +4,15 @@ import type { APIRoute } from 'astro';
 import { getSql } from '../../../lib/db';
 import { shows, showSlug } from '../../../lib/shows';
 import { sendShowReminderEmail, sendShowThankYouEmail } from '../../../lib/email';
+import {
+  isFbConfigured,
+  postPhoto,
+  captionAnnouncement,
+  captionReminder,
+  captionThanks,
+  imageForKind,
+  type FbPostKind,
+} from '../../../lib/fbPost';
 
 // Auth: Vercel cron sends `Authorization: Bearer <CRON_SECRET>` when CRON_SECRET
 // is set. We also accept x-cron-secret to make manual testing easier (curl).
@@ -49,12 +58,8 @@ export const GET: APIRoute = async ({ request, url }) => {
 
   const preShows = shows.filter((s) => s.isoDate === preDate);
   const postShows = shows.filter((s) => s.isoDate === postDate);
-
-  if (preShows.length === 0 && postShows.length === 0) {
-    return new Response(JSON.stringify({
-      ok: true, dryRun, preDate, postDate, message: 'No shows matched today',
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-  }
+  // (No early return on empty preShows/postShows — the FB announcement scan
+  //  below still has work to do on days where no email goes out.)
 
   // testTo: send a single sample of each kind to a tester, then return
   if (testTo) {
@@ -106,10 +111,74 @@ export const GET: APIRoute = async ({ request, url }) => {
     results.push({ kind: 'post', show: slug, ...r });
   }
 
+  // Facebook posts — fan out alongside the emails so the page and the squad
+  // hear the same beat on the same day. Idempotent via fb_posts UNIQUE(show_slug, kind).
+  // Skipped entirely if FB env isn't configured yet, on dry runs, or on testTo runs.
+  const fbResults: any[] = [];
+  if (isFbConfigured() && !dryRun) {
+    // T-2 reminder posts
+    for (const show of preShows) {
+      const slug = showSlug(show);
+      const r = await postFbForShow(sql, show, slug, 'pre');
+      fbResults.push({ kind: 'fb-pre', show: slug, ...r });
+    }
+    // T+1 thanks posts
+    for (const show of postShows) {
+      const slug = showSlug(show);
+      const r = await postFbForShow(sql, show, slug, 'post');
+      fbResults.push({ kind: 'fb-post', show: slug, ...r });
+    }
+    // Announcements — any future show beyond the reminder window that hasn't
+    // been announced yet. Cutoff = today+3 so a show announced today doesn't
+    // double-fire with the T-2 reminder two days later.
+    const announceCutoff = isoDateOffset(3);
+    for (const show of shows) {
+      if (show.isoDate < announceCutoff) continue;
+      const slug = showSlug(show);
+      const r = await postFbForShow(sql, show, slug, 'announcement');
+      fbResults.push({ kind: 'fb-announcement', show: slug, ...r });
+    }
+  }
+
   return new Response(JSON.stringify({
-    ok: true, dryRun, preDate, postDate, subscribedFans: fans.length, results,
+    ok: true, dryRun, preDate, postDate,
+    subscribedFans: fans.length, results,
+    fbConfigured: isFbConfigured(), fbResults,
   }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 };
+
+async function postFbForShow(
+  sql: ReturnType<typeof getSql>,
+  show: typeof shows[number],
+  slug: string,
+  kind: FbPostKind,
+): Promise<{ posted: boolean; skipped?: boolean; error?: string; fb_post_id?: string }> {
+  const existing = await sql`
+    SELECT fb_post_id FROM fb_posts WHERE show_slug = ${slug} AND kind = ${kind}
+  ` as Array<{ fb_post_id: string | null }>;
+  if (existing.length > 0 && existing[0].fb_post_id) {
+    return { posted: false, skipped: true };
+  }
+
+  const caption =
+    kind === 'announcement' ? captionAnnouncement({ slug, date: show.date, venue: show.venue, city: show.city }) :
+    kind === 'pre'          ? captionReminder({ slug, date: show.date, venue: show.venue, city: show.city }) :
+                              captionThanks({ slug, date: show.date, venue: show.venue, city: show.city });
+  const image = imageForKind(kind, slug);
+
+  try {
+    const postId = await postPhoto(image, caption);
+    await sql`
+      INSERT INTO fb_posts (show_slug, kind, fb_post_id)
+      VALUES (${slug}, ${kind}, ${postId})
+      ON CONFLICT (show_slug, kind) DO UPDATE
+        SET fb_post_id = EXCLUDED.fb_post_id, error = NULL, posted_at = NOW()
+    `;
+    return { posted: true, fb_post_id: postId };
+  } catch (err: any) {
+    return { posted: false, error: err.message };
+  }
+}
 
 async function sendForShow(
   sql: ReturnType<typeof getSql>,
