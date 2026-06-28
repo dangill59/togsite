@@ -1,35 +1,45 @@
 // Facebook Graph API page-post wrapper.
 //
-// Reads FB_PAGE_ID + FB_PAGE_ACCESS_TOKEN from env (Vercel project settings).
-// All callers go through postText / postPhoto so the API version is in one place.
+// FB_PAGE_ID comes from env. The page access token comes from app_config
+// in Neon (refreshed weekly by the refresh-fb-token cron), with the env
+// var FB_PAGE_ACCESS_TOKEN as the bootstrap fallback. See src/lib/fbToken.ts.
 //
 // The Graph API "post id" returned from /photos is `{pageId}_{postId}` — store
 // it as-is in fb_posts.fb_post_id; it's the canonical handle for edits/deletes.
 
+import { getCurrentPageToken } from './fbToken';
+
 const GRAPH_VERSION = 'v21.0';
 
-function env(): { pageId: string; token: string } {
-  const pageId = import.meta.env.FB_PAGE_ID || process.env.FB_PAGE_ID;
-  const token = import.meta.env.FB_PAGE_ACCESS_TOKEN || process.env.FB_PAGE_ACCESS_TOKEN;
-  if (!pageId || !token) {
-    throw new Error('FB_PAGE_ID and FB_PAGE_ACCESS_TOKEN must be set');
-  }
-  return { pageId, token };
+function pageId(): string {
+  const id = import.meta.env.FB_PAGE_ID || process.env.FB_PAGE_ID;
+  if (!id) throw new Error('FB_PAGE_ID must be set');
+  return id;
+}
+
+async function token(): Promise<string> {
+  const t = await getCurrentPageToken();
+  if (!t) throw new Error('No FB page access token available (env or app_config)');
+  return t;
 }
 
 export function isFbConfigured(): boolean {
-  const pageId = import.meta.env.FB_PAGE_ID || process.env.FB_PAGE_ID;
-  const token = import.meta.env.FB_PAGE_ACCESS_TOKEN || process.env.FB_PAGE_ACCESS_TOKEN;
-  return Boolean(pageId && token);
+  const id = import.meta.env.FB_PAGE_ID || process.env.FB_PAGE_ID;
+  const t = import.meta.env.FB_PAGE_ACCESS_TOKEN || process.env.FB_PAGE_ACCESS_TOKEN;
+  // We only require env-level signals here so the cron can short-circuit
+  // before hitting Neon. If env-token is set but app_config has a fresher one,
+  // postPhoto/postText will pick that up at call time.
+  return Boolean(id && t);
 }
 
 export async function postText(message: string): Promise<string> {
-  const { pageId, token } = env();
-  const url = `https://graph.facebook.com/${GRAPH_VERSION}/${pageId}/feed`;
+  const id = pageId();
+  const t = await token();
+  const url = `https://graph.facebook.com/${GRAPH_VERSION}/${id}/feed`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, access_token: token }),
+    body: JSON.stringify({ message, access_token: t }),
   });
   const data: any = await res.json();
   if (!res.ok || data.error) {
@@ -45,12 +55,13 @@ export async function postText(message: string): Promise<string> {
 // `caption` on /photos is the alt-text only — using it alone uploads the image
 // to the album but creates no feed post. Always send the post copy as `message`.
 export async function postPhoto(imageUrl: string, message: string): Promise<string> {
-  const { pageId, token } = env();
-  const url = `https://graph.facebook.com/${GRAPH_VERSION}/${pageId}/photos`;
+  const id = pageId();
+  const t = await token();
+  const url = `https://graph.facebook.com/${GRAPH_VERSION}/${id}/photos`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url: imageUrl, message, published: true, access_token: token }),
+    body: JSON.stringify({ url: imageUrl, message, published: true, access_token: t }),
   });
   const data: any = await res.json();
   if (!res.ok || data.error) {

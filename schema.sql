@@ -106,3 +106,13 @@ CREATE TABLE IF NOT EXISTS fb_posts (
 
 CREATE INDEX IF NOT EXISTS idx_fb_posts_lookup
   ON fb_posts(show_slug, kind);
+
+-- Mutable runtime config keyed by string. Used today to store the latest
+-- refreshed Facebook page access token (key='fb_page_access_token') so the
+-- refresh cron can rotate it without us having to update Vercel env vars.
+-- Env var FB_PAGE_ACCESS_TOKEN remains the bootstrap fallback.
+CREATE TABLE IF NOT EXISTS app_config (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

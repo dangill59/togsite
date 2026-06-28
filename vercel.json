@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/show-notifications",
       "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-fb-token",
+      "schedule": "0 13 * * 0"
     }
   ]
 }
