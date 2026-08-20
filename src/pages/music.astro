@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ComicBurst from '../components/ComicBurst.astro';
 import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
-import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc } from '../lib/videos';
+import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc, watchUrl } from '../lib/videos';
 ---
 
 <BaseLayout title="Music | Those One Guys">
@@ -58,14 +58,21 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc } from '../lib/videos';
         {liveVideos.map((v) => (
           <div class="live-item comic-panel">
             <div class="live-frame">
-              <iframe
-                src={v.source.kind === 'facebook' ? facebookEmbedSrc(v.source.url) : youtubeEmbedSrc(v.source.id)}
-                title={`${v.title} — ${v.venue}`}
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                allowfullscreen
-                loading="lazy"
-              ></iframe>
+              <button
+                class="live-facade"
+                type="button"
+                data-embed-src={v.source.kind === 'facebook' ? facebookEmbedSrc(v.source.url, true) : youtubeEmbedSrc(v.source.id, true)}
+                data-embed-title={`${v.title} — ${v.venue}`}
+                aria-label={`Play ${v.title}`}
+              >
+                <span class="live-play" aria-hidden="true"></span>
+                <span class="live-facade-text">Watch</span>
+              </button>
+              <noscript>
+                <a class="live-fallback" href={watchUrl(v.source)} target="_blank" rel="noopener">
+                  Watch “{v.title}” on {v.source.kind === 'facebook' ? 'Facebook' : 'YouTube'} →
+                </a>
+              </noscript>
             </div>
             <div class="live-meta">
               <h3 class="comic-title">{v.title}</h3>
@@ -99,6 +106,27 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc } from '../lib/videos';
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  // Facebook's reel player autoplays muted on load, and muted autoplay ignores
+  // the iframe allow="autoplay" policy — so the only way to keep the page quiet
+  // is to not create the iframe until the visitor asks for it. This also keeps
+  // Facebook's tracking scripts off the page for anyone who never hits play.
+  document.querySelectorAll('.live-facade').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const frame = btn.parentElement;
+      if (!frame) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = btn.dataset.embedSrc ?? '';
+      iframe.title = btn.dataset.embedTitle ?? '';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.setAttribute('frameborder', '0');
+      frame.replaceChildren(iframe);
+    }, { once: true });
+  });
+</script>
+
 
 <style>
   .music-hero {
@@ -232,7 +260,10 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc } from '../lib/videos';
     overflow: hidden;
   }
 
-  .live-frame iframe {
+  /* :global is required — this iframe is created by the click handler, so it
+     never gets Astro's data-astro-cid scope attribute and a scoped
+     descendant selector would silently fail to match it. */
+  .live-frame :global(iframe) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -257,5 +288,62 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc } from '../lib/videos';
     font-family: var(--comic);
     letter-spacing: 2px;
     text-transform: uppercase;
+  }
+
+  .live-facade {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    border: 0;
+    background: linear-gradient(135deg, var(--brown), var(--plum));
+    color: var(--cream);
+    transition: filter 0.2s;
+  }
+
+  .live-facade:hover { filter: brightness(1.15); }
+
+  .live-facade:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: -3px;
+  }
+
+  /* CSS play triangle — avoids shipping an icon asset for two buttons. */
+  .live-play {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 18px 0 18px 30px;
+    border-color: transparent transparent transparent var(--cream);
+    filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.4));
+    transition: transform 0.2s;
+  }
+
+  .live-facade:hover .live-play { transform: scale(1.15); }
+
+  .live-facade-text {
+    font-family: var(--comic);
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  }
+
+  .live-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    color: var(--cream);
+    background: var(--brown);
   }
 </style>

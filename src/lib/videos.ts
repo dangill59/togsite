@@ -20,20 +20,35 @@ export interface LiveVideo {
 }
 
 export const liveVideos: LiveVideo[] = [
-  // Pending: the two Owl Bar clips from Aug 17 are already on the FB page but
-  // we need their post permalinks before they can be embedded.
+  { title: 'One More', venue: 'The Owl Bar — Sundance, UT', source: { kind: 'facebook', url: 'https://www.facebook.com/reel/1600753358129019' } },
+  { title: 'A Great Night in Sundance', venue: 'The Owl Bar — Sundance, UT', source: { kind: 'facebook', url: 'https://www.facebook.com/reel/3104284463252492' } },
 ];
 
-export function facebookEmbedSrc(url: string): string {
+// Both builders take `autoplay`, which is only ever true for the click-to-load
+// path: the frame is injected in response to a click, so starting playback is
+// what the visitor just asked for.
+//
+// Note we cannot rely on these embeds NOT autoplaying when idle. Facebook's
+// reel player starts muted playback on load, and muted autoplay is exempt from
+// the iframe allow="autoplay" policy, so there is no attribute that stops it.
+// That is why the page renders a facade and only builds the iframe on click.
+export function facebookEmbedSrc(url: string, autoplay = false): string {
   const params = new URLSearchParams({
     href: url,
     show_text: 'false',
     width: '560',
-    t: '0',
+    autoplay: autoplay ? 'true' : 'false',
   });
   return `https://www.facebook.com/plugins/video.php?${params.toString()}`;
 }
 
-export function youtubeEmbedSrc(id: string): string {
-  return `https://www.youtube-nocookie.com/embed/${id}`;
+export function youtubeEmbedSrc(id: string, autoplay = false): string {
+  const params = new URLSearchParams({ rel: '0' });
+  if (autoplay) params.set('autoplay', '1');
+  return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
+}
+
+// The href a visitor lands on if JS is off, or if the embed fails to load.
+export function watchUrl(source: VideoSource): string {
+  return source.kind === 'facebook' ? source.url : `https://www.youtube.com/watch?v=${source.id}`;
 }
