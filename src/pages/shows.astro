@@ -56,8 +56,8 @@ const miniShapes = ["bang", "zap", "cloud", "pow", "star", "jagged"] as const;
               <span class="date-text">{show.date}</span>
             </div>
             <div class="show-mini-bursts">
-              <ComicBurst text={miniWords[i * 2]} bg={miniColors[i * 2]} color={miniColors[i * 2] === "#ffe135" ? "#5c3317" : "#fdf5e6"} shape={miniShapes[i * 2]} size="xs" rotate={-15 + i * 8} />
-              <ComicBurst text={miniWords[i * 2 + 1]} bg={miniColors[i * 2 + 1]} shape={miniShapes[i * 2 + 1]} size="xs" rotate={10 - i * 5} />
+              <ComicBurst text={miniWords[(i * 2) % miniWords.length]} bg={miniColors[(i * 2) % miniColors.length]} color={miniColors[(i * 2) % miniColors.length] === "#ffe135" ? "#5c3317" : "#fdf5e6"} shape={miniShapes[(i * 2) % miniShapes.length]} size="xs" rotate={-15 + i * 8} />
+              <ComicBurst text={miniWords[(i * 2 + 1) % miniWords.length]} bg={miniColors[(i * 2 + 1) % miniColors.length]} shape={miniShapes[(i * 2 + 1) % miniShapes.length]} size="xs" rotate={10 - i * 5} />
             </div>
             <div class="show-action">
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(show.address)}`} target="_blank" rel="noopener" class="btn btn-primary">Directions</a>
