@@ -52,3 +52,8 @@ export function youtubeEmbedSrc(id: string, autoplay = false): string {
 export function watchUrl(source: VideoSource): string {
   return source.kind === 'facebook' ? source.url : `https://www.youtube.com/watch?v=${source.id}`;
 }
+
+// Anchor id for a clip, so the hero shortcuts can jump straight to it.
+export function videoSlug(title: string): string {
+  return 'video-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
