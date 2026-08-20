@@ -10,13 +10,9 @@ import SpeedLines from '../components/SpeedLines.astro';
     <SpeedLines color="#fdf5e6" opacity={0.1} />
     <Cityscape color="#1a0a05" opacity={0.25} />
     <div class="fan-hero-inner">
-      <div class="burst-row">
-        <ComicBurst text="JOIN!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
-        <ComicBurst text="THE!" bg="#ffe135" color="#5c3317" shape="pow" size="sm" rotate={18} />
-      </div>
-      <h1 class="page-hero-title comic-title">TOG Hero Squad</h1>
-      <div class="burst-row">
-        <ComicBurst text="KERPOW!" bg="#e8641b" shape="star" size="md" rotate={-8} />
+      <div class="hero-title-row">
+        <ComicBurst text="JOIN!" bg="#e8251b" shape="bang" size="sm" rotate={-12} />
+        <h1 class="page-hero-title comic-title">TOG Hero Squad</h1>
         <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="sm" rotate={10} />
       </div>
     </div>
@@ -1144,7 +1140,7 @@ import SpeedLines from '../components/SpeedLines.astro';
   .fan-hero {
     position: relative;
     background: linear-gradient(135deg, var(--plum), var(--brown), var(--orange));
-    padding: 5rem 2rem;
+    padding: 1.35rem 2rem 1.5rem;
     overflow: hidden;
     text-align: center;
   }
@@ -1152,12 +1148,6 @@ import SpeedLines from '../components/SpeedLines.astro';
   .fan-hero-inner {
     position: relative;
     z-index: 2;
-  }
-
-  .page-hero-title {
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    color: var(--cream);
-    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
   }
 
   /* === Perks === */

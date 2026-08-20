@@ -18,14 +18,10 @@ const COMING_SOON = true;
     <SpeedLines color="#fdf5e6" opacity={0.1} />
     <Cityscape color="#1a0a05" opacity={0.25} />
     <div class="merch-hero-inner">
-      <div class="burst-row">
-        <ComicBurst text="GRAB!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
-        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={18} />
-      </div>
-      <h1 class="page-hero-title comic-title">Merch</h1>
-      <div class="burst-row">
-        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="pow" size="sm" rotate={-8} />
-        <ComicBurst text="KERPOW!" bg="#1e90ff" shape="star" size="md" rotate={10} />
+      <div class="hero-title-row">
+        <ComicBurst text="GRAB!" bg="#e8251b" shape="bang" size="sm" rotate={-12} />
+        <h1 class="page-hero-title comic-title">Merch</h1>
+        <ComicBurst text="KERPOW!" bg="#1e90ff" shape="star" size="sm" rotate={10} />
       </div>
     </div>
   </section>
@@ -508,7 +504,7 @@ const COMING_SOON = true;
   .merch-hero {
     position: relative;
     background: linear-gradient(135deg, var(--brown), var(--orange), var(--plum));
-    padding: 5rem 2rem;
+    padding: 1.35rem 2rem 1.5rem;
     overflow: hidden;
     text-align: center;
   }
@@ -516,12 +512,6 @@ const COMING_SOON = true;
   .merch-hero-inner {
     position: relative;
     z-index: 2;
-  }
-
-  .page-hero-title {
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    color: var(--cream);
-    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
   }
 
   .merch-grid {

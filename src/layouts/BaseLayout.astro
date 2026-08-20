@@ -436,4 +436,22 @@ const navLinks = [
     flex-wrap: wrap;
     padding: 1rem 0;
   }
+
+  /* === Compact page banner ===
+     Shared by every page except home. The bursts sit inline with the title so
+     the banner is one row (~210px) instead of three (~650px), which kept each
+     page's actual content below the fold. */
+  .page-hero-title {
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    color: var(--cream);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  }
+
+  .hero-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
 </style>

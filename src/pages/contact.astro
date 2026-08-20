@@ -10,14 +10,10 @@ import SpeedLines from '../components/SpeedLines.astro';
     <SpeedLines color="#fdf5e6" opacity={0.1} />
     <Cityscape color="#1a0a05" opacity={0.25} />
     <div class="contact-hero-inner">
-      <div class="burst-row">
-        <ComicBurst text="RING!" bg="#1a8a7d" shape="cloud" size="md" rotate={-12} />
-        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={18} />
-      </div>
-      <h1 class="page-hero-title comic-title">Get In Touch</h1>
-      <div class="burst-row">
-        <ComicBurst text="ONE!" bg="#ffe135" color="#5c3317" shape="pow" size="sm" rotate={-8} />
-        <ComicBurst text="KERPOW!" bg="#c0392b" shape="star" size="md" rotate={10} />
+      <div class="hero-title-row">
+        <ComicBurst text="RING!" bg="#1a8a7d" shape="cloud" size="sm" rotate={-12} />
+        <h1 class="page-hero-title comic-title">Get In Touch</h1>
+        <ComicBurst text="KERPOW!" bg="#c0392b" shape="star" size="sm" rotate={10} />
       </div>
     </div>
   </section>
@@ -99,7 +95,7 @@ import SpeedLines from '../components/SpeedLines.astro';
   .contact-hero {
     position: relative;
     background: linear-gradient(135deg, var(--brown), var(--orange));
-    padding: 5rem 2rem;
+    padding: 1.35rem 2rem 1.5rem;
     overflow: hidden;
     text-align: center;
   }
@@ -107,12 +103,6 @@ import SpeedLines from '../components/SpeedLines.astro';
   .contact-hero-inner {
     position: relative;
     z-index: 2;
-  }
-
-  .page-hero-title {
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    color: var(--cream);
-    text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
   }
 
   .contact-grid {
