@@ -20,8 +20,8 @@ export interface LiveVideo {
 }
 
 export const liveVideos: LiveVideo[] = [
-  { title: 'One More', venue: 'The Owl Bar — Sundance, UT', source: { kind: 'facebook', url: 'https://www.facebook.com/reel/1600753358129019' } },
-  { title: 'A Great Night in Sundance', venue: 'The Owl Bar — Sundance, UT', source: { kind: 'facebook', url: 'https://www.facebook.com/reel/3104284463252492' } },
+  { title: 'A Great Night in Sundance', venue: 'The Owl Bar — Sundance, UT', source: { kind: 'youtube', id: 'n4rWkEqF-ks' } },
+  { title: 'One More', venue: 'The Owl Bar — Sundance, UT', source: { kind: 'youtube', id: 'UKZHEldTt6s' } },
 ];
 
 // Both builders take `autoplay`, which is only ever true for the click-to-load
