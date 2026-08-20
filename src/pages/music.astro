@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ComicBurst from '../components/ComicBurst.astro';
 import Cityscape from '../components/Cityscape.astro';
 import SpeedLines from '../components/SpeedLines.astro';
+import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc } from '../lib/videos';
 ---
 
 <BaseLayout title="Music | Those One Guys">
@@ -43,6 +44,38 @@ import SpeedLines from '../components/SpeedLines.astro';
       ></iframe>
     </div>
   </section>
+
+  {liveVideos.length > 0 && (
+    <section class="section live-section">
+      <div class="live-header">
+        <ComicBurst text="LIVE!" bg="#e8251b" shape="bang" size="md" rotate={-12} />
+        <h2 class="comic-title">Caught On Tape</h2>
+        <ComicBurst text="POW!" bg="#1e90ff" shape="zap" size="sm" rotate={14} />
+      </div>
+      <p class="section-subtitle">Straight from the stage. Turn it up.</p>
+
+      <div class="live-grid">
+        {liveVideos.map((v) => (
+          <div class="live-item comic-panel">
+            <div class="live-frame">
+              <iframe
+                src={v.source.kind === 'facebook' ? facebookEmbedSrc(v.source.url) : youtubeEmbedSrc(v.source.id)}
+                title={`${v.title} — ${v.venue}`}
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                allowfullscreen
+                loading="lazy"
+              ></iframe>
+            </div>
+            <div class="live-meta">
+              <h3 class="comic-title">{v.title}</h3>
+              <p class="live-venue">{v.venue}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
 
   <section class="streaming-section halftone">
     <Cityscape color="#1a0a05" opacity={0.2} />
@@ -159,5 +192,70 @@ import SpeedLines from '../components/SpeedLines.astro';
     color: var(--brown);
     transform: translate(-2px, -2px);
     box-shadow: 6px 6px 0 rgba(0,0,0,0.4);
+  }
+
+  /* === Live videos === */
+  .live-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  .live-header h2 {
+    font-size: 2.2rem;
+    color: var(--brown);
+  }
+
+  .live-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .live-item {
+    background: white;
+    padding: 1.25rem;
+  }
+
+  /* 16:9 box so the iframe scales instead of letterboxing at a fixed height. */
+  .live-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--brown);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .live-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+  }
+
+  .live-meta {
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .live-meta h3 {
+    font-size: 1.3rem;
+    color: var(--brown);
+  }
+
+  .live-venue {
+    font-size: 0.9rem;
+    color: var(--orange);
+    font-family: var(--comic);
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
 </style>
