@@ -12,26 +12,21 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc, watchUrl } from '../lib/
     <Cityscape color="#1a0a05" opacity={0.25} />
     <div class="music-hero-inner">
       <div class="burst-row">
-        <ComicBurst text="WHAM!" bg="#ff69b4" shape="bang" size="md" rotate={-14} />
+        <ComicBurst text="WHAM!" bg="#ff69b4" shape="bang" size="sm" rotate={-14} />
         <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={20} />
       </div>
       <h1 class="page-hero-title comic-title">Music</h1>
       <div class="burst-row">
         <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="sm" rotate={-10} />
-        <ComicBurst text="KERPOW!" bg="#1e90ff" shape="star" size="md" rotate={8} />
+        <ComicBurst text="KERPOW!" bg="#1e90ff" shape="star" size="sm" rotate={8} />
       </div>
     </div>
   </section>
 
-  <section class="section">
+  <section class="section music-top">
     <p class="section-subtitle">Crank it up. Here's what we've been cooking.</p>
 
     <div class="spotify-embed comic-panel">
-      <div class="embed-header">
-        <ComicBurst text="THOSE!" bg="#e8641b" shape="star" size="sm" rotate={-10} />
-        <ComicBurst text="ONE!" bg="#1a8a7d" shape="pow" size="sm" rotate={8} />
-        <ComicBurst text="GUYS!" bg="#6b2d5b" shape="jagged" size="sm" rotate={-5} />
-      </div>
       <iframe
         style="border-radius: 4px;"
         src="https://open.spotify.com/embed/album/2HisOxjnnfc8p8lKSlLU9t?utm_source=generator&theme=0"
@@ -132,7 +127,7 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc, watchUrl } from '../lib/
   .music-hero {
     position: relative;
     background: linear-gradient(135deg, var(--orange), var(--plum));
-    padding: 5rem 2rem;
+    padding: 2rem 2rem 1.75rem;
     overflow: hidden;
     text-align: center;
   }
@@ -143,7 +138,7 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc, watchUrl } from '../lib/
   }
 
   .page-hero-title {
-    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
     color: var(--cream);
     text-shadow: 4px 4px 0 rgba(0,0,0,0.4);
   }
@@ -157,13 +152,6 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc, watchUrl } from '../lib/
 
   .spotify-embed iframe {
     display: block;
-  }
-
-  .embed-header {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
   }
 
   .streaming-section {
@@ -345,5 +333,15 @@ import { liveVideos, facebookEmbedSrc, youtubeEmbedSrc, watchUrl } from '../lib/
     text-align: center;
     color: var(--cream);
     background: var(--brown);
+  }
+
+  /* The album player is the point of this page, so pull it up toward the fold.
+     Scoped to this page — .section and .section-subtitle are shared globally. */
+  .music-top {
+    padding-top: 2.5rem;
+  }
+
+  .music-top .section-subtitle {
+    margin-bottom: 1.5rem;
   }
 </style>
